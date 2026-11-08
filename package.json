@@ -1,0 +1,25 @@
+{
+  "name": "sandlada-okyct-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "dev": "pnpm --filter @sandlada/site run dev",
+    "dev:app": "pnpm --filter @sandlada/dev-app run dev",
+    "bench": "pnpm --filter @sandlada/benchmark run bench",
+    "build": "pnpm --filter @sandlada/okyct run build && pnpm --filter @sandlada/site run build && pnpm --filter @sandlada/dev-app run build",
+    "build:all": "pnpm --filter @sandlada/okyct run build && pnpm --filter @sandlada/site run build && pnpm --filter @sandlada/dev-app run build",
+    "build:core": "pnpm --filter @sandlada/okyct run build",
+    "build:site": "pnpm --filter @sandlada/site run build",
+    "build:dev-app": "pnpm --filter @sandlada/dev-app run build",
+    "preview": "pnpm --filter @sandlada/site run preview",
+    "clean": "node -e \"['dist', 'packages/site/dist', 'packages/dev-app/dist', 'packages/typescript/dist'].forEach(d => fs.rmSync(d, { recursive: true, force: true }))\"",
+    "lint": "pnpm -r run lint",
+    "lint:all": "pnpm -r run lint",
+    "typecheck": "pnpm -r run lint"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
