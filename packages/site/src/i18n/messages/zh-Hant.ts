@@ -1,0 +1,220 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * 繁體中文（zh-Hant，台灣用語）訊息目錄。
+ * 型別強制與英文語系鍵集完全一致，缺少任何鍵都會在 tsc 階段報錯。
+ */
+
+import type { MessageKey } from './en.ts'
+
+export const TraditionalChineseMessages: Record<MessageKey, string> = {
+  'brand.name': 'OKYCT',
+  'brand.studio': 'OKYCT Studio',
+
+  'nav.product': '產品',
+  'nav.model': '色彩模型',
+  'nav.displays': '自發光面板',
+  'nav.palette': '調色實驗室',
+  'nav.studio': '工作台',
+  'nav.openStudio': '開啟工作台',
+  'nav.home': '首頁',
+
+  'theme.toLight': '切換至亮色模式',
+  'theme.toDark': '切換至暗色模式',
+
+  'language.label': '語言',
+  'language.en': 'English',
+  'language.zhHant': '繁體中文',
+
+  'hero.eyebrow': '感知色彩引擎',
+  'hero.titleLineOne': '讓色彩像光一樣',
+  'hero.titleLineTwo': '自然運作。',
+  'hero.subtitle':
+    'OKYCT 是為自發光顯示器打造的零依賴感知色彩引擎。以 OKLab 極角定義色相、以 CIE 亮度錨定視明度，並用代數證明無障礙對比度——不靠猜測。',
+  'hero.primaryCta': '開啟 OKYCT Studio',
+  'hero.secondaryCta': '深入色彩模型',
+  'hero.meta': 'MIT 授權 · TypeScript · 零執行期依賴',
+  'hero.seedLabel': '粒子種子色',
+  'hero.seedHint': '畫面中的每一顆粒子，都由引擎從同一個種子色即時生成。',
+  'hero.customSeed': '自訂種子色',
+  'hero.inspector.eyebrow': '即時種子檢查器',
+  'hero.inspector.ringLabel': 'T60 色相環',
+  'hero.inspector.badge': '色域內 · ΔH 0°',
+  'hero.inspector.hue': '色相',
+  'hero.inspector.chroma': '彩度',
+  'hero.inspector.tone': '明度',
+  'hero.inspector.luminance': '亮度 Y',
+  'hero.inspector.vsWhite': '對白',
+  'hero.inspector.vsBlack': '對黑',
+  'hero.inspector.copyHex': '複製種子色',
+  'hero.inspector.copied': '已複製',
+  'hero.inspector.openStudio': '進入工作台',
+  'hero.inspector.drift': '漂移 ΔH',
+  'hero.inspector.cmax': 'Cmax 餘量',
+  'hero.inspector.solve': '求解',
+  'hero.inspector.power': '功耗',
+  'hero.inspector.sliderLabel': '色相拉桿 · T60 即時',
+  'hero.inspector.sliderHint': '拖動即時預覽 · 鬆開套用',
+  'hero.inspector.live': '即時預覽',
+  'hero.inspector.peak': '峰值',
+
+  'benchmarks.eyebrow': '實測基準',
+  'benchmarks.title': 'OKYCT 在多項基準上全面領先。',
+  'benchmarks.body':
+    '以下每個數字都由 @sandlada/benchmark 在你的瀏覽器中即時測得——五個真實模型實作以當前種子色同場競技。',
+  'benchmarks.liveNote': '由當前種子色即時測得',
+  'benchmarks.column.benchmark': '評測項',
+  'benchmarks.column.condition': '條件',
+  'benchmarks.cond.scale': 'T10–T95 色階',
+  'benchmarks.cond.sweep': '360° 色相環掃 · 24 採樣點',
+  'benchmarks.cond.blue': '240°–300° 藍紫區間',
+  'benchmarks.row.maxDrift': '最大色相漂移',
+  'benchmarks.row.maxDriftDesc': '與種子色相差最大的色階',
+  'benchmarks.row.meanDrift': '平均色相漂移',
+  'benchmarks.row.meanDriftDesc': '10 級色階平均值',
+  'benchmarks.row.wcag': 'WCAG AA 達標率',
+  'benchmarks.row.wcagDesc': '色階可用性',
+  'benchmarks.row.toneDelta': '明度準確度',
+  'benchmarks.row.toneDeltaDesc': '與標稱明度最大偏差',
+  'benchmarks.row.solveTime': '求解耗時',
+  'benchmarks.row.solveTimeDesc': '每 10 級色階',
+  'benchmarks.row.speedup': '相對加速比',
+  'benchmarks.row.speedupDesc': '以 Google MCU 為基準',
+  'benchmarks.row.compliance': '色相達標率',
+  'benchmarks.row.complianceDesc': '漂移 ≤ 0.5° 的色階占比',
+  'benchmarks.row.severe': '嚴重失真數',
+  'benchmarks.row.severeDesc': '漂移 > 2.5° 的色階數',
+  'benchmarks.row.ringDrift': '全色相環漂移',
+  'benchmarks.row.ringDriftDesc': '24 個掃描點中的最大值',
+  'benchmarks.row.blueDrift': '藍紫區漂移',
+  'benchmarks.row.blueDriftDesc': '藍紫高危區間的最大值',
+  'hero.stats.iterationsValue': '5–7',
+  'hero.stats.iterationsLabel': '牛頓迭代次數',
+  'hero.stats.speedValue': '0.08 ms',
+  'hero.stats.speedLabel': '種子色 → 完整方案',
+  'hero.stats.hueValue': '0°',
+  'hero.stats.hueLabel': '色域折返色相漂移',
+  'hero.stats.contrastValue': 'O(1)',
+  'hero.stats.contrastLabel': '對比度反解',
+
+  'statement.eyebrow': '核心命題',
+  'statement.title': '當螢幕開始自己發光，紙張時代的調色盤就不再成立。',
+  'statement.body':
+    '既有的色貌模型是為反射光設計的。OKYCT 直接從像素的物理出發：以 OKLab 極平面描述色相、以 CIE 1931 Y 描述明度，中間則由嚴格單調的牛頓求解器銜接。最終得到一套在 OLED 上依然誠實、色域裁切零色相漂移，並且能直接證明對比度的色彩系統。',
+
+  'model.eyebrow': '為何選擇 OKYCT',
+  'model.title': '四項保證，全部寫進數學裡。',
+  'model.perceptual.title': '感知色相，物理明度',
+  'model.perceptual.body':
+    '色相取自 OKLab 極角，因此藍色在 CAM16 會偏紫的深藍區域依然保持藍色。明度直接錨定 CIE 1931 Y，讓亮度成為可量測的物理量，而不是感覺。',
+  'model.solver.title': '單變數牛頓求解器',
+  'model.solver.body':
+    '由於 Y 對 OKLab 的 L 嚴格單調，只需一條解析導數即可在 5–7 次迭代內收斂，無需 CAM16 的巢狀二分搜尋，也沒有超越函數掃描。',
+  'model.gamut.title': '尖峰錨定色域映射',
+  'model.gamut.body':
+    '超出色域的顏色會沿著等色相射線向尖峰折返。ΔH 在構造上恆為零，鮮紅永遠不會漂移成橘黃。',
+  'model.contrast.title': '可以解出來的對比度',
+  'model.contrast.body':
+    'Tone 與 CIE Y 互為雙射，因此 WCAG 2.1 與 APCA 門檻都能以閉式代數反解。無障礙成為 O(1) 的約束條件，而不是事後稽核。',
+
+  'displays.eyebrow': '自發光物理',
+  'displays.title': '為自己發光的面板而設計。',
+  'displays.body':
+    'OLED、AMOLED 與 MicroOLED 在暗部行為截然不同。OKYCT 提供的是硬體預設檔，而不是一套通用的「暗色模式」。',
+  'displays.oled.name': 'OLED · 真黑斷電',
+  'displays.oled.tone': 'Tone 0',
+  'displays.oled.body': '像素完全關斷，換取極致靜態對比度與最低待機功耗。',
+  'displays.amoled.name': 'AMOLED · 防黑拖影',
+  'displays.amoled.tone': 'Tone 4',
+  'displays.amoled.body':
+    '以亞閾值偏壓維持有機層喚醒，在 120 Hz 下把階躍響應由 18.5 ms 壓縮至 1.6 ms，徹底消除果凍黑拖影。',
+  'displays.micro.name': 'MicroOLED · XR',
+  'displays.micro.tone': 'Tone 8 / 92',
+  'displays.micro.body':
+    '抬升暗部並柔性限幅高光峰值，消除近眼 Pancake 透鏡的內反射光暈。',
+  'displays.power.title': '光譜加權子像素功耗',
+  'displays.power.body':
+    'P = 1.05·Rγ + 0.85·Gγ + 2.40·Bγ。藍色是最耗電、老化最快的通道，因此高危色相會被收斂並微偏青藍。',
+
+  'palette.eyebrow': '即時調色盤',
+  'palette.title': '一個種子色，十三級明度，涵蓋所有角色。',
+  'palette.body':
+    '引擎此刻正在你的瀏覽器中運行。改變種子色，粒子、色階列與 Token 角色都會沿著同一條感知管線同步更新。',
+  'palette.seedLabel': '種子色',
+  'palette.toneAxis': 'Tone',
+  'palette.palettes.primary': '主色',
+  'palette.palettes.secondary': '次色',
+  'palette.palettes.tertiary': '第三色',
+  'palette.palettes.neutral': '中性色',
+  'palette.palettes.neutralVariant': '中性變體',
+
+  'studio.eyebrow': 'OKYCT Studio',
+  'studio.title': '色彩系統的專屬實驗室。',
+  'studio.body':
+    '七個工作區：檢視 Token、模擬自發光硬體、測繪色域、以函數式組合配色，並匯出生產級 CSS。',
+  'studio.cta': '進入工作台',
+  'studio.tokens.title': 'Token 矩陣',
+  'studio.tokens.body': '完整角色 Token，明暗雙模式與 WCAG／APCA 稽核。',
+  'studio.sandbox.title': '元件沙盒',
+  'studio.sandbox.body': '以即時配色渲染按鈕、卡片與狀態層。',
+  'studio.emissive.title': '硬體實驗室',
+  'studio.emissive.body': 'OLED、AMOLED 與 MicroOLED 預設檔，附子像素功耗遙測。',
+  'studio.colorimetric.title': '色度學',
+  'studio.colorimetric.body': 'Y ↔ Tone 雙射曲線與 360° 尖峰外殼。',
+  'studio.fp.title': '管道組合',
+  'studio.fp.body': '以柯里化 pipe 與 flow 算子串接色彩流程。',
+  'studio.benchmark.title': '模型對標',
+  'studio.benchmark.body': 'OKYCT 與 CAM16、原生 sRGB 的色相保真度比較。',
+  'studio.export.title': '程式碼匯出',
+  'studio.export.body': 'MD3 CSS Token、JSON、Tailwind 設定與應用片段。',
+
+  'cta.title': '交付經得起考驗的色彩。',
+  'cta.body':
+    'OKYCT 以 MIT 授權釋出、零依賴，TypeScript 版本已可使用，Dart 與 Rust 實作正在路上。',
+  'cta.primary': '開啟 OKYCT Studio',
+  'cta.secondary': '回到頂端',
+
+  'footer.tagline': '為自發光顯示器而生的感知色彩。',
+  'footer.explore': '探索',
+  'footer.model': '色彩模型',
+  'footer.license': '授權',
+  'footer.licenseValue': 'MIT · Kai-Orion & Sandlada',
+  'footer.rights': '© 2026 Sandlada. 保留所有權利。',
+  'footer.builtWith': '本頁由 OKYCT 引擎即時渲染。',
+
+  'studio.nav.controls': '配色控制',
+  'studio.nav.export': '匯出生產 Token',
+  'studio.nav.exportShort': '匯出',
+  'studio.nav.parameters': '參數設定',
+  'studio.nav.closeControls': '關閉配色控制項',
+  'studio.nav.backToSite': '回到 OKYCT 首頁',
+  'studio.tab.tokens': 'Token 矩陣',
+  'studio.tab.sandbox': '元件沙盒',
+  'studio.tab.emissive': '硬體實驗室',
+  'studio.tab.colorimetric': '色度色域',
+  'studio.tab.fp': '管道組合',
+  'studio.tab.benchmark': '模型對標',
+  'studio.tab.export': '程式碼匯出',
+  'studio.mobile.tokens': 'Token',
+  'studio.mobile.sandbox': '沙盒',
+  'studio.mobile.emissive': '硬體',
+  'studio.mobile.colorimetric': '色域',
+  'studio.mobile.fp': '管道',
+  'studio.mobile.benchmark': '對標',
+  'studio.mobile.export': '匯出',
+  'studio.loading': '正在載入工作台…',
+
+  'notFound.title': '這個顏色落在色域之外。',
+  'notFound.body': '你要求的頁面並不存在，引擎已將它折返回一條有效的路徑。',
+  'notFound.cta': '回到首頁',
+
+  'seo.title': 'OKYCT — 為自發光顯示器而生的感知色彩引擎',
+  'seo.description':
+    'OKYCT 是為 OLED、AMOLED 與 MicroOLED 打造的零依賴感知色彩引擎。OKLab 色相、CIE 錨定明度、零漂移色域映射，以及 O(1) 的 WCAG／APCA 對比度反解。',
+  'seo.studio.title': 'OKYCT Studio — 即時色彩工作台',
+  'seo.studio.description':
+    '檢視 MD3 角色 Token、模擬自發光面板物理、探索尖峰色域外殼，並匯出生產級 CSS——全數由 OKYCT 引擎驅動。',
+  'seo.notFound.title': '找不到頁面 — OKYCT',
+  'seo.notFound.description': '找不到你要求的頁面。',
+}

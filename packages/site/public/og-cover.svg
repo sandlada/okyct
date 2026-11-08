@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="OKYCT — perceptual color engine for emissive displays">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A73E8" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#7C4DFF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#FF5A3C" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="spectrum" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1A73E8"/>
+      <stop offset="18%" stop-color="#4C8DFF"/>
+      <stop offset="36%" stop-color="#7C4DFF"/>
+      <stop offset="54%" stop-color="#C24BFF"/>
+      <stop offset="72%" stop-color="#FF5A3C"/>
+      <stop offset="88%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#00A87E"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#ffffff"/>
+
+  <circle cx="1010" cy="300" r="330" fill="url(#glow)"/>
+  <g opacity="0.85">
+    <circle cx="880" cy="140" r="3" fill="#1A73E8"/>
+    <circle cx="960" cy="205" r="2" fill="#7C4DFF"/>
+    <circle cx="1080" cy="160" r="2.5" fill="#FF5A3C"/>
+    <circle cx="1120" cy="300" r="2" fill="#00A87E"/>
+    <circle cx="900" cy="330" r="2.5" fill="#FFB300"/>
+    <circle cx="1010" cy="440" r="3" fill="#C24BFF"/>
+    <circle cx="1140" cy="470" r="2" fill="#4C8DFF"/>
+    <circle cx="850" cy="480" r="2" fill="#FF5A3C"/>
+    <circle cx="760" cy="220" r="2" fill="#7C4DFF"/>
+    <circle cx="700" cy="380" r="2.5" fill="#1A73E8"/>
+  </g>
+
+  <g transform="translate(90 96)">
+    <circle cx="18" cy="10" r="15" fill="#1A73E8"/>
+    <circle cx="6" cy="26" r="12" fill="#7C4DFF" fill-opacity="0.85"/>
+    <circle cx="30" cy="26" r="12" fill="#FF5A3C" fill-opacity="0.7"/>
+    <text x="58" y="28" font-family="'Plus Jakarta Sans', 'Segoe UI', sans-serif" font-size="26" font-weight="700" fill="#111111" letter-spacing="-0.5">OKYCT</text>
+  </g>
+
+  <text x="90" y="268" font-family="'Plus Jakarta Sans', 'Segoe UI', sans-serif" font-size="72" font-weight="600" fill="#111111" letter-spacing="-3">Color that behaves</text>
+  <text x="90" y="348" font-family="'Plus Jakarta Sans', 'Segoe UI', sans-serif" font-size="72" font-weight="600" fill="url(#spectrum)" letter-spacing="-3">like light.</text>
+
+  <text x="92" y="410" font-family="'DM Sans', 'Segoe UI', sans-serif" font-size="22" fill="#555555">
+    A zero-dependency perceptual color engine for OLED, AMOLED and MicroOLED.
+  </text>
+
+  <g transform="translate(90 470)">
+    <rect width="1020" height="10" rx="5" fill="url(#spectrum)"/>
+  </g>
+
+  <text x="90" y="548" font-family="'JetBrains Mono', ui-monospace, monospace" font-size="15" fill="#8a8a8a" letter-spacing="1.5">
+    OKLAB HUE · CIE 1931 Y TONE · CUSP GAMUT · WCAG &amp; APCA
+  </text>
+</svg>

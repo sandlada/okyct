@@ -1,0 +1,18 @@
+{
+  "name": "OKYCT — Perceptual color engine",
+  "short_name": "OKYCT",
+  "description": "A zero-dependency perceptual color engine for OLED, AMOLED and MicroOLED displays.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
