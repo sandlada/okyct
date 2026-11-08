@@ -18,3 +18,5 @@ coverage/
 .vite
 .vitest
 .cache
+
+.aistudio/
