@@ -23,7 +23,7 @@ import { useI18n, type MessageKey } from '../i18n/index.tsx'
 import { useTheme } from '../theme/index.tsx'
 import { Link } from '../router/index.tsx'
 import { studioPath, type StudioView } from '../router/routes.ts'
-import { runModelBenchmark, runSpectrumSweep } from '../color/benchmark.ts'
+import { runModelBenchmark } from '../color/benchmark.ts'
 import { buildBenchmarkMatrix } from '../landing/modelBenchmarks.ts'
 import { HueSeedScrubber } from '../landing/HueSeedScrubber.tsx'
 import {
@@ -76,10 +76,9 @@ export function LandingPage() {
   const terrainRoles = useMemo(() => buildTerrainRoleRamps(seedHex, isDark), [seedHex, isDark])
   const panels = useMemo(() => buildPanelSwatches(seedHex), [seedHex])
   const modelBenchmarks = useMemo(() => runModelBenchmark(seedHex), [seedHex])
-  const spectrumSweep = useMemo(() => runSpectrumSweep(), [])
   const benchmarkMatrix = useMemo(
-    () => buildBenchmarkMatrix(modelBenchmarks, spectrumSweep),
-    [modelBenchmarks, spectrumSweep],
+    () => buildBenchmarkMatrix(modelBenchmarks),
+    [modelBenchmarks],
   )
 
   const brandColors = [
@@ -270,6 +269,13 @@ export function LandingPage() {
                         <span className="mt-0.5 block text-[11px] font-normal leading-relaxed text-neutral-400 dark:text-neutral-500">
                           {t(row.descKey)}
                         </span>
+                        {row.criteriaKeys.length > 0 ? (
+                          <ul className="mt-2 max-w-[min(100%,280px)] list-disc space-y-0.5 pl-3.5 text-[10px] font-normal leading-snug text-neutral-400 dark:text-neutral-500">
+                            {row.criteriaKeys.map((key) => (
+                              <li key={key}>{t(key)}</li>
+                            ))}
+                          </ul>
+                        ) : null}
                       </th>
                       <td className="whitespace-nowrap py-4 pr-4 align-top text-[12px] text-neutral-500 dark:text-neutral-400">
                         {t(row.condKey)}

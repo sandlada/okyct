@@ -19,18 +19,18 @@ export function isInSrgbGamut(h: number, c: number, t: number): GamutCheckResult
   const xyz = oklabToXyz({ L, a, b })
   const linear = xyzToLinearRgb(xyz)
 
-  const eps = 0.0001
-  const inGamut = (
-    linear.r >= -eps && linear.r <= 1.0 + eps &&
-    linear.g >= -eps && linear.g <= 1.0 + eps &&
-    linear.b >= -eps && linear.b <= 1.0 + eps
-  )
-
   const srgb: RGB = {
     r: linearToSrgb(linear.r),
     g: linearToSrgb(linear.g),
     b: linearToSrgb(linear.b),
   }
+
+  const eps = 1e-6
+  const inGamut = (
+    srgb.r >= -eps && srgb.r <= 1.0 + eps &&
+    srgb.g >= -eps && srgb.g <= 1.0 + eps &&
+    srgb.b >= -eps && srgb.b <= 1.0 + eps
+  )
 
   return { inGamut, rgb: srgb }
 }

@@ -10,4 +10,5 @@ declare module 'culori' {
   export function oklch(color: string | unknown): OklchColor | undefined
   export function formatHex(color: unknown): string
   export function clampChroma<T>(color: T, mode?: string): T
+  export function rgb(color: unknown): { mode: 'rgb'; r?: number; g?: number; b?: number }
 }

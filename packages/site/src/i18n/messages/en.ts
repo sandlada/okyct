@@ -66,15 +66,39 @@ export const EnglishMessages = {
   'benchmarks.cond.sweep': '360° hue sweep · 24 stops',
   'benchmarks.cond.blue': '240°–300° blue-violet zone',
   'benchmarks.row.maxDrift': 'Max hue drift',
-  'benchmarks.row.maxDriftDesc': 'Worst stop vs seed hue',
+  'benchmarks.row.maxDriftDesc': 'p95 weighted OKLab drift',
+  'benchmarks.criteria.maxDrift.a': 'Same OKLab weighting as mean drift.',
+  'benchmarks.criteria.maxDrift.b': 'Report 95th percentile across the 10 stops.',
+  'benchmarks.criteria.maxDrift.c': 'Lower p95 wins.',
   'benchmarks.row.meanDrift': 'Mean hue drift',
   'benchmarks.row.meanDriftDesc': 'Average over 10 stops',
-  'benchmarks.row.wcag': 'WCAG AA pass rate',
-  'benchmarks.row.wcagDesc': 'Tonal scale usability',
+  'benchmarks.criteria.meanDrift.a':
+    'OKLab Δh vs seed, weighted by c/(c+0.1).',
+  'benchmarks.criteria.meanDrift.b':
+    'Mean over stops; near-neutral seeds (CIELAB C* < 2) skip hue ranking.',
+  'benchmarks.criteria.meanDrift.c': 'Lower weighted drift wins.',
+  'benchmarks.row.wcag': 'Semantic role AA',
+  'benchmarks.row.wcagDesc': 'Light/dark MD3 role pairs (11 each)',
+  'benchmarks.criteria.wcag.a':
+    'Shared MD3 role tone contract; culori uses the benchmark token table.',
+  'benchmarks.criteria.wcag.b':
+    'WCAG 2.1 contrast ≥ 4.5:1 on output hex (fg on bg), per theme.',
+  'benchmarks.criteria.wcag.c':
+    'Gate only — count of passing pairs (max 11 light + 11 dark); not a hue rank.',
   'benchmarks.row.toneDelta': 'Tone accuracy',
-  'benchmarks.row.toneDeltaDesc': 'Worst ΔT vs nominal',
+  'benchmarks.row.toneDeltaDesc': 'Worst ΔL* vs shared targets',
+  'benchmarks.criteria.toneDelta.a':
+    'Common CIE L* stops: 10, 20, …, 95 (protocol v2).',
+  'benchmarks.criteria.toneDelta.b':
+    'Rank by p95 |measured L* − target|; lower wins.',
+  'benchmarks.criteria.toneDelta.c':
+    'OKYCT/culori: shared nearest sRGB quantizer; MCU: native 8-bit ARGB.',
   'benchmarks.row.solveTime': 'Solve time',
   'benchmarks.row.solveTimeDesc': 'Per 10-stop scale',
+  'benchmarks.criteria.solveTime.a':
+    'Median wall time to build one full L* ramp on the current seed.',
+  'benchmarks.criteria.solveTime.b': '3 warm-up runs + 20 timed samples.',
+  'benchmarks.criteria.solveTime.c': 'Lower median ms wins.',
   'benchmarks.row.speedup': 'Relative speedup',
   'benchmarks.row.speedupDesc': 'Normalized to Google MCU',
   'benchmarks.row.compliance': 'Hue compliance',

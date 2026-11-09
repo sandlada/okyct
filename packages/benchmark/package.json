@@ -19,7 +19,6 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@ant-design/colors": "^7.2.1",
     "@material/material-color-utilities": "^0.3.0",
     "@sandlada/okyct": "workspace:*",
     "culori": "^4.0.1"

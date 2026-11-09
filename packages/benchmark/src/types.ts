@@ -1,26 +1,45 @@
 /**
- * OKYCT Multi-Model Benchmark Suite Types
+ * 三模型公平评测类型（协议 v2）
  */
 
-export const BenchmarkModelIds = [
-  'okyct',
-  'google-mcu',
-  'culori',
-  'antd-colors',
-  'hsl',
-] as const
+export const BenchmarkModelIds = ['okyct', 'google-mcu', 'culori'] as const
 
 export type BenchmarkModelId = (typeof BenchmarkModelIds)[number]
 
+export interface WeightedHueAggregate {
+  readonly cielab: number
+  readonly oklab: number
+  readonly hct: number
+}
+
 export interface ModelColorStop {
   stopName: string
-  nominalValue: number
+  targetLStar: number
   hex: string
-  actualY: number
+  actualLStar: number
+  deltaLStar: number
   actualTone: number
-  toneDelta: number
-  oklabHue: number
-  oklabHueDrift: number
+  weightedHueDeg: WeightedHueAggregate
+  hueExcluded: boolean
+  alreadyQuantized: boolean
+}
+
+export interface ContrastGateRow {
+  readonly pair: string
+  readonly wcag: number
+  readonly apca: number
+  readonly passesAa: boolean
+}
+
+export interface SemanticContrastThemeGate {
+  readonly passCount: number
+  readonly pairCount: number
+  readonly gates: readonly ContrastGateRow[]
+}
+
+export interface SemanticContrastModeResult {
+  readonly light: SemanticContrastThemeGate
+  readonly dark: SemanticContrastThemeGate
 }
 
 export interface ModelComparisonResult {
@@ -29,28 +48,30 @@ export interface ModelComparisonResult {
   shortName: string
   description: string
   stops: ModelColorStop[]
-  contrastPredictability: string
-  blueHueStability: string
-  computeOverhead: string
-  wcagAaPassRate: number
-  maxHueDriftDeg: number
-  meanHueDriftDeg: number
-  maxToneDelta: number
-  computeTimeMs: number
-  opsPerSec: number
-  relativeSpeedup: number
-  complianceRate: number // drift <= 0.5°
-  severeDistortionCount: number // drift > 2.5°
+  deltaLStarMean: number
+  deltaLStarP95: number
+  weightedHueMean: WeightedHueAggregate
+  weightedHueP95: WeightedHueAggregate
+  hueExcluded: boolean
+  hueSpaceDependent?: boolean
+  semanticContrast: SemanticContrastModeResult
+  computeTimeMedianMs: number
 }
 
 export interface SpectrumSweepPoint {
   targetHue: number
-  okyct: { hex: string; measuredHue: number; drift: number; tone: number }
-  googleMcu: { hex: string; measuredHue: number; drift: number; tone: number }
-  culori: { hex: string; measuredHue: number; drift: number; tone: number }
-  antdColors: { hex: string; measuredHue: number; drift: number; tone: number }
-  hsl: { hex: string; measuredHue: number; drift: number; tone: number }
-  advantageOverMcu: number // MCU drift - OKYCT drift
+  seedHex: string
+  okyct: SpectrumModelCell
+  googleMcu: SpectrumModelCell
+  culori: SpectrumModelCell
+}
+
+export interface SpectrumModelCell {
+  hex: string
+  measuredHue: number
+  drift: number
+  tone: number
+  deltaLStar: number
 }
 
 export interface ThroughputBenchmarkItem {
@@ -58,9 +79,7 @@ export interface ThroughputBenchmarkItem {
   modelName: string
   iterations: number
   totalMs: number
-  usPerOp: number
-  opsPerSec: number
-  relativeSpeedup: number
+  medianMsPerRamp: number
 }
 
 export const CvdTypes = [
