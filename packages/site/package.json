@@ -11,12 +11,15 @@
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
+    "@headlessui/react": "^2.2.10",
+    "@reduxjs/toolkit": "^2.14.0",
     "@sandlada/benchmark": "workspace:*",
     "@sandlada/okyct": "workspace:*",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-redux": "^9.3.1",
     "three": "^0.187.0"
   },
   "devDependencies": {

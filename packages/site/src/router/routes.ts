@@ -12,17 +12,17 @@
  */
 
 import { DefaultLocale, LocaleSlugs, localeFromSlug, type Locale } from '../i18n/locales.ts'
+import { isLandingPath } from '../features/landing/routes.ts'
+import {
+  DefaultStudioView,
+  isStudioLegacyId,
+  StudioLegacyRedirects,
+  StudioViews,
+  type StudioView,
+} from '../features/studio/routes.ts'
 
-export const StudioViews = [
-  'tokens',
-  'oled',
-  'fp',
-  'export',
-] as const
-
-export type StudioView = (typeof StudioViews)[number]
-
-export const DefaultStudioView: StudioView = 'tokens'
+export { DefaultStudioView, StudioViews }
+export type { StudioView }
 
 export type AppRoute =
   | { readonly kind: 'landing'; readonly locale: Locale }
@@ -59,7 +59,7 @@ export function matchRoute(pathname: string): AppRoute {
     }
   }
 
-  if (segments.length === 0) {
+  if (isLandingPath(segments)) {
     return { kind: 'landing', locale }
   }
 
@@ -68,11 +68,8 @@ export function matchRoute(pathname: string): AppRoute {
     if (rawView === undefined) {
       return { kind: 'studio', locale, view: DefaultStudioView }
     }
-    if (rawView === 'sandbox' || rawView === 'benchmark' || rawView === 'colorimetric') {
-      return { kind: 'studio', locale, view: 'tokens' }
-    }
-    if (rawView === 'emissive') {
-      return { kind: 'studio', locale, view: 'oled' }
+    if (isStudioLegacyId(rawView)) {
+      return { kind: 'studio', locale, view: StudioLegacyRedirects[rawView] }
     }
     if (isStudioView(rawView)) {
       return { kind: 'studio', locale, view: rawView }

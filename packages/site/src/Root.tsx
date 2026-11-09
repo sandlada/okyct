@@ -4,16 +4,18 @@
  * 因此模块作用域内不得触碰 window / document。
  */
 
-import { Suspense, lazy } from 'react'
+import { lazy, Suspense } from 'react'
+import { Provider } from 'react-redux'
+import { useState } from 'react'
+import { createAppStore } from './app/store.ts'
+import { ThemeSync } from './features/theme/ThemeSync.tsx'
 import { RouterProvider, useRouter } from './router/index.tsx'
-import { studioPath } from './router/routes.ts'
-import { ThemeProvider } from './theme/index.tsx'
 import { I18nProvider, useI18n } from './i18n/index.tsx'
 import { useDocumentHead } from './seo/index.ts'
-import { LandingPage } from './pages/LandingPage.tsx'
-import { NotFoundPage } from './pages/NotFoundPage.tsx'
+import { LandingPage } from './features/landing/components/LandingPage.tsx'
+import { NotFoundPage } from './features/not-found/components/NotFoundPage.tsx'
 
-const StudioApp = lazy(() => import('./App.tsx'))
+const StudioApp = lazy(() => import('./features/studio/components/StudioApp.tsx'))
 
 function StudioFallback() {
   const { t } = useI18n()
@@ -25,7 +27,7 @@ function StudioFallback() {
 }
 
 function RoutedApp() {
-  const { route, navigate } = useRouter()
+  const { route } = useRouter()
   useDocumentHead(route)
 
   return (
@@ -34,11 +36,7 @@ function RoutedApp() {
       {route.kind === 'not-found' && <NotFoundPage />}
       {route.kind === 'studio' && (
         <Suspense fallback={<StudioFallback />}>
-          <StudioApp
-            key={route.locale}
-            view={route.view}
-            onViewChange={(view) => navigate(studioPath(route.locale, view))}
-          />
+          <StudioApp key={route.locale} />
         </Suspense>
       )}
     </I18nProvider>
@@ -46,11 +44,13 @@ function RoutedApp() {
 }
 
 export function Root({ url }: { readonly url?: string }) {
+  const [store] = useState(() => createAppStore())
   return (
-    <ThemeProvider>
+    <Provider store={store}>
+      <ThemeSync />
       <RouterProvider initialPath={url}>
         <RoutedApp />
       </RouterProvider>
-    </ThemeProvider>
+    </Provider>
   )
 }

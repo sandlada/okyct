@@ -38,64 +38,38 @@
 
 ## 2. 前端架构与目录职责
 
-OKYCT Studio 采用清晰的「状态提升 + 视图装配 + 兼容门面」三层架构：
+OKYCT Studio 按 **feature** 切开。每个 feature 自己拥有路由声明、Redux 分片、选择器与组件。组件只渲染自己的 props，并从本 feature（或它明确依赖的 session feature）读取已经算好的状态。色度学计算留在 `src/color/` 门面之后的选择器里，不写进组件。
 
-```mermaid
-graph TD
-    subgraph UI["UI 展示与交互层"]
-        App["App.tsx (全局状态总线)"]
-        TopNav["TopNav.tsx (品牌字标 / 导航 / 明暗切换)"]
-        Sidebar["SidebarControls.tsx (源色 / 变体 / 对比度 / OLED 物理配置)"]
-        Views["views/* (6 大独立工作台视图)"]
-        App --> TopNav
-        App --> Sidebar
-        App --> Views
-    end
-
-    subgraph Facades["src/color/ 兼容门面层"]
-        MathFacade["math.ts -> @sandlada/okyct/domain"]
-        PaletteFacade["palettes.ts & stacker.ts -> @sandlada/okyct/application"]
-        SchemeFacade["scheme.ts -> @sandlada/okyct"]
-        AdapterFacades["emissive.ts / exporter.ts / fp.ts / benchmark.ts -> @sandlada/okyct/adapters"]
-    end
-
-    subgraph CoreEngine["@sandlada/okyct (核心算法核)"]
-        Core["Domain | Application | Adapters | Ports"]
-    end
-
-    Views -->|导入计算与模型| Facades
-    App -->|推导 Palettes / Scheme| Facades
-    Facades -->|透传与重新导出| CoreEngine
+```text
+src/app/store.ts                         组合各 feature reducer，并做预览结算
+src/features/landing/                    落地页路由、种子色分片、页面与地形
+src/features/studio/                     工作台会话（种子、变体、对比度、面板、自定义色）
+src/features/tokens/                     Token 矩阵
+src/features/oled/                       自发光滚动仿真
+src/features/composition/                叠层与函数管道
+src/features/export/                     多格式导出
+src/features/benchmark/                  公平评测矩阵
+src/features/theme/                      明暗主题分片
+src/features/chrome/                     落地页页眉页脚
+src/router/routes.ts                     组装 landing 与 studio 的路径
 ```
 
-### 2.1 全局状态总线 (`src/App.tsx`)
+工作台视图只订阅自己的分片，以及 `studio` 会话里已经结算的方案。种子色与对比度先写入即时值，再在短延迟后结算，避免拖动时整页重算。
 
-`App.tsx` 充当整个工作台的数据上下文与响应式调度中心，实行**单向数据流**：
-1. **输入状态维护**：
-   - `sourceHex`: 品牌种子色（十六进制字符串，如 `#1A73E8`）。
-   - `variant`: 配色变体策略（`tonalSpot`, `vibrant`, `expressive`, `neutral`, `monochrome`, `fidelity` 等）。
-   - `contrastLevel`: 连续对比度等级（`-1.0 ~ 1.0`，0.0 为标准）。
-   - `emissiveProfile`: 自发光面板物理调校模式（`oled-true-black`, `amoled-anti-smear`, `micro-oled-xr`）。
-   - `burnInGuard`: 蓝色发光材料防烧屏开关。
-   - `antiFringing`: Pancake 透镜防眩光光晕开关。
-   - `cvdType`: 色盲模拟类型（`none`, `protanopia`, `deuteranopia`, `tritanopia`）。
-   - `customColors`: 用户动态添加的扩展业务/品牌语义色。
-2. **派生数据纯计算 (Memoized)**：
-   - 源色坐标：`okyct = hexToOkyct(sourceHex)`
-   - 8 大调色板集合：`palettes = createPalettesFromSource(sourceHex, variant, harmonize)`
-   - 当前动态方案：`scheme = buildDynamicScheme(palettes, isDark, contrastLevel, emissiveOpts)`
-   - 导出双方案：`lightScheme` 与 `darkScheme`
+### 2.1 会话状态（`features/studio`）
 
-### 2.2 六大工作台视图 (`src/components/views/`)
+`studio` 分片保存种子色、变体、对比度、和谐化、色觉模拟、自发光面板、防烧屏、防眩光、自定义语义色，以及侧栏量化出的种子。选择器在结算后的输入上推导调色板、当前方案、明暗两套导出方案和自定义色。
 
-| 视图文件名 | 视图名称 | 核心职责 |
+### 2.2 工作台视图
+
+| Feature | 路由 id | 组件 |
 |---|---|---|
-| **`SandboxView.tsx`** | **实时组件沙盒** | 渲染 MD3 角色阶梯（Primary / Secondary / Tertiary / Error / Surface 容器），演示按钮、卡片、输入框与状态层叠加。 |
-| **`OledView.tsx`** | **自发光硬件仿真** | 演示 OLED 极限纯黑断电、AMOLED 防黑拖影微起辉（$T=4$）、MicroOLED XR 防眩光，实时遥测光谱加权子像素功耗（$P_{\text{pixel}}$）。 |
-| **`ColorimetricView.tsx`** | **色度学与色域分析** | 深度解析 CIE 1931 $Y$、Tone 双射曲线、OKLab 正交平面极坐标投影与 360° Cusp 色域尖峰折返外壳。 |
-| **`FpPlaygroundView.tsx`** | **函数式组合子操场** | 演示柯里化管道算子（`pipe` / `flow`）与数据后置变换，直观展示流式色彩数据处理过程。 |
-| **`BenchmarkView.tsx`** | **色彩模型基准评测** | 对比 OKYCT、CAM16 与原生 sRGB 的色貌表现、蓝紫伪影规避度及色差辨析。 |
-| **`TokenExportView.tsx`** | **多格式代码导出器** | 导出按需定制的 MD3 CSS Tokens（`--md-sys-color-*`）、JSON、Tailwind 配置与移动端适配代码。 |
+| tokens | `tokens` | `TokensView` |
+| oled | `oled` | `OledView` |
+| composition | `fp` | `FpPlaygroundView` |
+| export | `export` | `TokenExportView` |
+
+每个视图一个公开组件文件。文件内部可以有不导出的私有组件。旧路径 `sandbox`、`benchmark`、`colorimetric` 进入 tokens，`emissive` 进入 oled。
 
 ### 2.3 兼容门面层 (`src/color/`)
 
