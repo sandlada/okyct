@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * SEO 头部标记的字符串渲染（供 SSR / prerender 使用）
  * 与浏览器端的增量应用。两端共享同一套渲染逻辑，避免描述漂移。
  */

@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 interface BrandMarkProps {
   readonly colors?: readonly [string, string, string]

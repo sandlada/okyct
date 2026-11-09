@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * T60 色相彩色拉杆：原生 range 保证键盘与指针无障碍，
  * 父组件负责 rAF 节流与松手提交，这里只做即时透传。
  */

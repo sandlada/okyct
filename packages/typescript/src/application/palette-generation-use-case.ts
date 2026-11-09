@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { IPaletteGenerationPort } from '../ports/inbound/palette-generation.port.ts'
 import { TonalPalette } from './tonal-palette.ts'

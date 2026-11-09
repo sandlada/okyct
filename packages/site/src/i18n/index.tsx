@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 区域性语言上下文。仅注册英文与繁体中文两套目录，
  * 通过 Context 向 React 树注入当前语言与消息表。
  */

@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Domain Services Barrel]
  */
 

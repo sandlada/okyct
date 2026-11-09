@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { hexToOkyct, okyctToHex } from '../../domain/index.ts'
 import type { EmissivePanelType } from '../../ports/outbound/display-physics.port.ts'

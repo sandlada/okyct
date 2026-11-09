@@ -1,6 +1,4 @@
 /**
- * @license
- * Apache-2.0
  * OKYCT Dev-App — Transparency & Compliance Audit Utilities
  */
 

@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * OKYCT 落地页。
  *
  * 视觉母题参考现代「悬浮粒子 + 巨幅排版 + 大留白」的产品站语言，

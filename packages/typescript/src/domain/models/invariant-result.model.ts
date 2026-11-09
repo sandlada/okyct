@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Domain Model]
  * 色度学数学不变量自检套件结果模型
  * 约束：零外部依赖

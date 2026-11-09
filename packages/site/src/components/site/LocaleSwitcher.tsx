@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 语言切换器：在保留当前页面结构的前提下替换语言前缀。
  */
 

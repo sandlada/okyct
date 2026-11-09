@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 全局明暗主题。产品默认亮色模式（不跟随系统），
  * 通过根节点 dark 类驱动 Tailwind v4 自定义变体。
  */

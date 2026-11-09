@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 export function toneToY(tone: number): number {
   const t = Math.max(0, Math.min(100, tone))

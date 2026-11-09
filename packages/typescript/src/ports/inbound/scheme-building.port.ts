@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Inbound Port]
  * 按需定制 MD3 CSS Tokens 动态方案求解、扩展色四元组与对比度审计驱动端契约 (一个口对应一个文件)
  * 约束：仅依赖 domain/models 与同层契约

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "OKYCT Perceptual Color Space & MD3 Theme Engine for Emissive Displays",
   "author": "sandlada",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "type": "module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",

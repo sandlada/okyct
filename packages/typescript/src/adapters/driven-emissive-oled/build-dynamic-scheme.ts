@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { buildDynamicSchemeWithPhysics, type PaletteSet } from '../../application/index.ts'
 import type { DynamicSchemeColors } from '../../ports/inbound/scheme-building.port.ts'

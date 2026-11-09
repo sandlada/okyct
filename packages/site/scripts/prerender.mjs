@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 构建后处理：
  * 1. 使用 SSR 入口预渲染每个落地页路由为静态 HTML；
  * 2. 为工作台路由生成带独立 SEO 头的静态壳；

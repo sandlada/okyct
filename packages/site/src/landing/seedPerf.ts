@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 落地页种子色实时性能测量：T60 色相拉杆的轻量 L1 计算。
  * 重型落地页推导（色板 / 地形 / 粒子重建）只在松手提交时触发，
  * 这里只做单点 okyctToHex + Cmax + 功耗遥测，供卡片实时显示。

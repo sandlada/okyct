@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 繁體中文（zh-Hant，台灣用語）訊息目錄。
  * 型別強制與英文語系鍵集完全一致，缺少任何鍵都會在 tsc 階段報錯。
  */

@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { useI18n } from '../../i18n/index.tsx'
 import { Link } from '../../router/index.tsx'

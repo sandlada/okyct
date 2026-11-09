@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { rgbToOkyct, okyctToHex } from '../../domain/index.ts'
 import type { ExtractedSeedColor, ImagePixelBuffer } from '../../ports/outbound/image-quantizer.port.ts'

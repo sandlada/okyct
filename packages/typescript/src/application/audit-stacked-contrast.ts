@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { hexToRgb, rgbToOkyct, getContrastRatio, getApcaContrast, solveTonesForContrast } from '../domain/index.ts'
 import type { CompositedResult, StackedContrastReport } from '../ports/inbound/layer-stacking.port.ts'

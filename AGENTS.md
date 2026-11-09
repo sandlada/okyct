@@ -214,7 +214,7 @@ flowchart TD
 - **TypeScript 一律无行尾分号（No trailing semicolons）**，保持极简现代风格。
 - **零托底策略（Zero-polyfilling）**：严禁引入 polyfill、vendor prefix 或向下兼容 patch；基线锁定现代标准环境（Chrome 150+ / ES2022+ / ECMA Next）。
 - **错误处理**：一律采用 `throw new Error(...)` 显式抛出异常，**严禁静默吞异常、返回魔法哨兵值或返回错误码**。
-- **版权声明**：新文件采用 MIT（Kai-Orion & Sandlada），衍生 Google Material Web 相关实现保留 Apache-2.0 声明。
+- **版权与许可**：整个 Monorepo 统一采用 MIT（见仓库根目录 `LICENSE`）；源码文件中不重复 SPDX 或协议头注释。
 
 ### 5.2 命名规范与类型推导
 

@@ -1,8 +1,4 @@
 /**
- * @license
- * MIT License
- * Copyright (c) 2026 Kai-Orion & Sandlada
- *
  * OKYCT Multi-Model Benchmark Suite Types
  */
 

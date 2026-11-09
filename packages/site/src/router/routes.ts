@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 路由表与路径构建器（单一事实来源）。
  *
  * URL 形态：

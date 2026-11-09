@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Site Domain / Facade -> Image Quantizer & Preset Art Scenes]
  * 包含前端专用 4 幅艺术演示画布场景与 @sandlada/okyct 图像量化适配器转发。
  */

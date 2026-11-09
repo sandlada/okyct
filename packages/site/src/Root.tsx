@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 应用根组件：主题 → 路由 → 语言 → 页面。
  * 该组件同时用于浏览器渲染与 SSR 预渲染（entry-server），
  * 因此模块作用域内不得触碰 window / document。

@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 轻量级、强类型的 History API 路由运行时。
  *
  * 设计取舍：

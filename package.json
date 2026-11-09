@@ -2,6 +2,7 @@
   "name": "sandlada-okyct-workspace",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@12.18.0",
   "scripts": {

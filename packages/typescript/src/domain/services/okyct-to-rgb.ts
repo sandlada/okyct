@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { RGB, OKYCT } from '../models/index.ts'
 import { isInSrgbGamut } from './is-in-srgb-gamut.ts'

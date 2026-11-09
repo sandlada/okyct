@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 基准区种子拉杆：T60 色相连续试探，rAF 节流即时预览、松手提交。
  * 重型基准矩阵只在提交后重算，拖动中仅更新滑杆与 hex 读数。
  */

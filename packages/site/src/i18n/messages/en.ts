@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * English (en) message catalogue — the source of truth for every translatable string.
  * Keys are flat and namespaced; adding a key here forces the zh-Hant catalogue to
  * provide a matching translation at type-check time.

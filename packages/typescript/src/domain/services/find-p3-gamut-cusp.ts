@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { GamutCusp } from '../models/index.ts'
 import { findMaxP3ChromaForTone } from './find-max-p3-chroma-for-tone.ts'

@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Outbound Port]
  * 自发光显示面板物理特性、子像素功耗遥测与烧屏/彩边补偿被驱动端契约 (一个口对应一个文件)
  * 约束：仅依赖 domain/models 与同层契约

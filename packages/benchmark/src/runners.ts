@@ -1,8 +1,4 @@
 /**
- * @license
- * MIT License
- * Copyright (c) 2026 Kai-Orion & Sandlada
- *
  * 5-Model Benchmark Runners: OKYCT vs Google MCU vs culori vs @ant-design/colors vs HSL
  */
 

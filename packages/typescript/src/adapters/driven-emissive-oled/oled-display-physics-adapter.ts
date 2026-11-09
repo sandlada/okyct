@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { EmissivePanelType, EmissivePanelSpec, IDisplayPhysicsPort } from '../../ports/outbound/display-physics.port.ts'
 import { EMISSIVE_PANEL_SPECS } from './emissive-panel-specs.ts'

@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { ITokenExporterPort } from '../../ports/outbound/token-exporter.port.ts'
 import type { TonalPalette } from '../../application/tonal-palette.ts'

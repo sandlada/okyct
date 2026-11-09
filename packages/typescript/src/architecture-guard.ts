@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Architecture Dependency Guard]
  * 六边形架构四层单向依赖规则与拓扑自检守卫
  *

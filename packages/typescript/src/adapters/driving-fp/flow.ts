@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 export function flow<A, B>(fn1: (x: A) => B): (x: A) => B
 export function flow<A, B, C>(fn1: (x: A) => B, fn2: (x: B) => C): (x: A) => C

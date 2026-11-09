@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { ILayerStackingPort } from '../ports/inbound/layer-stacking.port.ts'
 import { stackLayers } from './stack-layers.ts'

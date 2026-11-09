@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { PaletteSet } from '../../color/palettes.ts';

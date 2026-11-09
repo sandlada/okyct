@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 支持的语言清单与 URL 形态约定。
  * 默认语言 en 不带前缀；其余语言使用小写 slug 前缀（zh-Hant -> /zh-hant）。
  */

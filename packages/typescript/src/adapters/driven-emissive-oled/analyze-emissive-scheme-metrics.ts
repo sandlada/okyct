@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { hexToOkyct, getContrastRatio } from '../../domain/index.ts'
 import type { DynamicSchemeColors } from '../../ports/inbound/scheme-building.port.ts'

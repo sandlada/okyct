@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 落地页基准矩阵组装：把 @sandlada/benchmark 的实测结果整理成
  * Gemini 式对照表（行 = 评测项，列 = 五个真实模型实现，最优值加粗）。
  */

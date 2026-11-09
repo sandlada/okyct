@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 export function yToTone(y: number): number {
   const yClamped = Math.max(0, y)

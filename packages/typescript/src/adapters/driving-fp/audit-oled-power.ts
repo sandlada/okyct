@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { TokenDictionary } from './token-dictionary.ts'
 import { computeColorEmissiveTelemetry } from '../driven-emissive-oled/compute-color-emissive-telemetry.ts'

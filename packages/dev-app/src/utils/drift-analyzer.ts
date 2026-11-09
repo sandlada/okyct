@@ -1,6 +1,4 @@
 /**
- * @license
- * Apache-2.0
  * OKYCT Dev-App — Multi-Model Hue Drift & Angle Preservation Analyzer
  */
 

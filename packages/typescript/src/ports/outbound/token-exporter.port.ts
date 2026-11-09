@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Outbound Port]
  * 多格式生产级设计 Token 导出器被驱动端契约 (一个口对应一个文件)
  * 约束：仅依赖 domain/models 与同层契约

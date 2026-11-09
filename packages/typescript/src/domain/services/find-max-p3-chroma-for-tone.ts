@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { isInDisplayP3Gamut } from './is-in-display-p3-gamut.ts'
 

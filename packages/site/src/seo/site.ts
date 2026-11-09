@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 站点级 SEO 常量。部署时可通过 VITE_SITE_URL 覆盖，
  * 用于 canonical、hreflang 与 sitemap 的绝对地址生成。
  */

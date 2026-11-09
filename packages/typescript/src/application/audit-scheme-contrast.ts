@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { getContrastRatio, getApcaContrast } from '../domain/index.ts'
 import type { SystemColorToken, DynamicSchemeColors, ContrastAuditItem } from '../ports/inbound/scheme-building.port.ts'

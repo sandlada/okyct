@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Outbound Port]
  * 图像像素色彩量化与主题种子色显著性提取被驱动端契约 (单口单文件)
  * 约束：仅依赖 domain/models，零 DOM 依赖

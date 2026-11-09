@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 落地页配色推导。全部颜色经由 @sandlada/okyct 门面生成，
  * 页面本身不硬编码任何品牌色值（种子选择器除外）。
  */

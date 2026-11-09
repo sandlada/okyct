@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { OKYCT } from '../models/index.ts'
 import { okyctToRgb } from './okyct-to-rgb.ts'

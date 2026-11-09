@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * OKYCT Color Engine — Unified Hexagonal Public Entry
  *
  * 架构分层 (Hexagonal / Ports & Adapters):

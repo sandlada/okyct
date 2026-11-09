@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { hexToRgb, srgbToLinear } from '../../domain/index.ts'
 import type { ColorEmissiveTelemetry } from '../../ports/outbound/display-physics.port.ts'

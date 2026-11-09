@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { Sun, Moon, Code2 } from 'lucide-react'
 import { useI18n, type MessageKey } from '../i18n/index.tsx'

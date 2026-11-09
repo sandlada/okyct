@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 路由级文档头部同步 Hook。每次路由或语言变化时重建元数据。
  */
 

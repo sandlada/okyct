@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 将强类型路由编译为完整的 SEO 描述对象。
  * 该模块为纯函数，可同时运行于浏览器、SSR 构建与 prerender 脚本。
  */

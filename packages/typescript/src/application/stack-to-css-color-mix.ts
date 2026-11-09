@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) =>
   (layers: ReadonlyArray<{ color: string; opacity: number }>) =>

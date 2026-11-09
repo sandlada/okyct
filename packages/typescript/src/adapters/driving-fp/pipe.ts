@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 export function pipe<T>(value: T): T
 export function pipe<T, A>(value: T, fn1: (x: T) => A): A

@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Domain Model]
  * 自研 OKYCT (OKLab Chroma-Hue + CIE Y-Tone) 色彩空间核心坐标模型
  * 约束：零外部依赖

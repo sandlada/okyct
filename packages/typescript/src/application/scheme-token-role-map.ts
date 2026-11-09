@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { SystemColorToken } from '../ports/inbound/scheme-building.port.ts'
 import type { PaletteSet } from './palette-set.ts'

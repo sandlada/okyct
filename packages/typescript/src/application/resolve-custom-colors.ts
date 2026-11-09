@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import { getContrastRatio, solveTonesForContrast, hexToOkyct } from '../domain/index.ts'
 import type { CustomColorConfig, ResolvedCustomColor } from '../ports/inbound/scheme-building.port.ts'

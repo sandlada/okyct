@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * 透视点阵地形（Three.js + 自定义 GLSL）。
  *
  * 视觉参考：镜头悬停于点阵波浪之上、垂直向下俯瞰，波浪在地表推进，

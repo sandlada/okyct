@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Hexagonal Layer: Inbound Port]
  * N 层颜色物理/感知叠加与状态层合成驱动端契约 (一个口对应一个文件)
  * 约束：仅依赖 domain/models

@@ -1,7 +1,3 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
 
 import type { EmissivePanelType } from '../../ports/outbound/display-physics.port.ts'
 import type { TokenDictionary } from './token-dictionary.ts'

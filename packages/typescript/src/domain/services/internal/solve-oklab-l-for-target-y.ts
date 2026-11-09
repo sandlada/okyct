@@ -1,7 +1,4 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
  * [Domain Service — module internal]
  * 单变量牛顿切线法求 OKLab L（固定 a,b）
  */
