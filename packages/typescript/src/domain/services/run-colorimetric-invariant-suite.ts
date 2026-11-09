@@ -1,85 +1,80 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- *
- * [Hexagonal Layer: Domain Service]
- * 引擎数学不变量自检套件 (Colorimetric Invariant Verification Suite)
- * 约束：仅依赖 ../models 与同级纯数学服务
  */
 
-import type { InvariantTestResult } from '../models/index.ts';
-import { rgbToOkyct, toneToY, yToTone } from './okyct-space.service.ts';
-import { okyctToRgb } from './gamut-solver.service.ts';
-import { getContrastRatio, solveTonesForContrast } from './contrast-calculus.service.ts';
+import type { InvariantTestResult } from '../models/index.ts'
+import { rgbToOkyct } from './rgb-to-okyct.ts'
+import { toneToY } from './tone-to-y.ts'
+import { yToTone } from './y-to-tone.ts'
+import { okyctToRgb } from './okyct-to-rgb.ts'
+import { getContrastRatio } from './get-contrast-ratio.ts'
+import { solveTonesForContrast } from './solve-tones-for-contrast.ts'
 
 export function runColorimetricInvariantSuite(): InvariantTestResult[] {
-  // 1. 双向往返还原精度检验: sRGB -> OKYCT -> sRGB
-  let maxRoundTripError = 0;
-  let roundTripSamples = 0;
-  const sampleSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  let maxRoundTripError = 0
+  let roundTripSamples = 0
+  const sampleSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
   for (const r of sampleSteps) {
     for (const g of sampleSteps) {
       for (const b of sampleSteps) {
-        const okyct = rgbToOkyct({ r, g, b });
-        const restored = okyctToRgb(okyct);
+        const okyct = rgbToOkyct({ r, g, b })
+        const restored = okyctToRgb(okyct)
         const err = Math.max(
           Math.abs(r - restored.r),
           Math.abs(g - restored.g),
           Math.abs(b - restored.b)
-        );
-        if (err > maxRoundTripError) maxRoundTripError = err;
-        roundTripSamples++;
+        )
+        if (err > maxRoundTripError) maxRoundTripError = err
+        roundTripSamples++
       }
     }
   }
 
-  // 2. Tone <-> CIE Y 严格单调递增与双射反演误差
-  let maxToneBijectionError = 0;
-  let monotonicViolations = 0;
-  let prevY = -1;
+  let maxToneBijectionError = 0
+  let monotonicViolations = 0
+  let prevY = -1
   for (let t = 0; t <= 100; t += 0.5) {
-    const y = toneToY(t);
-    if (y <= prevY) monotonicViolations++;
-    prevY = y;
-    const backT = yToTone(y);
-    const err = Math.abs(t - backT);
-    if (err > maxToneBijectionError) maxToneBijectionError = err;
+    const y = toneToY(t)
+    if (y <= prevY) monotonicViolations++
+    prevY = y
+    const backT = yToTone(y)
+    const err = Math.abs(t - backT)
+    if (err > maxToneBijectionError) maxToneBijectionError = err
   }
 
-  // 3. 360° 全色相环 Cusp 折返裁剪零越界与色相保持度检验
-  let gamutOverflowCount = 0;
-  let maxHueDriftDeg = 0;
-  let gamutSamples = 0;
+  let gamutOverflowCount = 0
+  let maxHueDriftDeg = 0
+  let gamutSamples = 0
   for (let h = 0; h < 360; h += 15) {
     for (const t of [20, 40, 60, 80]) {
-      const rgb = okyctToRgb({ h, c: 0.38, t });
+      const rgb = okyctToRgb({ h, c: 0.38, t })
       if (rgb.r < 0 || rgb.r > 1 || rgb.g < 0 || rgb.g > 1 || rgb.b < 0 || rgb.b > 1) {
-        gamutOverflowCount++;
+        gamutOverflowCount++
       }
-      const backOkyct = rgbToOkyct(rgb);
+      const backOkyct = rgbToOkyct(rgb)
       if (backOkyct.c > 0.01) {
-        let hDiff = Math.abs(backOkyct.h - h) % 360;
-        if (hDiff > 180) hDiff = 360 - hDiff;
-        if (hDiff > maxHueDriftDeg) maxHueDriftDeg = hDiff;
+        let hDiff = Math.abs(backOkyct.h - h) % 360
+        if (hDiff > 180) hDiff = 360 - hDiff
+        if (hDiff > maxHueDriftDeg) maxHueDriftDeg = hDiff
       }
-      gamutSamples++;
+      gamutSamples++
     }
   }
 
-  // 4. 代数对比度求解器不变量: solveTonesForContrast(bg, 4.5) 求解结果 100% 满足 >= 4.5:1
-  let contrastViolations = 0;
-  let contrastSamples = 0;
+  let contrastViolations = 0
+  let contrastSamples = 0
   for (let bgT = 0; bgT <= 100; bgT += 2) {
-    const solved = solveTonesForContrast(bgT, 4.5);
+    const solved = solveTonesForContrast(bgT, 4.5)
     if (solved.darkForegroundTone !== null) {
-      const ratio = getContrastRatio(bgT, solved.darkForegroundTone);
-      if (ratio < 4.49) contrastViolations++;
-      contrastSamples++;
+      const ratio = getContrastRatio(bgT, solved.darkForegroundTone)
+      if (ratio < 4.49) contrastViolations++
+      contrastSamples++
     }
     if (solved.lightForegroundTone !== null) {
-      const ratio = getContrastRatio(bgT, solved.lightForegroundTone);
-      if (ratio < 4.49) contrastViolations++;
-      contrastSamples++;
+      const ratio = getContrastRatio(bgT, solved.lightForegroundTone)
+      if (ratio < 4.49) contrastViolations++
+      contrastSamples++
     }
   }
 
@@ -124,5 +119,5 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
       samplesChecked: contrastSamples,
       details: '直接由相对亮度方程反解目标 Tone 边界，零遍历循环即可确保 100% 满足 WCAG 2.1 阈值。',
     },
-  ];
+  ]
 }

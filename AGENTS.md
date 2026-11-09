@@ -233,14 +233,19 @@ flowchart TD
 
 - **深层导出隔离（Barrel 约定）**：
   - 核心包统一经 `src/index.ts` 导出公共 API，并在 `package.json` 中配置了五个子路径 exports：`.`、`./domain`、`./ports`、`./application`、`./adapters`。
-  - 外部引用必须使用具名子路径或根入口，严禁深层穿透导入私有内部文件（如禁止直接相对路径引入 `../../domain/services/gamut-solver.service.ts` 到业务层）。
+  - 外部引用必须使用具名子路径或根入口，严禁深层穿透导入私有内部文件（如禁止从业务层直接相对路径引入 `domain/services/internal/solve-oklab-l-for-target-y.ts`）。
   - 前端包 `packages/site` 消费核心库时，使用 `@sandlada/okyct` 或通过 `packages/site/src/color/` 兼容门面引用。
+- **模块内公开 API vs `internal/`**：
+  - 每个六边形子模块（如 `domain/services`、`application`、`adapters/driven-exporters`）仅通过本模块的 `index.ts` 对外暴露公共 API。
+  - **一公开 API 一文件**：每文件至多一个 `export function`；`export class` 独占该文件；柯里化算子使用 `export const` 且每个算子单独文件；同文件允许多个 `export const`（常量表、默认实例）及非导出局部函数。
+  - **`internal/` 目录**：仅存放同模块内跨文件复用、且不属于公共面的辅助函数；**不设** `internal/index.ts`；只允许本模块内用带 `.ts` 后缀的文件路径直接导入；**严禁**任何 `index.ts` 再导出 `internal/`。
+  - 同模块内公开文件互相引用时按文件导入，避免绕回本模块 `index.ts` 造成桶循环；跨层仍只从对方模块 `index.ts` 进入。
 
 ---
 
 ## 6. 验证、测试与避坑指南
 
-### 6.1 色度学数学不变量自检套件 (`invariant-suite.service.ts`)
+### 6.1 色度学数学不变量自检套件 (`run-colorimetric-invariant-suite.ts`)
 
 修改色度学算法后，必须通过数学不变量自检：
 ```typescript

@@ -1,0 +1,89 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import type { EmissivePanelType, EmissivePanelSpec } from '../../ports/outbound/display-physics.port.ts'
+
+export const EMISSIVE_PANEL_SPECS: Record<EmissivePanelType, EmissivePanelSpec> = {
+  'standard-lcd': {
+    id: 'standard-lcd',
+    name: 'Standard IPS / Mini-LED LCD',
+    shortName: 'LCD 标准参照',
+    badge: '全局背光',
+    subpixelGeometry: 'rgb-stripe',
+    geometryLabel: 'RGB Stripe (标准三色竖条排列)',
+    description: '依靠恒定背光层透过液晶分子偏转显色，功耗几乎与画面色彩/明暗无关，无子像素断电与烧屏现象。',
+    darkSurfaceTones: {
+      lowest: 4,
+      surface: 6,
+      low: 10,
+      container: 12,
+      high: 17,
+      highest: 22,
+      bright: 24,
+    },
+    lightPeakToneCap: 100,
+    smearRiseTimeMs: 4.5,
+  },
+  'oled-true-black': {
+    id: 'oled-true-black',
+    name: 'OLED True-Black (纯黑极限省电)',
+    shortName: 'OLED 纯黑省电',
+    badge: 'T=0 零功耗关断',
+    subpixelGeometry: 'rgb-stripe',
+    geometryLabel: 'RGB OLED (独立自发光像素)',
+    description: '将底层背景压至纯黑 #000000 (T=0) 使有机发光二极管完全断电，最大化像素关断率与静态续航，但从 T=0 唤醒至低灰阶存在 18ms 电容充电黑拖影。',
+    darkSurfaceTones: {
+      lowest: 0,
+      surface: 0,
+      low: 4,
+      container: 8,
+      high: 13,
+      highest: 18,
+      bright: 22,
+    },
+    lightPeakToneCap: 100,
+    smearRiseTimeMs: 18.5,
+  },
+  'amoled-anti-smear': {
+    id: 'amoled-anti-smear',
+    name: 'AMOLED 120Hz Anti-Smear (防黑拖影起辉)',
+    shortName: 'AMOLED 防拖影',
+    badge: 'T=4 预偏置起辉',
+    subpixelGeometry: 'diamond-pentile',
+    geometryLabel: 'Diamond PenTile (绿多红蓝减半菱形借用)',
+    description: '专为 120Hz 移动端高刷屏幕调校：将最暗表面锚定在子像素起辉电位 T=4 (#0B0B0E)，保持微弱导通，彻底消除滚动果冻黑拖影与紫边，并抑制 PenTile 彩边。',
+    darkSurfaceTones: {
+      lowest: 3,
+      surface: 4,
+      low: 8,
+      container: 12,
+      high: 16,
+      highest: 21,
+      bright: 24,
+    },
+    lightPeakToneCap: 98,
+    smearRiseTimeMs: 1.6,
+  },
+  'micro-oled-xr': {
+    id: 'micro-oled-xr',
+    name: 'MicroOLED Silicon XR (硅基微显示低眩光)',
+    shortName: 'MicroOLED XR',
+    badge: '防光晕 + 抗 ABL',
+    subpixelGeometry: 'micro-oled-hex',
+    geometryLabel: 'Silicon Tandem Micro-Cavity (硅基微腔密排)',
+    description: '面向 XR 头显与硅基微显示：将暗底抬升至 T=8 丝绒灰并将峰值白光柔和收敛至 T=92，消除 Pancake 透镜内反射光晕 (Halation) 并防止触发硅基驱动背板 ABL 骤暗。',
+    darkSurfaceTones: {
+      lowest: 6,
+      surface: 8,
+      low: 12,
+      container: 16,
+      high: 20,
+      highest: 25,
+      bright: 28,
+    },
+    lightPeakToneCap: 92,
+    smearRiseTimeMs: 0.4,
+  },
+}
