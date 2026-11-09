@@ -119,7 +119,6 @@ export type DynamicSchemeColors = {
 }
 
 export interface ContrastAuditItem {
-  name: string
   fgRole: SystemColorToken
   bgRole: SystemColorToken
   fgTone: number

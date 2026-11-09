@@ -228,7 +228,6 @@ ${emissiveItems.map((e) => `- [${e.passed ? 'PASS' : 'FAIL'}] ${e.name}: ${e.act
           <table className="w-full text-left text-xs font-mono">
             <thead className="bg-neutral-900/90 text-neutral-400 border-b border-neutral-800">
               <tr>
-                <th className="py-2.5 px-3">语义配对</th>
                 <th className="py-2.5 px-3">前景</th>
                 <th className="py-2.5 px-3">背景</th>
                 <th className="py-2.5 px-3">预览</th>
@@ -244,8 +243,7 @@ ${emissiveItems.map((e) => `- [${e.passed ? 'PASS' : 'FAIL'}] ${e.name}: ${e.act
                 const bgHex = scheme[item.bgRole]
 
                 return (
-                  <tr key={item.name} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="py-2 px-3 font-semibold text-white">{item.name}</td>
+                  <tr key={`${item.fgRole}/${item.bgRole}`} className="hover:bg-neutral-800/30 transition-colors">
                     <td className="py-2 px-3">
                       <span className="text-neutral-300">{item.fgRole}</span>
                       <span className="text-neutral-500 ml-1">T{item.fgTone}</span>

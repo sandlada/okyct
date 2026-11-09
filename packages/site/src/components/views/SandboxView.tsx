@@ -57,7 +57,6 @@ const EnglishCopy = {
   searchPlaceholder: 'Search chromaticity metrics and tokens...',
   filterMode: 'Filter Mode',
   exportCsv: 'Export Dataset (CSV)',
-  columnSemanticPair: 'Semantic Pair',
   columnForegroundBackground: 'Foreground / Background',
   columnToneDelta: 'Tone Delta (ΔT)',
   columnWcagContrast: 'WCAG Contrast',
@@ -102,7 +101,6 @@ const TraditionalCopy: typeof EnglishCopy = {
   searchPlaceholder: '搜尋色度指標與 Token...',
   filterMode: '篩選模式',
   exportCsv: '匯出資料集 (CSV)',
-  columnSemanticPair: '語意配對名稱',
   columnForegroundBackground: '前景 / 背景',
   columnToneDelta: 'Tone 差 (ΔT)',
   columnWcagContrast: 'WCAG 對比度',
@@ -645,7 +643,6 @@ export const SandboxView: React.FC<SandboxViewProps> = ({
                     borderColor: c(scheme.outlineVariant),
                   }}
                 >
-                  <th className="py-2.5 px-3 sm:px-4 font-semibold whitespace-nowrap">{copy.columnSemanticPair}</th>
                   <th className="py-2.5 px-3 sm:px-4 font-semibold whitespace-nowrap">{copy.columnForegroundBackground}</th>
                   <th className="py-2.5 px-3 sm:px-4 font-semibold whitespace-nowrap">{copy.columnToneDelta}</th>
                   <th className="py-2.5 px-3 sm:px-4 font-semibold whitespace-nowrap">{copy.columnWcagContrast}</th>
@@ -656,7 +653,7 @@ export const SandboxView: React.FC<SandboxViewProps> = ({
               <tbody className="divide-y font-mono" style={{ borderColor: c(scheme.outlineVariant) }}>
                 {audits.map((a) => (
                   <tr
-                    key={a.name}
+                    key={`${a.fgRole}/${a.bgRole}`}
                     className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
                     onMouseEnter={() =>
                       setInspectToken({
@@ -666,10 +663,7 @@ export const SandboxView: React.FC<SandboxViewProps> = ({
                       })
                     }
                   >
-                    <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-sans font-medium text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
-                      {a.name}
-                    </td>
-                    <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-neutral-500 dark:text-neutral-400 text-[11px] whitespace-nowrap">
+                    <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-medium text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
                       {a.fgRole} / {a.bgRole}
                     </td>
                     <td className="py-2.5 sm:py-3 px-3 sm:px-4 tabular-nums whitespace-nowrap">
