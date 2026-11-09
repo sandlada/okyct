@@ -1,6 +1,5 @@
 
-import React, { useState, useMemo } from 'react'
-import { hexToOkyct } from './color/math.ts'
+import React, { useState, useMemo, useDeferredValue } from 'react'
 import { createPalettesFromSource, PaletteVariant } from './color/palettes.ts'
 import {
   buildDynamicScheme,
@@ -12,11 +11,8 @@ import { CvdType } from './color/benchmark.ts'
 import { TopNav } from './components/TopNav.tsx'
 import { MobileBottomNav } from './components/MobileBottomNav.tsx'
 import { SidebarControls } from './components/SidebarControls.tsx'
-import { SandboxView } from './components/views/SandboxView.tsx'
 import { TokensView } from './components/views/TokensView.tsx'
-import { EmissiveLabView } from './components/views/EmissiveLabView.tsx'
-import { ColorimetricView } from './components/views/ColorimetricView.tsx'
-import { BenchmarkView } from './components/views/BenchmarkView.tsx'
+import { OledView } from './components/views/OledView.tsx'
 import { TokenExportView } from './components/views/TokenExportView.tsx'
 import { FpPlaygroundView } from './components/views/FpPlaygroundView.tsx'
 import { useTheme } from './theme/index.tsx'
@@ -41,24 +37,16 @@ export default function App({ view, onViewChange }: StudioAppProps) {
   const [burnInGuard, setBurnInGuard] = useState<boolean>(true);
   const [antiFringing, setAntiFringing] = useState<boolean>(true);
 
-  // 自定义扩展品牌/业务语义色列表
-  const [customColors, setCustomColors] = useState<CustomColorConfig[]>([
-    {
-      id: 'ext-gold',
-      name: 'brandGold',
-      label: '尊享琥珀金',
-      sourceHex: '#D97706',
-      harmonize: true,
-    },
-  ]);
+  // 自定义扩展品牌/业务语义色（默认空；由侧边栏「Add semantic」添加）
+  const [customColors, setCustomColors] = useState<CustomColorConfig[]>([]);
 
-  // 1. 计算源色 OKYCT 坐标
-  const okyct = useMemo(() => hexToOkyct(sourceHex), [sourceHex]);
+  const deferredSourceHex = useDeferredValue(sourceHex)
+  const deferredContrastLevel = useDeferredValue(contrastLevel)
 
-  // 2. 推导 8 大调色板集合
+  // Palettes derive from seed + variant (OKYCT coords stay in engine / views).
   const palettes = useMemo(
-    () => createPalettesFromSource(sourceHex, variant, harmonize),
-    [sourceHex, variant, harmonize]
+    () => createPalettesFromSource(deferredSourceHex, variant, harmonize),
+    [deferredSourceHex, variant, harmonize]
   );
 
   // 3. 推导当前界面的动态语义方案 (融合自发光面板物理参数)
@@ -68,31 +56,32 @@ export default function App({ view, onViewChange }: StudioAppProps) {
   );
 
   const scheme = useMemo(
-    () => buildDynamicScheme(palettes, isDark, contrastLevel, emissiveOpts),
-    [palettes, isDark, contrastLevel, emissiveOpts]
+    () => buildDynamicScheme(palettes, isDark, deferredContrastLevel, emissiveOpts),
+    [palettes, isDark, deferredContrastLevel, emissiveOpts]
   );
 
   // 4. 同步生成明暗两套方案用于导出
   const lightScheme = useMemo(
-    () => buildDynamicScheme(palettes, false, contrastLevel, emissiveOpts),
-    [palettes, contrastLevel, emissiveOpts]
+    () => buildDynamicScheme(palettes, false, deferredContrastLevel, emissiveOpts),
+    [palettes, deferredContrastLevel, emissiveOpts]
   );
   const darkScheme = useMemo(
-    () => buildDynamicScheme(palettes, true, contrastLevel, emissiveOpts),
-    [palettes, contrastLevel, emissiveOpts]
+    () => buildDynamicScheme(palettes, true, deferredContrastLevel, emissiveOpts),
+    [palettes, deferredContrastLevel, emissiveOpts]
   );
 
   // 5. 推导自定义扩展语义色四元组 (明/暗双模式)
   const resolvedCustomLight = useMemo(
-    () => resolveCustomColors(customColors, sourceHex, false, contrastLevel),
-    [customColors, sourceHex, contrastLevel]
+    () => resolveCustomColors(customColors, deferredSourceHex, false, deferredContrastLevel),
+    [customColors, deferredSourceHex, deferredContrastLevel]
   );
   const resolvedCustomDark = useMemo(
-    () => resolveCustomColors(customColors, sourceHex, true, contrastLevel),
-    [customColors, sourceHex, contrastLevel]
+    () => resolveCustomColors(customColors, deferredSourceHex, true, deferredContrastLevel),
+    [customColors, deferredSourceHex, deferredContrastLevel]
   );
-  const currentResolvedCustom = isDark ? resolvedCustomDark : resolvedCustomLight
 
+  const schemeRecomputing =
+    sourceHex !== deferredSourceHex || contrastLevel !== deferredContrastLevel
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 relative">
       {/* 顶部单行三区契约导航栏 */}
@@ -112,7 +101,6 @@ export default function App({ view, onViewChange }: StudioAppProps) {
           <SidebarControls
             sourceHex={sourceHex}
             onSourceHexChange={setSourceHex}
-            okyct={okyct}
             variant={variant}
             onVariantChange={setVariant}
             contrastLevel={contrastLevel}
@@ -129,8 +117,6 @@ export default function App({ view, onViewChange }: StudioAppProps) {
             onBurnInGuardChange={setBurnInGuard}
             antiFringing={antiFringing}
             onAntiFringingChange={setAntiFringing}
-            isDark={isDark}
-            onToggleDark={toggleTheme}
           />
         </div>
 
@@ -146,7 +132,6 @@ export default function App({ view, onViewChange }: StudioAppProps) {
               <SidebarControls
                 sourceHex={sourceHex}
                 onSourceHexChange={setSourceHex}
-                okyct={okyct}
                 variant={variant}
                 onVariantChange={setVariant}
                 contrastLevel={contrastLevel}
@@ -163,8 +148,6 @@ export default function App({ view, onViewChange }: StudioAppProps) {
                 onBurnInGuardChange={setBurnInGuard}
                 antiFringing={antiFringing}
                 onAntiFringingChange={setAntiFringing}
-                isDark={isDark}
-                onToggleDark={toggleTheme}
                 onCloseMobile={() => setMobileDrawerOpen(false)}
               />
             </div>
@@ -172,35 +155,28 @@ export default function App({ view, onViewChange }: StudioAppProps) {
         )}
 
         {/* 主视口工作区 */}
-        <main className="flex-1 flex flex-col overflow-hidden relative">
+        <main
+          className={`flex-1 flex flex-col overflow-hidden relative transition-opacity duration-150 ${
+            schemeRecomputing ? 'opacity-[0.92]' : 'opacity-100'
+          }`}
+        >
           {view === 'tokens' && (
             <TokensView
+              palettes={palettes}
               scheme={scheme}
               lightScheme={lightScheme}
               darkScheme={darkScheme}
-              customColors={currentResolvedCustom}
-              isDark={isDark}
-              onToggleDark={toggleTheme}
+              customColorsLight={resolvedCustomLight}
+              customColorsDark={resolvedCustomDark}
               cvdType={cvdType}
             />
           )}
 
-          {view === 'sandbox' && (
-            <SandboxView
-              scheme={scheme}
-              customColors={currentResolvedCustom}
-              isDark={isDark}
-              cvdType={cvdType}
-            />
-          )}
-
-          {view === 'emissive' && (
-            <EmissiveLabView
+          {view === 'oled' && (
+            <OledView
               palettes={palettes}
               scheme={scheme}
-              contrastLevel={contrastLevel}
-              emissiveProfile={emissiveProfile}
-              onEmissiveProfileChange={setEmissiveProfile}
+              contrastLevel={deferredContrastLevel}
               burnInGuard={burnInGuard}
               onBurnInGuardChange={setBurnInGuard}
               antiFringing={antiFringing}
@@ -210,16 +186,8 @@ export default function App({ view, onViewChange }: StudioAppProps) {
             />
           )}
 
-          {view === 'colorimetric' && (
-            <ColorimetricView okyct={okyct} scheme={scheme} isDark={isDark} />
-          )}
-
           {view === 'fp' && (
             <FpPlaygroundView scheme={scheme} isDark={isDark} />
-          )}
-
-          {view === 'benchmark' && (
-            <BenchmarkView sourceHex={sourceHex} isDark={isDark} />
           )}
 
           {view === 'export' && (

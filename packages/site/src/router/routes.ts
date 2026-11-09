@@ -15,11 +15,8 @@ import { DefaultLocale, LocaleSlugs, localeFromSlug, type Locale } from '../i18n
 
 export const StudioViews = [
   'tokens',
-  'sandbox',
-  'emissive',
-  'colorimetric',
+  'oled',
   'fp',
-  'benchmark',
   'export',
 ] as const
 
@@ -70,6 +67,12 @@ export function matchRoute(pathname: string): AppRoute {
     const rawView = segments[1]
     if (rawView === undefined) {
       return { kind: 'studio', locale, view: DefaultStudioView }
+    }
+    if (rawView === 'sandbox' || rawView === 'benchmark' || rawView === 'colorimetric') {
+      return { kind: 'studio', locale, view: 'tokens' }
+    }
+    if (rawView === 'emissive') {
+      return { kind: 'studio', locale, view: 'oled' }
     }
     if (isStudioView(rawView)) {
       return { kind: 'studio', locale, view: rawView }

@@ -1,5 +1,5 @@
 
-import { LayoutGrid, Crosshair, Scale, Code2, Layers, Cpu, Palette } from 'lucide-react'
+import { Code2, Layers, Cpu, Palette } from 'lucide-react'
 import { useI18n, type MessageKey } from '../i18n/index.tsx'
 import type { StudioView } from '../router/routes.ts'
 
@@ -10,11 +10,8 @@ interface MobileBottomNavProps {
 
 const MobileTabs: readonly { id: StudioView; key: MessageKey; icon: typeof Palette }[] = [
   { id: 'tokens', key: 'studio.mobile.tokens', icon: Palette },
-  { id: 'sandbox', key: 'studio.mobile.sandbox', icon: LayoutGrid },
-  { id: 'emissive', key: 'studio.mobile.emissive', icon: Cpu },
-  { id: 'colorimetric', key: 'studio.mobile.colorimetric', icon: Crosshair },
+  { id: 'oled', key: 'studio.mobile.oled', icon: Cpu },
   { id: 'fp', key: 'studio.mobile.fp', icon: Layers },
-  { id: 'benchmark', key: 'studio.mobile.benchmark', icon: Scale },
   { id: 'export', key: 'studio.mobile.export', icon: Code2 },
 ]
 
@@ -23,7 +20,7 @@ export function MobileBottomNav({ activeTab, onTabChange }: MobileBottomNavProps
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 grid grid-cols-7 items-center px-0.5 pb-safe select-none"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 grid grid-cols-4 items-center px-0.5 pb-safe select-none"
       aria-label="Mobile Navigation"
     >
       {MobileTabs.map((tab) => {

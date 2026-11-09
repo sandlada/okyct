@@ -2,29 +2,41 @@
 import { SystemColorTokens, type DynamicSchemeColors, type ResolvedCustomColor } from '../../ports/index.ts'
 import { kebabCase } from './internal/kebab-case.ts'
 
+export const TailwindFallbackModes = ['none', 'light-dark'] as const
+export type TailwindFallbackMode = (typeof TailwindFallbackModes)[number]
+
+const colorVar = (token: string, light: string, dark: string, fallback: TailwindFallbackMode) => {
+  if (fallback === 'light-dark') {
+    return `var(${token}, light-dark(${light}, ${dark}))`
+  }
+  return `var(${token})`
+}
+
 export function exportTailwindV4(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  customColorsLight: ResolvedCustomColor[] = []
+  customColorsLight: ResolvedCustomColor[] = [],
+  customColorsDark: ResolvedCustomColor[] = [],
+  fallback: TailwindFallbackMode = 'light-dark'
 ): string {
-  void lightScheme
-  void darkScheme
+  const darkByName = new Map(customColorsDark.map((color) => [color.name, color]))
 
   const systemLines = SystemColorTokens
     .map((key) => {
       const k = kebabCase(key)
-      return `  --color-${k}: var(--md-sys-color-${k});`
+      return `  --color-${k}: ${colorVar(`--md-sys-color-${k}`, lightScheme[key], darkScheme[key], fallback)};`
     })
     .join('\n')
 
   const customLines = customColorsLight
-    .flatMap((c) => {
-      const k = kebabCase(c.name)
+    .flatMap((color) => {
+      const dark = darkByName.get(color.name) ?? color
+      const k = kebabCase(color.name)
       return [
-        `  --color-${k}: var(--md-custom-color-${k});`,
-        `  --color-on-${k}: var(--md-custom-color-on-${k});`,
-        `  --color-${k}-container: var(--md-custom-color-${k}-container);`,
-        `  --color-on-${k}-container: var(--md-custom-color-on-${k}-container);`,
+        `  --color-${k}: ${colorVar(`--md-custom-color-${k}`, color.color, dark.color, fallback)};`,
+        `  --color-on-${k}: ${colorVar(`--md-custom-color-on-${k}`, color.onColor, dark.onColor, fallback)};`,
+        `  --color-${k}-container: ${colorVar(`--md-custom-color-${k}-container`, color.colorContainer, dark.colorContainer, fallback)};`,
+        `  --color-on-${k}-container: ${colorVar(`--md-custom-color-on-${k}-container`, color.onColorContainer, dark.onColorContainer, fallback)};`,
       ]
     })
     .join('\n')

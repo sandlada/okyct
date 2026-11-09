@@ -1,6 +1,8 @@
 
 import React, { useState, useMemo } from 'react'
 import { runModelBenchmark } from '../../color/benchmark.ts'
+import { buildBenchmarkMatrix } from '../../landing/modelBenchmarks.ts'
+import { BenchmarkFairMatrixTable } from '../benchmark/BenchmarkFairMatrixTable.tsx'
 import { getContrastRatio } from '../../color/math.ts'
 import { Scale } from 'lucide-react'
 import { useI18n } from '../../i18n/index.tsx'
@@ -15,7 +17,7 @@ const EnglishCopy = {
   columnDeltaLP95: 'ΔL* p95',
   columnWeightedHueMean: 'Weighted ΔH mean (OKLab)',
   columnWeightedHueP95: 'Weighted ΔH p95',
-  columnContrastGate: 'Contrast pairs (AA)',
+  columnContrastGate: 'Semantic role AA',
   columnNotes: 'Adapter',
   modelOkyct: 'OKYCT',
   modelCam16: 'Google MCU (HCT)',
@@ -42,7 +44,7 @@ const TraditionalCopy: typeof EnglishCopy = {
   columnDeltaLP95: 'ΔL* p95',
   columnWeightedHueMean: '加權 ΔH 平均 (OKLab)',
   columnWeightedHueP95: '加權 ΔH p95',
-  columnContrastGate: '對比度對 (AA)',
+  columnContrastGate: '語義角色 AA',
   columnNotes: '適配器',
   modelOkyct: 'OKYCT',
   modelCam16: 'Google MCU (HCT)',
@@ -71,6 +73,10 @@ export const BenchmarkView: React.FC<BenchmarkViewProps> = ({ sourceHex }) => {
   const copy = Copy[locale]
 
   const benchmarkResults = useMemo(() => runModelBenchmark(sourceHex), [sourceHex])
+  const benchmarkMatrix = useMemo(
+    () => buildBenchmarkMatrix(benchmarkResults),
+    [benchmarkResults],
+  )
 
   const [yellowMode, setYellowMode] = useState<'naive' | 'okyct'>('okyct')
   const naiveYellow = '#FFD600'
@@ -115,44 +121,7 @@ export const BenchmarkView: React.FC<BenchmarkViewProps> = ({ sourceHex }) => {
           <span className="text-[11px] font-mono text-neutral-400">{copy.baselineLabel}</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left border-collapse">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-400 font-mono">
-                <th className="pb-2 font-medium">{copy.columnModel}</th>
-                <th className="pb-2 font-medium">{copy.columnSolveTime}</th>
-                <th className="pb-2 font-medium">{copy.columnDeltaLP95}</th>
-                <th className="pb-2 font-medium">{copy.columnWeightedHueMean}</th>
-                <th className="pb-2 font-medium">{copy.columnWeightedHueP95}</th>
-                <th className="pb-2 font-medium">{copy.columnContrastGate}</th>
-                <th className="pb-2 font-medium">{copy.columnNotes}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800 font-mono text-[11px]">
-              {benchmarkResults.map((m) => {
-                const sc = m.semanticContrast
-                const contrastLabel = `L ${sc.light.passCount}/${sc.light.pairCount} · D ${sc.dark.passCount}/${sc.dark.pairCount}`
-                return (
-                  <tr key={m.modelId} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20">
-                    <td className="py-2.5 font-bold font-sans text-neutral-900 dark:text-neutral-100">
-                      {getModelLabel(m.modelId)}
-                    </td>
-                    <td className="py-2.5 tabular-nums text-neutral-600 dark:text-neutral-400">
-                      {m.computeTimeMedianMs.toFixed(2)} ms
-                    </td>
-                    <td className="py-2.5 tabular-nums">{m.deltaLStarP95.toFixed(2)}</td>
-                    <td className="py-2.5 tabular-nums">{m.weightedHueMean.oklab.toFixed(2)}°</td>
-                    <td className="py-2.5 tabular-nums">{m.weightedHueP95.oklab.toFixed(2)}°</td>
-                    <td className="py-2.5 tabular-nums">{contrastLabel}</td>
-                    <td className="py-2.5 font-sans text-neutral-600 dark:text-neutral-400 text-[10px]">
-                      {m.description}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <BenchmarkFairMatrixTable matrix={benchmarkMatrix} />
 
         <div className="flex flex-col gap-3 pt-2 border-t border-neutral-100 dark:border-neutral-800">
           {benchmarkResults.map((m) => (

@@ -12,8 +12,6 @@ import {
   ArrowUpRight,
   Code2,
   Cpu,
-  Crosshair,
-  LayoutGrid,
   Layers,
   Palette,
   Scale,
@@ -25,6 +23,7 @@ import { Link } from '../router/index.tsx'
 import { studioPath, type StudioView } from '../router/routes.ts'
 import { runModelBenchmark } from '../color/benchmark.ts'
 import { buildBenchmarkMatrix } from '../landing/modelBenchmarks.ts'
+import { BenchmarkFairMatrixTable } from '../components/benchmark/BenchmarkFairMatrixTable.tsx'
 import { HueSeedScrubber } from '../landing/HueSeedScrubber.tsx'
 import {
   DefaultLandingSeed,
@@ -52,19 +51,21 @@ const PanelCards = [
   { index: 2, nameKey: 'displays.micro.name', toneKey: 'displays.micro.tone', bodyKey: 'displays.micro.body' },
 ] as const
 
+type StudioCardLink =
+  | { kind: 'studio'; view: StudioView }
+  | { kind: 'landing'; hash: string }
+
 const StudioCards: readonly {
-  view: StudioView
+  link: StudioCardLink
   titleKey: MessageKey
   bodyKey: MessageKey
   icon: typeof Palette
 }[] = [
-  { view: 'tokens', titleKey: 'studio.tokens.title', bodyKey: 'studio.tokens.body', icon: Palette },
-  { view: 'sandbox', titleKey: 'studio.sandbox.title', bodyKey: 'studio.sandbox.body', icon: LayoutGrid },
-  { view: 'emissive', titleKey: 'studio.emissive.title', bodyKey: 'studio.emissive.body', icon: Cpu },
-  { view: 'colorimetric', titleKey: 'studio.colorimetric.title', bodyKey: 'studio.colorimetric.body', icon: Crosshair },
-  { view: 'fp', titleKey: 'studio.fp.title', bodyKey: 'studio.fp.body', icon: Layers },
-  { view: 'benchmark', titleKey: 'studio.benchmark.title', bodyKey: 'studio.benchmark.body', icon: Scale },
-  { view: 'export', titleKey: 'studio.export.title', bodyKey: 'studio.export.body', icon: Code2 },
+  { link: { kind: 'studio', view: 'tokens' }, titleKey: 'studio.tokens.title', bodyKey: 'studio.tokens.body', icon: Palette },
+  { link: { kind: 'studio', view: 'oled' }, titleKey: 'studio.oled.title', bodyKey: 'studio.oled.body', icon: Cpu },
+  { link: { kind: 'studio', view: 'fp' }, titleKey: 'studio.fp.title', bodyKey: 'studio.fp.body', icon: Layers },
+  { link: { kind: 'landing', hash: 'benchmarks' }, titleKey: 'studio.benchmark.title', bodyKey: 'studio.benchmark.body', icon: Scale },
+  { link: { kind: 'studio', view: 'export' }, titleKey: 'studio.export.title', bodyKey: 'studio.export.body', icon: Code2 },
 ]
 
 export function LandingPage() {
@@ -215,7 +216,7 @@ export function LandingPage() {
         {/* ---------------------------------------------------------------- */}
         {/* Benchmarks · five-model matrix                                   */}
         {/* ---------------------------------------------------------------- */}
-        <section className="relative border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
+        <section id="benchmarks" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
           <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
             <div className="flex flex-col gap-4 pl-7 sm:pl-9">
               <div className="max-w-2xl">
@@ -237,65 +238,8 @@ export function LandingPage() {
             <div className="mt-6">
               <HueSeedScrubber seedHex={seedHex} onCommit={setSeedHex} />
             </div>
-            <div className="mt-6 overflow-x-auto">
-              <table className="w-full min-w-[920px] border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-neutral-900/15 dark:border-white/15">
-                    <th scope="col" className="w-[26%] min-w-[220px] pb-3 pr-4 align-bottom text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-                      {t('benchmarks.column.benchmark')}
-                    </th>
-                    <th scope="col" className="min-w-[170px] pb-3 pr-4 align-bottom text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-                      {t('benchmarks.column.condition')}
-                    </th>
-                    {benchmarkMatrix.columns.map((column) => (
-                      <th key={column.id} scope="col" className="min-w-[110px] pb-3 pr-4 align-bottom">
-                        <span className="block text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-                          {column.name}
-                        </span>
-                        <span className="mt-0.5 block text-[11px] font-normal text-neutral-400 dark:text-neutral-500">
-                          {column.sub}
-                        </span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {benchmarkMatrix.rows.map((row) => (
-                    <tr key={row.labelKey} className="border-b border-neutral-900/10 last:border-b-0 dark:border-white/10">
-                      <th scope="row" className="py-4 pr-4 align-top">
-                        <span className="block text-[13px] font-semibold text-neutral-900 dark:text-neutral-100">
-                          {t(row.labelKey)}
-                        </span>
-                        <span className="mt-0.5 block text-[11px] font-normal leading-relaxed text-neutral-400 dark:text-neutral-500">
-                          {t(row.descKey)}
-                        </span>
-                        {row.criteriaKeys.length > 0 ? (
-                          <ul className="mt-2 max-w-[min(100%,280px)] list-disc space-y-0.5 pl-3.5 text-[10px] font-normal leading-snug text-neutral-400 dark:text-neutral-500">
-                            {row.criteriaKeys.map((key) => (
-                              <li key={key}>{t(key)}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </th>
-                      <td className="whitespace-nowrap py-4 pr-4 align-top text-[12px] text-neutral-500 dark:text-neutral-400">
-                        {t(row.condKey)}
-                      </td>
-                      {row.cells.map((cell, index) => (
-                        <td
-                          key={`${row.labelKey}-${benchmarkMatrix.columns[index].id}`}
-                          className={`whitespace-nowrap py-4 pr-4 align-top tabular-nums text-[13px] ${
-                            index === row.bestIndex
-                              ? 'font-bold text-neutral-900 dark:text-white'
-                              : 'text-neutral-500 dark:text-neutral-400'
-                          }`}
-                        >
-                          {cell}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-6">
+              <BenchmarkFairMatrixTable matrix={benchmarkMatrix} />
             </div>
           </div>
         </section>
@@ -489,10 +433,14 @@ export function LandingPage() {
             <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {StudioCards.map((card) => {
                 const Icon = card.icon
+                const cardTo =
+                  card.link.kind === 'studio'
+                    ? studioPath(locale, card.link.view)
+                    : `#${card.link.hash}`
                 return (
                   <Link
-                    key={card.view}
-                    to={studioPath(locale, card.view)}
+                    key={card.titleKey}
+                    to={cardTo}
                     className="group relative flex flex-col gap-5 rounded-2xl border border-neutral-900/10 bg-white/70 p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-neutral-900/25 hover:shadow-lg hover:shadow-neutral-900/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/25"
                   >
                     <div className="flex items-center justify-between">

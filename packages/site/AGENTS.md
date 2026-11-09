@@ -91,7 +91,7 @@ graph TD
 | 视图文件名 | 视图名称 | 核心职责 |
 |---|---|---|
 | **`SandboxView.tsx`** | **实时组件沙盒** | 渲染 MD3 角色阶梯（Primary / Secondary / Tertiary / Error / Surface 容器），演示按钮、卡片、输入框与状态层叠加。 |
-| **`EmissiveLabView.tsx`** | **自发光硬件仿真** | 演示 OLED 极限纯黑断电、AMOLED 防黑拖影微起辉（$T=4$）、MicroOLED XR 防眩光，实时遥测光谱加权子像素功耗（$P_{\text{pixel}}$）。 |
+| **`OledView.tsx`** | **自发光硬件仿真** | 演示 OLED 极限纯黑断电、AMOLED 防黑拖影微起辉（$T=4$）、MicroOLED XR 防眩光，实时遥测光谱加权子像素功耗（$P_{\text{pixel}}$）。 |
 | **`ColorimetricView.tsx`** | **色度学与色域分析** | 深度解析 CIE 1931 $Y$、Tone 双射曲线、OKLab 正交平面极坐标投影与 360° Cusp 色域尖峰折返外壳。 |
 | **`FpPlaygroundView.tsx`** | **函数式组合子操场** | 演示柯里化管道算子（`pipe` / `flow`）与数据后置变换，直观展示流式色彩数据处理过程。 |
 | **`BenchmarkView.tsx`** | **色彩模型基准评测** | 对比 OKYCT、CAM16 与原生 sRGB 的色貌表现、蓝紫伪影规避度及色差辨析。 |

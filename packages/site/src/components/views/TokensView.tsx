@@ -8,26 +8,24 @@ import {
 import { hexToOkyct, getContrastRatio } from '../../color/math.ts'
 import { CvdType, simulateCvd } from '../../color/benchmark.ts'
 import {
-  Search,
-  Copy as CopyIcon,
   Check,
-  Columns,
-  Sun,
-  Moon,
   ShieldCheck,
   ShieldAlert,
   Hash,
   Sliders,
 } from 'lucide-react'
 import { useI18n } from '../../i18n/index.tsx'
+import { SchemeContrastAuditTable } from '../tokens/SchemeContrastAuditTable.tsx'
+import { TonalPaletteRamps } from '../tokens/TonalPaletteRamps.tsx'
+import type { PaletteSet } from '../../color/palettes.ts'
 
 interface TokensViewProps {
+  palettes: PaletteSet
   scheme: DynamicSchemeColors
   lightScheme: DynamicSchemeColors
   darkScheme: DynamicSchemeColors
-  customColors: ResolvedCustomColor[]
-  isDark: boolean
-  onToggleDark: () => void
+  customColorsLight: ResolvedCustomColor[]
+  customColorsDark: ResolvedCustomColor[]
   cvdType: CvdType
 }
 
@@ -129,6 +127,13 @@ export const SystemTokenDefinitions: TokenMeta[] = [
   { token: 'scrim', label: 'Scrim', category: 'inverse-utility' },
 ]
 
+const TokensWithoutAaPreview = new Set<SystemColorToken>([
+  'scrim',
+  'shadow',
+  'outline',
+  'outlineVariant',
+])
+
 const EnglishCopy = {
   categoryLabels: Object.fromEntries(
     TokenCategories.map((cat) => [cat.id, cat.label])
@@ -144,8 +149,7 @@ const EnglishCopy = {
 
   matrixTitle: 'Token matrix',
   tokenCount: (count: number) => `${count} tokens`,
-  copyHexTitle: 'Copy the HEX value',
-  copyVarTitle: 'Copy the CSS variable name',
+  copySwatchTitle: (hex: string) => `Click to copy ${hex}`,
   viewCurrent: 'Current',
   viewSplit: 'Light / dark',
   toggleThemeTitle: 'Toggle the global light/dark theme',
@@ -243,8 +247,7 @@ const TraditionalCopy: typeof EnglishCopy = {
 
   matrixTitle: 'Token 矩陣',
   tokenCount: (count: number) => `共 ${count} 個權杖`,
-  copyHexTitle: '複製 HEX 值',
-  copyVarTitle: '複製 CSS 變數名稱',
+  copySwatchTitle: (hex: string) => `點擊複製 ${hex}`,
   viewCurrent: '目前方案',
   viewSplit: '明暗對照',
   toggleThemeTitle: '切換全域明暗主題',
@@ -262,22 +265,21 @@ const TraditionalCopy: typeof EnglishCopy = {
 
 const Copy = { en: EnglishCopy, 'zh-Hant': TraditionalCopy } as const
 
+const TokenGridClass =
+  'grid gap-2 sm:gap-2.5 lg:gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-[repeat(auto-fill,minmax(10.75rem,1fr))]'
+
 export const TokensView: React.FC<TokensViewProps> = ({
+  palettes,
   scheme,
   lightScheme,
   darkScheme,
-  customColors,
-  isDark,
-  onToggleDark,
+  customColorsLight,
+  customColorsDark,
   cvdType,
 }) => {
   const { locale } = useI18n()
   const copy = Copy[locale]
 
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<TokenCategory>('all')
-  const [viewMode, setViewMode] = useState<'current' | 'split'>('current')
-  const [copyFormat, setCopyFormat] = useState<'hex' | 'var'>('hex')
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const c = (hex: string) => simulateCvd(hex, cvdType)
@@ -288,198 +290,201 @@ export const TokensView: React.FC<TokensViewProps> = ({
     setTimeout(() => setToastMessage(null), 1800)
   }
 
-  // 过滤系统 Token
-  const filteredSystemTokens = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-    return SystemTokenDefinitions.filter((item) => {
-      const matchCategory = selectedCategory === 'all' || item.category === selectedCategory
-      if (!matchCategory) return false
-      if (!query) return true
-      return (
-        item.token.toLowerCase().includes(query) ||
-        item.label.toLowerCase().includes(query) ||
-        `--md-sys-color-${item.token}`.toLowerCase().includes(query)
-      )
-    })
-  }, [searchQuery, selectedCategory])
+  const filteredSystemTokens = SystemTokenDefinitions
+  const filteredCustomColors = customColorsLight
 
-  // 过滤自定义扩展语义色
-  const shouldShowCustom =
-    selectedCategory === 'all' || selectedCategory === 'custom'
+  const darkCustomById = useMemo(
+    () => new Map(customColorsDark.map((item) => [item.id, item])),
+    [customColorsDark]
+  )
 
-  const filteredCustomColors = useMemo(() => {
-    if (!shouldShowCustom) return []
-    const query = searchQuery.trim().toLowerCase()
-    if (!query) return customColors
-    return customColors.filter(
-      (c) =>
-        c.name.toLowerCase().includes(query) ||
-        c.label.toLowerCase().includes(query)
-    )
-  }, [customColors, shouldShowCustom, searchQuery])
+  const contrastForRole = (
+    roleScheme: DynamicSchemeColors,
+    token: SystemColorToken,
+    pairedToken?: SystemColorToken
+  ): number | null => {
+    if (!pairedToken) return null
+    const fg = hexToOkyct(roleScheme[token])
+    const bg = hexToOkyct(roleScheme[pairedToken])
+    return getContrastRatio(fg.t, bg.t)
+  }
 
-  const totalTokensCount =
-    SystemTokenDefinitions.length + customColors.length * 4
+  const renderDualSwatch = (
+    lightHexRaw: string,
+    darkHexRaw: string,
+    lightContrast: number | null,
+    darkContrast: number | null,
+    aa?: { show: boolean; lightTextHex?: string; darkTextHex?: string },
+    onCopyLight?: () => void,
+    onCopyDark?: () => void
+  ) => (
+    <div className="flex h-10 w-full shrink-0">
+      <SwatchHalf
+        hex={c(lightHexRaw)}
+        contrast={lightContrast}
+        side="left"
+        showAa={aa?.show ?? false}
+        aaColor={aa?.lightTextHex ? c(aa.lightTextHex) : undefined}
+        onCopy={onCopyLight}
+        copyTitle={copy.copySwatchTitle(lightHexRaw)}
+      />
+      <SwatchHalf
+        hex={c(darkHexRaw)}
+        contrast={darkContrast}
+        side="right"
+        showAa={aa?.show ?? false}
+        aaColor={aa?.darkTextHex ? c(aa.darkTextHex) : undefined}
+        onCopy={onCopyDark}
+        copyTitle={copy.copySwatchTitle(darkHexRaw)}
+      />
+    </div>
+  )
 
   const renderTokenCard = (
     token: SystemColorToken,
     label: string,
-    currentScheme: DynamicSchemeColors,
     pairedToken?: SystemColorToken
   ) => {
-    const rawHex = currentScheme[token]
-    const hex = c(rawHex)
-    const oky = hexToOkyct(rawHex)
-    const toneVal = Math.round(oky.t)
+    const lightHex = lightScheme[token]
+    const darkHex = darkScheme[token]
+    const lightTone = Math.round(hexToOkyct(lightHex).t)
+    const darkTone = Math.round(hexToOkyct(darkHex).t)
+    const lightContrast = contrastForRole(lightScheme, token, pairedToken)
+    const darkContrast = contrastForRole(darkScheme, token, pairedToken)
+    const showAa = !TokensWithoutAaPreview.has(token)
+    const lightAaHex = pairedToken ? lightScheme[pairedToken] : lightScheme.onSurface
+    const darkAaHex = pairedToken ? darkScheme[pairedToken] : darkScheme.onSurface
 
-    // 若有配对角色，求 WCAG 对比度
-    let contrastRatio: number | null = null
-    let pairedHex: string | null = null
-    if (pairedToken) {
-      pairedHex = currentScheme[pairedToken]
-      const pairedOky = hexToOkyct(pairedHex)
-      contrastRatio = getContrastRatio(oky.t, pairedOky.t)
-    }
-
-    const cssVar = `--md-sys-color-${token}`
-    const copyVal = copyFormat === 'hex' ? rawHex : `var(${cssVar})`
+    const humanLabel = copy.tokenLabels[token] ?? label
 
     return (
       <div
         key={token}
-        onClick={() => handleCopy(copyVal, token)}
-        className="group relative rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden hover:border-neutral-400 dark:hover:border-neutral-600 transition-all cursor-pointer flex flex-col shadow-xs"
+        title={humanLabel}
+        className="group relative rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden transition-all flex flex-col hover:border-neutral-400 dark:hover:border-neutral-600"
       >
-        {/* 顶部色彩预览块 */}
-        <div
-          className="h-20 w-full p-2.5 flex flex-col justify-between relative transition-opacity"
-          style={{ backgroundColor: hex }}
-        >
-          {/* 左上角配对文本预览 */}
-          {pairedToken && pairedHex ? (
-            <div
-              className="text-xs font-semibold px-2 py-0.5 rounded backdrop-blur-xs self-start"
-              style={{
-                color: c(pairedHex),
-                backgroundColor: 'rgba(0,0,0,0.06)',
-              }}
-            >
-              {copy.textContrastBadge}
-            </div>
-          ) : (
-            <div />
-          )}
-
-          {/* 右下角对比度徽标 */}
-          {contrastRatio !== null && (
-            <div
-              className="self-end px-1.5 py-0.5 rounded text-[10px] font-mono font-bold flex items-center gap-1 shadow-xs"
-              style={{
-                backgroundColor: contrastRatio >= 4.5 ? '#10b981' : '#f59e0b',
-                color: '#ffffff',
-              }}
-            >
-              {contrastRatio >= 4.5 ? (
-                <ShieldCheck className="w-3 h-3" />
-              ) : (
-                <ShieldAlert className="w-3 h-3" />
-              )}
-              <span>{contrastRatio.toFixed(1)}:1</span>
-            </div>
-          )}
-        </div>
-
-        {/* 底部详情信息 */}
-        <div className="p-3 flex flex-col gap-1.5 flex-1 justify-between text-xs">
-          <div>
-            <div className="flex items-center justify-between gap-1">
-              <span className="font-mono font-bold text-neutral-900 dark:text-neutral-100 truncate text-[11px] sm:text-xs">
-                {token}
-              </span>
-              <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 tabular-nums">
-                T{toneVal}
-              </span>
-            </div>
-            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
-              {copy.tokenLabels[token] ?? label}
-            </div>
+        {renderDualSwatch(
+          lightHex,
+          darkHex,
+          lightContrast,
+          darkContrast,
+          {
+            show: showAa,
+            lightTextHex: lightAaHex,
+            darkTextHex: darkAaHex,
+          },
+          () => handleCopy(lightHex, `${token} (light)`),
+          () => handleCopy(darkHex, `${token} (dark)`)
+        )}
+        <div className="px-2 py-1.5 flex flex-col gap-0.5 min-w-0">
+          <div className="flex items-baseline justify-between gap-1 min-w-0">
+            <span className="font-mono font-semibold text-neutral-900 dark:text-neutral-100 truncate text-[10px] leading-tight">
+              {token}
+            </span>
+            <span className="font-mono text-[9px] text-neutral-400 tabular-nums shrink-0">
+              T{lightTone}/{darkTone}
+            </span>
           </div>
-
-          <div className="pt-1.5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-600 dark:text-neutral-400">
-            <span className="tabular-nums uppercase font-semibold">{rawHex}</span>
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-900 dark:text-neutral-100">
-              <CopyIcon className="w-3 h-3" />
-              <span className="text-[10px]">{copy.copyAction}</span>
-            </div>
+          <div className="flex items-center gap-1 min-w-0 text-[9px] font-mono text-neutral-500 dark:text-neutral-400">
+            <span className="flex-1 truncate uppercase text-left">{lightHex}</span>
+            <span className="text-neutral-300 dark:text-neutral-600 shrink-0">|</span>
+            <span className="flex-1 truncate uppercase text-right">{darkHex}</span>
           </div>
         </div>
       </div>
     )
   }
 
-  const renderCustomColorGroup = (custom: ResolvedCustomColor) => {
-    const roles = [
-      { key: custom.name, label: copy.customRolePrimary(custom.label), hex: custom.color, pairedHex: custom.onColor, ratio: custom.wcagRatioColor },
-      { key: `on${custom.name.charAt(0).toUpperCase()}${custom.name.slice(1)}`, label: copy.customRoleText(custom.label), hex: custom.onColor, pairedHex: custom.color, ratio: custom.wcagRatioColor },
-      { key: `${custom.name}Container`, label: copy.customRoleContainer(custom.label), hex: custom.colorContainer, pairedHex: custom.onColorContainer, ratio: custom.wcagRatioContainer },
-      { key: `on${custom.name.charAt(0).toUpperCase()}${custom.name.slice(1)}Container`, label: copy.customRoleContainerText(custom.label), hex: custom.onColorContainer, pairedHex: custom.colorContainer, ratio: custom.wcagRatioContainer },
+  const renderCustomColorGroup = (customLight: ResolvedCustomColor) => {
+    const customDark = darkCustomById.get(customLight.id) ?? customLight
+
+    const roleDefs = [
+      {
+        key: customLight.name,
+        label: copy.customRolePrimary(customLight.label),
+        lightHex: customLight.color,
+        darkHex: customDark.color,
+        lightAaHex: customLight.onColor,
+        darkAaHex: customDark.onColor,
+        lightRatio: customLight.wcagRatioColor,
+        darkRatio: customDark.wcagRatioColor,
+      },
+      {
+        key: `on${customLight.name.charAt(0).toUpperCase()}${customLight.name.slice(1)}`,
+        label: copy.customRoleText(customLight.label),
+        lightHex: customLight.onColor,
+        darkHex: customDark.onColor,
+        lightAaHex: customLight.color,
+        darkAaHex: customDark.color,
+        lightRatio: customLight.wcagRatioColor,
+        darkRatio: customDark.wcagRatioColor,
+      },
+      {
+        key: `${customLight.name}Container`,
+        label: copy.customRoleContainer(customLight.label),
+        lightHex: customLight.colorContainer,
+        darkHex: customDark.colorContainer,
+        lightAaHex: customLight.onColorContainer,
+        darkAaHex: customDark.onColorContainer,
+        lightRatio: customLight.wcagRatioContainer,
+        darkRatio: customDark.wcagRatioContainer,
+      },
+      {
+        key: `on${customLight.name.charAt(0).toUpperCase()}${customLight.name.slice(1)}Container`,
+        label: copy.customRoleContainerText(customLight.label),
+        lightHex: customLight.onColorContainer,
+        darkHex: customDark.onColorContainer,
+        lightAaHex: customLight.colorContainer,
+        darkAaHex: customDark.colorContainer,
+        lightRatio: customLight.wcagRatioContainer,
+        darkRatio: customDark.wcagRatioContainer,
+      },
     ]
 
     return (
-      <div key={custom.id} className="flex flex-col gap-2.5">
+      <div key={customLight.id} className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold font-mono text-neutral-700 dark:text-neutral-300">
-            {custom.label} ({custom.name})
+            {customLight.label} ({customLight.name})
           </span>
           <span className="text-[10px] font-mono text-neutral-400">
-            {copy.sourceHex(custom.sourceHex)}
+            {copy.sourceHex(customLight.sourceHex)}
           </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {roles.map((r) => {
-            const hex = c(r.hex)
-            const oky = hexToOkyct(r.hex)
-            const toneVal = Math.round(oky.t)
-            const copyVal = copyFormat === 'hex' ? r.hex : `var(--md-custom-color-${r.key})`
-
+        <div className={TokenGridClass}>
+          {roleDefs.map((r) => {
+            const lightTone = Math.round(hexToOkyct(r.lightHex).t)
+            const darkTone = Math.round(hexToOkyct(r.darkHex).t)
             return (
               <div
                 key={r.key}
-                onClick={() => handleCopy(copyVal, r.key)}
-                className="group relative rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden hover:border-neutral-400 dark:hover:border-neutral-600 transition-all cursor-pointer flex flex-col shadow-xs"
+                title={r.label}
+                className="group relative rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden hover:border-neutral-400 dark:hover:border-neutral-600 transition-all flex flex-col"
               >
-                <div
-                  className="h-16 w-full p-2 flex flex-col justify-between relative"
-                  style={{ backgroundColor: hex }}
-                >
-                  <div
-                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded backdrop-blur-xs self-start"
-                    style={{ color: c(r.pairedHex) }}
-                  >
-                    {copy.textBadge}
-                  </div>
-                  <div
-                    className="self-end px-1.5 py-0.5 rounded text-[9px] font-mono font-bold flex items-center gap-1 shadow-xs"
-                    style={{
-                      backgroundColor: r.ratio >= 4.5 ? '#10b981' : '#f59e0b',
-                      color: '#ffffff',
-                    }}
-                  >
-                    <span>{r.ratio.toFixed(1)}:1</span>
-                  </div>
-                </div>
-                <div className="p-2.5 flex flex-col gap-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-[11px] truncate">
-                      {r.key}
-                    </span>
-                    <span className="font-mono text-[10px] text-neutral-400">
-                      T{toneVal}
+                {renderDualSwatch(
+                  r.lightHex,
+                  r.darkHex,
+                  r.lightRatio,
+                  r.darkRatio,
+                  {
+                    show: true,
+                    lightTextHex: r.lightAaHex,
+                    darkTextHex: r.darkAaHex,
+                  },
+                  () => handleCopy(r.lightHex, r.key),
+                  () => handleCopy(r.darkHex, r.key)
+                )}
+                <div className="px-2 py-1.5 flex flex-col gap-0.5 min-w-0">
+                  <div className="flex items-baseline justify-between gap-1 min-w-0">
+                    <span className="font-mono font-semibold text-[10px] truncate">{r.key}</span>
+                    <span className="font-mono text-[9px] text-neutral-400 tabular-nums shrink-0">
+                      T{lightTone}/{darkTone}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500">
-                    <span>{r.hex}</span>
-                    <CopyIcon className="w-3 h-3 opacity-0 group-hover:opacity-100" />
+                  <div className="flex items-center gap-1 text-[9px] font-mono text-neutral-500 min-w-0">
+                    <span className="flex-1 truncate uppercase">{r.lightHex}</span>
+                    <span className="text-neutral-300 dark:text-neutral-600 shrink-0">|</span>
+                    <span className="flex-1 truncate uppercase text-right">{r.darkHex}</span>
                   </div>
                 </div>
               </div>
@@ -491,7 +496,7 @@ export const TokensView: React.FC<TokensViewProps> = ({
   }
 
   return (
-    <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex flex-col gap-4 sm:gap-6 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 relative">
+    <div className="flex-1 min-h-0 w-full max-w-[2400px] mx-auto p-3 sm:p-6 xl:px-8 2xl:px-10 overflow-y-auto flex flex-col gap-4 sm:gap-6 xl:gap-8 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 relative">
       {/* 浮动 Toast 复制提示 */}
       {toastMessage && (
         <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 px-3.5 py-2 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-lg shadow-xl text-xs font-mono flex items-center gap-2">
@@ -500,172 +505,121 @@ export const TokensView: React.FC<TokensViewProps> = ({
         </div>
       )}
 
-      {/* 顶部紧凑控制栏 */}
-      <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-3.5 sm:p-4 flex flex-col gap-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm sm:text-base font-bold font-display tracking-tight">
-              {copy.matrixTitle}
-            </h2>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-              {copy.tokenCount(totalTokensCount)}
-            </span>
+      <div className="flex flex-col gap-6">
+        {filteredSystemTokens.length > 0 && (
+          <div className={TokenGridClass}>
+            {filteredSystemTokens.map((item) =>
+              renderTokenCard(item.token, item.label, item.pairedRole)
+            )}
           </div>
+        )}
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* 复制格式快捷切换 */}
-            <div className="flex items-center p-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs font-mono">
-              <button
-                onClick={() => setCopyFormat('hex')}
-                className={`px-2 py-1 rounded transition-colors ${
-                  copyFormat === 'hex'
-                    ? 'bg-white dark:bg-neutral-700 font-bold shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-                title={copy.copyHexTitle}
-              >
-                HEX
-              </button>
-              <button
-                onClick={() => setCopyFormat('var')}
-                className={`px-2 py-1 rounded transition-colors ${
-                  copyFormat === 'var'
-                    ? 'bg-white dark:bg-neutral-700 font-bold shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-                title={copy.copyVarTitle}
-              >
-                CSS Var
-              </button>
-            </div>
-
-            {/* 视图模式：当前模式 vs 双模对照 */}
-            <div className="flex items-center p-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs">
-              <button
-                onClick={() => setViewMode('current')}
-                className={`px-2.5 py-1 rounded transition-colors ${
-                  viewMode === 'current'
-                    ? 'bg-white dark:bg-neutral-700 font-bold shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                {copy.viewCurrent}
-              </button>
-              <button
-                onClick={() => setViewMode('split')}
-                className={`px-2.5 py-1 rounded transition-colors flex items-center gap-1 ${
-                  viewMode === 'split'
-                    ? 'bg-white dark:bg-neutral-700 font-bold shadow-xs'
-                    : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
-                }`}
-              >
-                <Columns className="w-3.5 h-3.5" />
-                <span>{copy.viewSplit}</span>
-              </button>
-            </div>
-
-            {/* 明暗切换按钮 */}
-            <button
-              onClick={onToggleDark}
-              className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300"
-              title={copy.toggleThemeTitle}
-            >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* 搜索与分类 Tab */}
-        <div className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-neutral-100 dark:border-neutral-800">
-          <div className="relative flex-1">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={copy.searchPlaceholder}
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 focus:outline-none focus:ring-1 focus:ring-neutral-400"
-            />
-          </div>
-
-          <div className="flex items-center gap-1 overflow-x-auto text-xs pb-0.5">
-            {TokenCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id as TokenCategory)}
-                className={`px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors text-[11px] ${
-                  selectedCategory === cat.id
-                    ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-semibold'
-                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                }`}
-              >
-                {copy.categoryLabels[cat.id] ?? cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 视图主体 */}
-      {viewMode === 'current' ? (
-        /* 单视图模式 (当前主题) */
-        <div className="flex flex-col gap-6">
-          {filteredSystemTokens.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-              {filteredSystemTokens.map((item) =>
-                renderTokenCard(item.token, item.label, scheme, item.pairedRole)
-              )}
-            </div>
-          )}
-
-          {/* 扩展自定义色 */}
-          {filteredCustomColors.length > 0 && (
-            <div className="flex flex-col gap-4 p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                {copy.customFamilyTitle}
-              </h3>
-              <div className="flex flex-col gap-4">
-                {filteredCustomColors.map((c) => renderCustomColorGroup(c))}
-              </div>
-            </div>
-          )}
-
-          {filteredSystemTokens.length === 0 && filteredCustomColors.length === 0 && (
-            <div className="p-8 text-center text-xs text-neutral-400">
-              {copy.emptyState}
-            </div>
-          )}
-        </div>
-      ) : (
-        /* 双模对照模式 (Light vs Dark) */
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* 浅色模式列 */}
-          <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-2xl bg-neutral-50/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800">
-            <div className="flex items-center gap-2 pb-2 border-b border-neutral-200 dark:border-neutral-800 text-xs font-bold text-amber-700 dark:text-amber-400">
-              <Sun className="w-4 h-4" />
-              <span>{copy.lightSchemeTitle}</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {filteredSystemTokens.map((item) =>
-                renderTokenCard(item.token, item.label, lightScheme, item.pairedRole)
-              )}
+        {filteredCustomColors.length > 0 && (
+          <div className="flex flex-col gap-4 p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+              {copy.customFamilyTitle}
+            </h3>
+            <div className="flex flex-col gap-3">
+              {filteredCustomColors.map((item) => renderCustomColorGroup(item))}
             </div>
           </div>
+        )}
 
-          {/* 深色模式列 */}
-          <div className="flex flex-col gap-3 p-3.5 sm:p-4 rounded-2xl bg-neutral-900/60 dark:bg-neutral-900/90 border border-neutral-800">
-            <div className="flex items-center gap-2 pb-2 border-b border-neutral-800 text-xs font-bold text-indigo-400">
-              <Moon className="w-4 h-4" />
-              <span>{copy.darkSchemeTitle}</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {filteredSystemTokens.map((item) =>
-                renderTokenCard(item.token, item.label, darkScheme, item.pairedRole)
-              )}
-            </div>
+        {filteredSystemTokens.length === 0 && filteredCustomColors.length === 0 && (
+          <div className="p-8 text-center text-xs text-neutral-400">
+            {copy.emptyState}
           </div>
-        </div>
-      )}
+        )}
+
+        <TonalPaletteRamps palettes={palettes} />
+
+        <SchemeContrastAuditTable scheme={scheme} />
+      </div>
+    </div>
+  )
+}
+
+function SwatchHalf({
+  hex,
+  contrast,
+  side,
+  showAa = false,
+  aaColor,
+  onCopy,
+  copyTitle,
+}: {
+  hex: string
+  contrast: number | null
+  side: 'left' | 'right'
+  showAa?: boolean
+  aaColor?: string
+  onCopy?: () => void
+  copyTitle?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onCopy}
+      title={copyTitle}
+      className={`relative flex-1 min-w-0 cursor-pointer transition-opacity hover:opacity-90 active:opacity-80 ${
+        side === 'left' ? 'border-r border-black/10 dark:border-white/10' : ''
+      }`}
+      style={{ backgroundColor: hex }}
+    >
+      {showAa && aaColor ? (
+        <span
+          className="absolute inset-0 flex items-center justify-center font-display font-bold text-[13px] leading-none select-none pointer-events-none"
+          style={{ color: aaColor }}
+          aria-hidden
+        >
+          Aa
+        </span>
+      ) : null}
+      {contrast !== null ? (
+        <ContrastRatioBadge
+          pass={contrast >= 4.5}
+          ratio={contrast}
+          compact
+          side={side}
+          backgroundColor={aaColor ?? hex}
+          textColor={hex}
+        />
+      ) : null}
+    </button>
+  )
+}
+
+function ContrastRatioBadge({
+  pass,
+  ratio,
+  compact = false,
+  side = 'right',
+  backgroundColor,
+  textColor,
+}: {
+  pass: boolean
+  ratio: number
+  compact?: boolean
+  side?: 'left' | 'right'
+  backgroundColor: string
+  textColor: string
+}) {
+  const corner = side === 'left' ? 'left-0.5' : 'right-0.5'
+  return (
+    <div
+      className={`absolute bottom-0.5 ${corner} rounded font-mono font-bold flex items-center gap-0.5 ${
+        compact ? 'px-1 py-px text-[8px]' : 'px-1 py-0.5 text-[9px]'
+      }`}
+      style={{ backgroundColor, color: textColor }}
+    >
+      {!compact ? (
+        pass ? (
+          <ShieldCheck className="w-2.5 h-2.5" />
+        ) : (
+          <ShieldAlert className="w-2.5 h-2.5" />
+        )
+      ) : null}
+      <span>{ratio.toFixed(1)}</span>
     </div>
   )
 }

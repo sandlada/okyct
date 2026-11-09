@@ -7,11 +7,8 @@ import { LocaleSwitcher } from './site/LocaleSwitcher.tsx'
 
 const NavItems: readonly { view: StudioView; key: MessageKey }[] = [
   { view: 'tokens', key: 'studio.tab.tokens' },
-  { view: 'sandbox', key: 'studio.tab.sandbox' },
-  { view: 'emissive', key: 'studio.tab.emissive' },
-  { view: 'colorimetric', key: 'studio.tab.colorimetric' },
+  { view: 'oled', key: 'studio.tab.oled' },
   { view: 'fp', key: 'studio.tab.fp' },
-  { view: 'benchmark', key: 'studio.tab.benchmark' },
   { view: 'export', key: 'studio.tab.export' },
 ]
 
