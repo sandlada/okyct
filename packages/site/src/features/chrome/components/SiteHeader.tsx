@@ -1,5 +1,4 @@
 
-import { ArrowUpRight } from 'lucide-react'
 import { useI18n } from '../../../i18n/index.tsx'
 import { Link } from '../../../router/index.tsx'
 import { landingPath, studioPath } from '../../../router/routes.ts'
@@ -12,6 +11,7 @@ const SectionLinks = [
   { href: '#model', key: 'nav.model' },
   { href: '#displays', key: 'nav.displays' },
   { href: '#palette', key: 'nav.palette' },
+  { href: '#tokens', key: 'nav.tokens' },
 ] as const
 
 interface SiteHeaderProps {
@@ -59,14 +59,6 @@ export function SiteHeader({ brandColors = DefaultBrandColors, showSectionLinks 
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           <LocaleSwitcher compact />
           <ThemeToggle />
-          <Link
-            to={studioPath(locale)}
-            className="group ml-0.5 inline-flex h-9 items-center gap-1.5 rounded-full bg-neutral-900 pl-4 pr-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-neutral-700 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-white"
-          >
-            <span className="hidden sm:inline">{t('nav.openStudio')}</span>
-            <span className="sm:hidden">{t('nav.studio')}</span>
-            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
         </div>
       </div>
     </header>

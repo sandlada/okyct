@@ -7,19 +7,10 @@
  */
 
 import { lazy, Suspense } from 'react'
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Code2,
-  Cpu,
-  Layers,
-  Palette,
-  Scale,
-  Sparkles,
-} from 'lucide-react'
-import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
+import { ArrowRight, Github, Sparkles } from 'lucide-react'
+import { useI18n } from '../../../i18n/index.tsx'
 import { Link } from '../../../router/index.tsx'
-import { studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
+import { studioPath } from '../../../router/routes.ts'
 import { useAppDispatch, useAppSelector } from '../../../app/store.ts'
 import { BenchmarkFairMatrixTable } from '../../benchmark/components/BenchmarkFairMatrixTable.tsx'
 import { SiteFooter } from '../../chrome/components/SiteFooter.tsx'
@@ -27,6 +18,9 @@ import { SiteHeader } from '../../chrome/components/SiteHeader.tsx'
 import { setLandingSeed } from '../slice.ts'
 import { selectLandingScreen } from '../selectors.ts'
 import { HueSeedScrubber } from '../HueSeedScrubber.tsx'
+import { TokenIntroSection } from './TokenIntroSection.tsx'
+
+const OkyctRepository = 'https://github.com/sandlada/okyct'
 
 const ParticleTerrain = lazy(() =>
   import('../ParticleTerrain.tsx').then((module) => ({ default: module.ParticleTerrain })),
@@ -44,23 +38,6 @@ const PanelCards = [
   { index: 1, nameKey: 'displays.amoled.name', toneKey: 'displays.amoled.tone', bodyKey: 'displays.amoled.body' },
   { index: 2, nameKey: 'displays.micro.name', toneKey: 'displays.micro.tone', bodyKey: 'displays.micro.body' },
 ] as const
-
-type StudioCardLink =
-  | { kind: 'studio'; view: StudioView }
-  | { kind: 'landing'; hash: string }
-
-const StudioCards: readonly {
-  link: StudioCardLink
-  titleKey: MessageKey
-  bodyKey: MessageKey
-  icon: typeof Palette
-}[] = [
-  { link: { kind: 'studio', view: StudioViewIds.Tokens }, titleKey: 'studio.tokens.title', bodyKey: 'studio.tokens.body', icon: Palette },
-  { link: { kind: 'studio', view: StudioViewIds.Oled }, titleKey: 'studio.oled.title', bodyKey: 'studio.oled.body', icon: Cpu },
-  { link: { kind: 'studio', view: StudioViewIds.Composition }, titleKey: 'studio.fp.title', bodyKey: 'studio.fp.body', icon: Layers },
-  { link: { kind: 'landing', hash: 'benchmarks' }, titleKey: 'studio.benchmark.title', bodyKey: 'studio.benchmark.body', icon: Scale },
-  { link: { kind: 'studio', view: StudioViewIds.Export }, titleKey: 'studio.export.title', bodyKey: 'studio.export.body', icon: Code2 },
-]
 
 export function LandingPage() {
   const { t, locale } = useI18n()
@@ -127,9 +104,12 @@ export function LandingPage() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <a
-                href="#model"
+                href={OkyctRepository}
+                target="_blank"
+                rel="noopener"
                 className="inline-flex h-12 items-center gap-2 rounded-full border border-neutral-900/15 px-6 text-sm font-semibold text-neutral-900 transition-colors hover:border-neutral-900/30 hover:bg-neutral-900/5 dark:border-white/20 dark:text-neutral-100 dark:hover:bg-white/5"
               >
+                <Github className="h-4 w-4" aria-hidden="true" />
                 {t('hero.secondaryCta')}
               </a>
             </div>
@@ -382,69 +362,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Studio                                                            */}
-        {/* ---------------------------------------------------------------- */}
-        <section id="studio" className="relative scroll-mt-24 pb-24 sm:pb-32">
-          <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
-            <div className="flex flex-col gap-6 pl-5 sm:flex-row sm:items-end sm:justify-between sm:pl-5">
-              <div className="max-w-5xl">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
-                  {t('studio.eyebrow')}
-                </span>
-                <h2 className="mt-6 font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
-                  {t('studio.title')}
-                </h2>
-                <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
-                  {t('studio.body')}
-                </p>
-              </div>
-              <Link
-                to={studioPath(locale)}
-                className="group inline-flex h-11 w-fit items-center gap-2 rounded-full border border-neutral-900/15 px-5 text-sm font-semibold transition-colors hover:border-neutral-900/35 hover:bg-neutral-900/5 dark:border-white/20 dark:hover:bg-white/5"
-              >
-                {t('studio.cta')}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            </div>
-
-            <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {StudioCards.map((card) => {
-                const Icon = card.icon
-                const cardTo =
-                  card.link.kind === 'studio'
-                    ? studioPath(locale, card.link.view)
-                    : `#${card.link.hash}`
-                return (
-                  <Link
-                    key={card.titleKey}
-                    to={cardTo}
-                    className="group relative flex flex-col gap-5 rounded-2xl border border-neutral-900/10 bg-white/70 p-5 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-neutral-900/25 hover:shadow-lg hover:shadow-neutral-900/5 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-white/25"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="flex h-9 w-9 items-center justify-center rounded-xl"
-                        style={{
-                          backgroundColor: `${palette.accents.primary}14`,
-                          color: palette.accents.primary,
-                        }}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <ArrowUpRight className="h-4 w-4 text-neutral-300 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-neutral-900 dark:text-neutral-600 dark:group-hover:text-neutral-100" />
-                    </div>
-                    <div>
-                      <h3 className="font-display text-sm font-semibold tracking-tight">{t(card.titleKey)}</h3>
-                      <p className="mt-1.5 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-                        {t(card.bodyKey)}
-                      </p>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        </section>
+        <TokenIntroSection schemes={palette.schemes} />
 
         {/* ---------------------------------------------------------------- */}
         {/* Closing CTA                                                       */}
@@ -486,7 +404,7 @@ export function LandingPage() {
         </section>
       </main>
 
-      <SiteFooter brandColors={brandColors} />
+      <SiteFooter />
     </div>
   )
 }

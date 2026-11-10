@@ -13,8 +13,8 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
   'nav.model': '色彩模型',
   'nav.displays': '自發光面板',
   'nav.palette': '調色實驗室',
+  'nav.tokens': '令牌',
   'nav.studio': '工作台',
-  'nav.openStudio': '開啟工作台',
   'nav.home': '首頁',
 
   'theme.toLight': '切換至亮色模式',
@@ -30,7 +30,7 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
   'hero.subtitle':
     'OKYCT 是為自發光顯示器打造的零依賴感知色彩引擎。以 OKLab 極角定義色相、以 CIE 亮度錨定視明度，並用代數證明無障礙對比度——不靠猜測。',
   'hero.primaryCta': '開啟 OKYCT Studio',
-  'hero.secondaryCta': '深入色彩模型',
+  'hero.secondaryCta': 'GitHub',
   'hero.meta': 'MIT 授權 · TypeScript · 零執行期依賴',
   'hero.seedLabel': '粒子種子色',
   'hero.seedHint': '畫面中的每一顆粒子，都由引擎從同一個種子色即時生成。',
@@ -162,27 +162,34 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
   'palette.palettes.neutral': '中性色',
   'palette.palettes.neutralVariant': '中性變體',
 
-  'studio.eyebrow': 'OKYCT Studio',
-  'studio.title': '色彩系統的專屬實驗室。',
-  'studio.body':
-    '七個工作區：檢視 Token、模擬自發光硬體、測繪色域、以函數式組合配色，並匯出生產級 CSS。',
-  'studio.cta': '進入工作台',
-  'studio.tokens.title': 'Tokens',
-  'studio.tokens.body':
-    '角色 Token 矩陣、明暗對照、自訂四元組與字壓底 WCAG／APCA 審計表。',
-  'studio.sandbox.title': '元件沙盒',
-  'studio.sandbox.body': '以即時配色渲染按鈕、卡片與狀態層。',
-  'studio.oled.title': 'OLED',
-  'studio.oled.body': 'OLED、AMOLED 與 MicroOLED 預設檔，附子像素功耗遙測。',
-  'studio.colorimetric.title': '色度學',
-  'studio.colorimetric.body': 'Y ↔ Tone 雙射曲線與 360° 尖峰外殼。',
-  'studio.fp.title': '管道組合',
-  'studio.fp.body': '以柯里化 pipe 與 flow 算子串接色彩流程。',
-  'studio.benchmark.title': '模型對標',
-  'studio.benchmark.body':
-    '協議 v2：CIE L* 色階、加權色相漂移、共用語義角色 WCAG 門檻與求解耗時。',
-  'studio.export.title': '程式碼匯出',
-  'studio.export.body': 'MD3 CSS Token、JSON、Tailwind 設定與應用片段。',
+  'tokens.eyebrow': '令牌',
+  'tokens.title': '每個職責都有一個名字。',
+  'tokens.body':
+    '色階是明度。令牌是這個明度被派去擔任的職責。OKYCT 保留一小套角色：主色、表面、狀態。上面的種子色可以換，這些職責不變。',
+  'tokens.primary.title': '主色',
+  'tokens.primary.body':
+    '操作控件停在文字仍能通過 WCAG 的明度上。種子色原本的亮度則放進容器裡展示。',
+  'tokens.surface.title': '表面',
+  'tokens.surface.body':
+    '從 Dim 到 Highest 共五級，用來拉開層次。卡片和面板不靠投影。',
+  'tokens.status.title': '狀態',
+  'tokens.status.body':
+    '錯誤、警告、成功與資訊各自帶著前景色，訊息和底色是一對。',
+  'tokens.light': '亮色',
+  'tokens.dark': '暗色',
+  'tokens.roles.primary': '主色',
+  'tokens.roles.primaryContainer': '主色容器',
+  'tokens.roles.secondary': '次色',
+  'tokens.roles.tertiary': '第三色',
+  'tokens.roles.error': '錯誤',
+  'tokens.roles.warning': '警告',
+  'tokens.roles.success': '成功',
+  'tokens.roles.info': '資訊',
+  'tokens.roles.surfaceDim': '表面 Dim',
+  'tokens.roles.surfaceContainerLow': '容器 Low',
+  'tokens.roles.surfaceContainer': '表面容器',
+  'tokens.roles.surfaceContainerHigh': '容器 High',
+  'tokens.roles.surfaceContainerHighest': '容器 Highest',
 
   'cta.title': '交付經得起考驗的色彩。',
   'cta.body':
@@ -190,13 +197,10 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
   'cta.primary': '開啟 OKYCT Studio',
   'cta.secondary': '回到頂端',
 
-  'footer.tagline': '為自發光顯示器而生的感知色彩。',
-  'footer.explore': '探索',
-  'footer.model': '色彩模型',
-  'footer.license': '授權',
-  'footer.licenseValue': 'MIT · Kai-Orion & Sandlada',
-  'footer.rights': '© 2026 Sandlada. 保留所有權利。',
-  'footer.builtWith': '本頁由 OKYCT 引擎即時渲染。',
+  'footer.sandlada': '在新分頁開啟 Sandlada 網站',
+  'footer.github': '在新分頁開啟 OKYCT 的 GitHub 倉庫',
+  'footer.npm': '在新分頁開啟 npm 上的 @sandlada/okyct',
+  'footer.kaiOrion': '在新分頁開啟 Kai Orion 的 GitHub 個人頁',
 
   'studio.nav.controls': '配色控制',
   'studio.nav.export': '匯出生產 Token',

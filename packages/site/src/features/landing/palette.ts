@@ -9,6 +9,7 @@ import {
   type StandardTone,
 } from '../../color/palettes.ts'
 import { findMaxChromaForTone, hexToOkyct, okyctToHex } from '../../color/math.ts'
+import { buildDynamicScheme, type DynamicSchemeColors } from '../../color/scheme.ts'
 import type { MessageKey } from '../../i18n/messages/en.ts'
 
 export const LandingSeeds = [
@@ -55,9 +56,15 @@ export interface SpectrumStop {
   readonly hex: string
 }
 
+export interface LandingSchemes {
+  readonly light: DynamicSchemeColors
+  readonly dark: DynamicSchemeColors
+}
+
 export interface LandingPalette {
   readonly seedHex: string
   readonly rows: readonly LandingPaletteRow[]
+  readonly schemes: LandingSchemes
   readonly accents: {
     readonly primary: string
     readonly secondary: string
@@ -101,6 +108,10 @@ export function buildLandingPalette(seedHex: string): LandingPalette {
   return {
     seedHex,
     rows,
+    schemes: {
+      light: buildDynamicScheme(palettes, false),
+      dark: buildDynamicScheme(palettes, true),
+    },
     accents: {
       primary: palettes.primary.tone(58),
       secondary: palettes.secondary.tone(62),
