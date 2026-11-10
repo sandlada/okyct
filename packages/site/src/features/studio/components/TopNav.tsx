@@ -1,5 +1,5 @@
 
-import { Sun, Moon, Code2 } from 'lucide-react'
+import { Sun, Moon, Code2, Menu } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { Link, useRouter } from '../../../router/index.tsx'
 import { landingPath, studioPath, type StudioView } from '../../../router/routes.ts'
@@ -38,41 +38,38 @@ export function TopNav() {
 
   return (
     <header className="h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 flex items-center justify-between gap-4 shrink-0 select-none z-30">
-      {/* Zone 1: Brand Wordmark */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex min-w-0 items-center gap-2 md:gap-6">
+        <button
+          type="button"
+          onClick={() => dispatch(setMobileDrawerOpen(true))}
+          className="md:hidden flex items-center justify-center min-h-[38px] min-w-[38px] rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
+          title={t('studio.nav.parameters')}
+          aria-label={t('studio.nav.parameters')}
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+
         <Link
           to={landingPath(locale)}
           title={t('studio.nav.backToSite')}
-          className="font-display font-bold text-sm md:text-base tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap transition-opacity hover:opacity-70"
+          className="shrink-0 font-display font-bold text-sm md:text-base tracking-tight text-neutral-900 dark:text-neutral-100 whitespace-nowrap transition-opacity hover:opacity-70"
         >
           {t('brand.studio')}
         </Link>
-      </div>
 
-      {/* Zone 2: Navigation Links */}
-      <Tabs
-        label={t('brand.studio')}
-        appearance="underline"
-        size="md"
-        value={activeTab}
-        onChange={onTabChange}
-        className="hidden md:flex"
-        options={NavItems.map((item) => ({ id: item.view, label: t(item.key) }))}
-      />
+        <Tabs
+          label={t('brand.studio')}
+          appearance="underline"
+          size="md"
+          value={activeTab}
+          onChange={onTabChange}
+          className="hidden md:flex"
+          options={NavItems.map((item) => ({ id: item.view, label: t(item.key) }))}
+        />
+      </div>
 
       {/* Zone 3: Actions & Mobile Drawer Toggle */}
       <div className="flex items-center gap-2 shrink-0">
-        {true && (
-          <button
-            type="button"
-            onClick={() => dispatch(setMobileDrawerOpen(true))}
-            className="md:hidden flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 min-h-[38px]"
-            title={t('studio.nav.parameters')}
-          >
-            <span>{t('studio.nav.parameters')}</span>
-          </button>
-        )}
-
         <LocaleSwitcher compact />
 
         <button

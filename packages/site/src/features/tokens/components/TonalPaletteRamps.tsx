@@ -5,7 +5,7 @@ import { copyTokenText } from '../actions.ts'
 import { selectRampFamilies } from '../selectors.ts'
 
 type PaletteRampKey = 'primary' | 'secondary' | 'tertiary' | 'neutral' | 'neutralVariant' | 'error' | 'warning' | 'success' | 'info'
-type PaletteFamilyId = 'brand' | 'neutral' | 'semantic'
+type PaletteFamilyId = 'brand' | 'neutral' | 'semantic' | 'custom'
 
 const EnglishCopy = {
   paletteSectionTitle: 'Full 13-step tonal palette ramps (Tone 0 → 100)',
@@ -14,6 +14,7 @@ const EnglishCopy = {
     brand: 'Brand',
     neutral: 'Neutral',
     semantic: 'Semantic',
+    custom: 'Custom',
   } as Record<PaletteFamilyId, string>,
   paletteNames: {
     primary: 'Primary',
@@ -35,6 +36,7 @@ const TraditionalCopy: typeof EnglishCopy = {
     brand: '品牌色族',
     neutral: '中性色族',
     semantic: '語意色族',
+    custom: '自訂色族',
   },
   paletteNames: {
     primary: 'Primary',
@@ -78,16 +80,16 @@ export function TonalPaletteRamps() {
 
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start min-w-0">
           {families.map((family) => (
-            <div key={family.id} className="flex flex-col gap-3 min-w-0">
+            <div key={family.id} className={`flex flex-col gap-3 min-w-0 ${family.id === 'custom' ? 'lg:col-span-3' : ''}`}>
               <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 {copy.familyTitles[family.id as PaletteFamilyId]}
               </h4>
-              <div className="flex flex-col gap-3">
+              <div className={family.id === 'custom' ? 'grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3' : 'flex flex-col gap-3'}>
                 {family.rows.map((row) => (
                   <div key={row.key} className="flex flex-col gap-1.5 min-w-0 w-full">
                     <div className="flex items-baseline gap-2 text-xs min-w-0">
                       <span className="font-medium text-neutral-700 dark:text-neutral-300 text-[11px] sm:text-xs truncate">
-                        {copy.paletteNames[row.key as PaletteRampKey]}
+                        {row.label ?? copy.paletteNames[row.key as PaletteRampKey]}
                       </span>
                       <span className="font-mono text-[10px] text-neutral-400 tabular-nums shrink-0">
                         {row.hue.toFixed(1)}°
@@ -100,7 +102,7 @@ export function TonalPaletteRamps() {
                             key={swatch.tone}
                             type="button"
                             onClick={() =>
-                              copyToClipboard(swatch.hex, `${copy.paletteNames[row.key as PaletteRampKey]} T${swatch.tone} (${swatch.hex})`)
+                              copyToClipboard(swatch.hex, `${row.label ?? copy.paletteNames[row.key as PaletteRampKey]} T${swatch.tone} (${swatch.hex})`)
                             }
                             className="group relative flex min-w-0 flex-col items-center justify-center text-[10px] font-mono transition-transform hover:scale-105 hover:z-10"
                             style={{

@@ -1,11 +1,10 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { STANDARD_TONES, type PaletteSet } from '../../color/palettes.ts'
+import { STANDARD_TONES, TonalPalette, type PaletteSet } from '../../color/palettes.ts'
 import type { RootState } from '../../app/store.ts'
-import { selectPalettes } from '../studio/selectors.ts'
 import { simulateCvd } from '../../color/benchmark.ts'
 import { getContrastRatio, hexToOkyct } from '../../color/math.ts'
 import { auditSchemeContrast, type DynamicSchemeColors, type SystemColorToken } from '../../color/scheme.ts'
-import { selectCustomDark, selectCustomLight, selectDarkScheme, selectLightScheme, selectScheme } from '../studio/selectors.ts'
+import { selectCustomDark, selectCustomLight, selectDarkScheme, selectLightScheme, selectPalettes, selectScheme } from '../studio/selectors.ts'
 import { SystemTokenDefinitions, TokensWithoutAaPreview, type TokenMeta } from './catalog.ts'
 
 export interface TokenCardModel {
@@ -179,17 +178,41 @@ const RampFamilies = [
   { id: 'semantic', keys: ['error', 'warning', 'success', 'info'] },
 ] as const satisfies readonly { id: string; keys: readonly (keyof PaletteSet)[] }[]
 
-export const selectRampFamilies = createSelector([selectPalettes], (palettes) =>
-  RampFamilies.map((family) => ({
+export const selectRampFamilies = createSelector([selectPalettes, selectCustomLight], (palettes, customs) => {
+  const families = RampFamilies.map((family) => ({
     id: family.id,
     rows: family.keys.map((key) => ({
       key,
+      label: undefined as string | undefined,
       hue: palettes[key].hue,
       swatches: STANDARD_TONES.map((tone) => ({
         tone,
         hex: palettes[key].tone(tone),
       })),
     })),
-  })),
-)
+  }))
+
+  if (customs.length === 0) {
+    return families
+  }
+
+  return [
+    ...families,
+    {
+      id: 'custom',
+      rows: customs.map((color) => {
+        const palette = TonalPalette.fromHex(color.harmonizedHex)
+        return {
+          key: color.id,
+          label: color.label,
+          hue: palette.hue,
+          swatches: STANDARD_TONES.map((tone) => ({
+            tone,
+            hex: palette.tone(tone),
+          })),
+        }
+      }),
+    },
+  ]
+})
 
