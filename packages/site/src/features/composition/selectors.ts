@@ -33,6 +33,7 @@ export const selectFpScreen = createSelector(
       newOpType: fp.newOpType,
       inspectStepIdx: fp.inspectStepIdx,
       codeTab: fp.codeTab,
+      preset: fp.preset,
       copiedCode: fp.copied,
       statePreviews,
       previewHex,

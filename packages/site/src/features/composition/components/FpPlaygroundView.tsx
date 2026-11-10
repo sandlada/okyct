@@ -225,7 +225,7 @@ export function FpPlaygroundView() {
   const screen = useAppSelector(selectFpScreen)
   const {
     layers, steps, blendSpace, baseColor, foregroundText, newOpType, inspectStepIdx,
-    codeTab, copiedCode, statePreviews, previewHex, displayedOutput, generatedTsCode,
+    codeTab, preset, copiedCode, statePreviews, previewHex, displayedOutput, generatedTsCode,
   } = screen
   const setBlendSpace = (space: BlendSpace) => dispatch(setFpBlendSpace(space))
   const setBaseColor = (color: string) => dispatch(setFpBaseColor(color))
@@ -262,11 +262,10 @@ export function FpPlaygroundView() {
             {/* 混合色彩空间三档切换 */}
             <Tabs
               label={copy.stackerTitle}
-              appearance="soft"
+              appearance="pill"
               size="sm"
               value={blendSpace}
               onChange={setBlendSpace}
-              className="font-mono"
               options={[
                 { id: 'linear-srgb', label: copy.blendLinear },
                 { id: 'okyct', label: copy.blendOkyct },
@@ -401,32 +400,20 @@ export function FpPlaygroundView() {
       <section className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-4 sm:p-5 flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h3 className="text-sm font-semibold tracking-tight">{copy.pipelineTitle}</h3>
-          <div className="flex flex-wrap items-center gap-1.5">
-            <button
-              onClick={() => loadPresetPipeline('css')}
-              className="px-2 py-0.5 text-xs font-medium rounded border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            >
-              {copy.presetCss}
-            </button>
-            <button
-              onClick={() => loadPresetPipeline('oled')}
-              className="px-2 py-0.5 text-xs font-medium rounded border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            >
-              {copy.presetOled}
-            </button>
-            <button
-              onClick={() => loadPresetPipeline('nested-json')}
-              className="px-2 py-0.5 text-xs font-medium rounded border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            >
-              {copy.presetAlphaTree}
-            </button>
-            <button
-              onClick={() => loadPresetPipeline('contract')}
-              className="px-2 py-0.5 text-xs font-medium rounded border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-            >
-              {copy.presetContract}
-            </button>
-          </div>
+          <Tabs
+            label={copy.pipelineTitle}
+            appearance="pill"
+            size="sm"
+            wrap
+            value={preset}
+            onChange={loadPresetPipeline}
+            options={[
+              { id: 'css', label: copy.presetCss },
+              { id: 'oled', label: copy.presetOled },
+              { id: 'nested-json', label: copy.presetAlphaTree },
+              { id: 'contract', label: copy.presetContract },
+            ]}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)] gap-5 items-start">
@@ -656,7 +643,7 @@ export function FpPlaygroundView() {
             <div className="flex items-center justify-between gap-2">
               <Tabs
                 label={copy.evalOutput}
-                appearance="soft"
+                appearance="pill"
                 size="md"
                 value={codeTab}
                 onChange={setCodeTab}

@@ -21,6 +21,7 @@ import {
   type PaletteVariant,
 } from '../slice.ts'
 import { useQuantizer } from '../use-quantizer.ts'
+import { Tabs } from '../../../ui/Tabs.tsx'
 
 const PRESET_SEEDS = [
   { id: 'googleBlue', hex: '#1A73E8' },
@@ -250,24 +251,19 @@ export function SidebarControls({ closable = false }: { readonly closable?: bool
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="grid grid-cols-4 gap-1 flex-1">
-            {scenes.map((scene) => (
-              <button
-                key={scene.id}
-                type="button"
-                onClick={() => selectScene(scene.id)}
-                className={`py-1 px-1 text-[10px] font-medium rounded border transition-colors truncate ${
-                  activeSceneId === scene.id
-                    ? 'border-neutral-900 dark:border-white bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                    : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
-                }`}
-              >
-                {copy.sceneNames[scene.id] ?? scene.name}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Tabs
+          label={copy.imageQuantizer}
+          appearance="pill"
+          size="sm"
+          wrap
+          columns={4}
+          value={scenes.some((scene) => scene.id === activeSceneId) ? activeSceneId : scenes[0].id}
+          onChange={selectScene}
+          options={scenes.map((scene) => ({
+            id: scene.id,
+            label: copy.sceneNames[scene.id] ?? scene.name,
+          }))}
+        />
 
         <div className="flex items-center gap-2">
           <canvas
@@ -299,22 +295,16 @@ export function SidebarControls({ closable = false }: { readonly closable?: bool
         <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
           {copy.generationVariant}
         </label>
-        <div className="grid grid-cols-2 gap-1">
-          {VARIANTS.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              onClick={() => dispatch(setVariant(v.id))}
-              className={`py-1.5 px-2 text-left rounded-md border text-[11px] font-medium transition-colors truncate ${
-                variant === v.id
-                  ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-              }`}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
+        <Tabs
+          label={copy.generationVariant}
+          appearance="outline"
+          size="md"
+          wrap
+          columns={2}
+          value={variant}
+          onChange={(id) => dispatch(setVariant(id))}
+          options={VARIANTS.map((item) => ({ id: item.id, label: item.label }))}
+        />
       </section>
 
       <section className="flex flex-col gap-2 pt-1 border-t border-neutral-200 dark:border-neutral-800">
@@ -341,27 +331,19 @@ export function SidebarControls({ closable = false }: { readonly closable?: bool
         <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
           {copy.emissivePanel}
         </label>
-        <div className="grid grid-cols-2 gap-1">
-          {selectEmissiveChoices.map((choice) => {
-            const prof = choice.id
-            const active = emissiveProfile === prof
-            return (
-              <button
-                key={prof}
-                type="button"
-                onClick={() => dispatch(setEmissiveProfile(prof))}
-                className={`py-1.5 px-2 rounded-md border text-left text-[10px] font-medium transition-colors truncate ${
-                  active
-                    ? 'border-neutral-900 dark:border-white bg-neutral-900/5 dark:bg-white/10'
-                    : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800/40 hover:bg-neutral-100'
-                }`}
-                title={choice.description}
-              >
-                {copy.panelShortNames[prof]}
-              </button>
-            )
-          })}
-        </div>
+        <Tabs
+          label={copy.emissivePanel}
+          appearance="pill"
+          size="sm"
+          wrap
+          columns={2}
+          value={emissiveProfile}
+          onChange={(id) => dispatch(setEmissiveProfile(id))}
+          options={selectEmissiveChoices.map((choice) => ({
+            id: choice.id,
+            label: copy.panelShortNames[choice.id],
+          }))}
+        />
 
         <div className="flex flex-col gap-1">
           <label className="flex items-center justify-between gap-2 text-[11px] cursor-pointer">

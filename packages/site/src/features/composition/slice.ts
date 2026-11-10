@@ -18,6 +18,7 @@ export interface CompositionState {
   newOpType: OperatorKind
   inspectStepIdx: number | null
   codeTab: CodeTab
+  preset: PipelinePreset
   copied: boolean
 }
 
@@ -36,6 +37,7 @@ const InitialCompositionState: CompositionState = {
   newOpType: 'mapWithAlpha',
   inspectStepIdx: null,
   codeTab: 'output',
+  preset: 'css',
   copied: false,
 }
 
@@ -120,6 +122,7 @@ const compositionSlice = createSlice({
       moveItem(state.steps, action.payload.index, action.payload.direction)
     },
     loadFpPreset(state, action: PayloadAction<PipelinePreset>) {
+      state.preset = action.payload
       state.steps = stepsForPreset(action.payload)
       state.inspectStepIdx = null
     },
