@@ -13,6 +13,7 @@ const NavItems: readonly { view: StudioView; key: MessageKey }[] = [
   { view: StudioViewIds.Tokens, key: 'studio.tab.tokens' },
   { view: StudioViewIds.Oled, key: 'studio.tab.oled' },
   { view: StudioViewIds.Composition, key: 'studio.tab.fp' },
+  { view: StudioViewIds.Page, key: 'studio.tab.page' },
   { view: StudioViewIds.Export, key: 'studio.tab.export' },
 ]
 

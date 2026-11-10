@@ -1,4 +1,4 @@
-import { Code2, Cpu, Layers, Palette } from 'lucide-react'
+import { Code2, Cpu, Layers, LayoutTemplate, Palette } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { useRouter } from '../../../router/index.tsx'
 import { studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
@@ -8,6 +8,7 @@ const MobileTabs: readonly { id: StudioView; key: MessageKey; icon: typeof Palet
   { id: StudioViewIds.Tokens, key: 'studio.mobile.tokens', icon: Palette },
   { id: StudioViewIds.Oled, key: 'studio.mobile.oled', icon: Cpu },
   { id: StudioViewIds.Composition, key: 'studio.mobile.fp', icon: Layers },
+  { id: StudioViewIds.Page, key: 'studio.mobile.page', icon: LayoutTemplate },
   { id: StudioViewIds.Export, key: 'studio.mobile.export', icon: Code2 },
 ]
 

@@ -1,6 +1,7 @@
 import { CompositionLegacySlugs, CompositionStudioSlug } from '../composition/routes.ts'
 import { ExportStudioSlug } from '../export/routes.ts'
 import { OledLegacySlugs, OledStudioSlug } from '../oled/routes.ts'
+import { PageStudioSlug } from '../page/routes.ts'
 import { TokensLegacySlugs, TokensStudioSlug } from '../tokens/routes.ts'
 
 export const StudioViewIds = {
@@ -8,6 +9,7 @@ export const StudioViewIds = {
   Oled: OledStudioSlug,
   Composition: CompositionStudioSlug,
   Export: ExportStudioSlug,
+  Page: PageStudioSlug,
 } as const
 
 export type StudioView = (typeof StudioViewIds)[keyof typeof StudioViewIds]
@@ -16,6 +18,7 @@ export const StudioViews = [
   StudioViewIds.Tokens,
   StudioViewIds.Oled,
   StudioViewIds.Composition,
+  StudioViewIds.Page,
   StudioViewIds.Export,
 ] as const satisfies readonly StudioView[]
 

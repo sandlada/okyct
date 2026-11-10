@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from '../../../app/store.ts'
 import { FpPlaygroundView } from '../../composition/components/FpPlaygroundView.tsx'
 import { TokenExportView } from '../../export/components/TokenExportView.tsx'
+import { PageView } from '../../page/components/PageView.tsx'
 import { OledView } from '../../oled/components/OledView.tsx'
 import { TokensView } from '../../tokens/components/TokensView.tsx'
 import { selectSchemePending } from '../selectors.ts'
@@ -53,6 +54,7 @@ export default function StudioApp() {
           {view === StudioViewIds.Tokens && <TokensView />}
           {view === StudioViewIds.Oled && <OledView />}
           {view === StudioViewIds.Composition && <FpPlaygroundView />}
+          {view === StudioViewIds.Page && <PageView />}
           {view === StudioViewIds.Export && <TokenExportView />}
         </main>
       </div>

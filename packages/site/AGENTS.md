@@ -67,6 +67,7 @@ src/router/routes.ts                     组装 landing 与 studio 的路径
 | tokens | `tokens` | `TokensView` |
 | oled | `oled` | `OledView` |
 | composition | `composition` | `FpPlaygroundView` |
+| page | `page` | `PageView` |
 | export | `export` | `TokenExportView` |
 
 各 feature 在 `routes.ts` 导出 `*StudioSlug` 与可选的 `*LegacySlugs`；`features/studio/routes.ts` 汇总为 `StudioViewIds` 与 `StudioLegacyRedirects`。导航与 `StudioApp` 只引用 `StudioViewIds`，禁止硬编码 slug 字面量。旧路径 `fp` → composition，`sandbox` / `benchmark` / `colorimetric` → tokens，`emissive` → oled。
