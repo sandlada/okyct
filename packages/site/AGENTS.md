@@ -62,14 +62,14 @@ src/router/routes.ts                     组装 landing 与 studio 的路径
 
 ### 2.2 工作台视图
 
-| Feature | 路由 id | 组件 |
+| Feature | 路由 slug | 组件 |
 |---|---|---|
 | tokens | `tokens` | `TokensView` |
 | oled | `oled` | `OledView` |
-| composition | `fp` | `FpPlaygroundView` |
+| composition | `composition` | `FpPlaygroundView` |
 | export | `export` | `TokenExportView` |
 
-每个视图一个公开组件文件。文件内部可以有不导出的私有组件。旧路径 `sandbox`、`benchmark`、`colorimetric` 进入 tokens，`emissive` 进入 oled。
+各 feature 在 `routes.ts` 导出 `*StudioSlug` 与可选的 `*LegacySlugs`；`features/studio/routes.ts` 汇总为 `StudioViewIds` 与 `StudioLegacyRedirects`。导航与 `StudioApp` 只引用 `StudioViewIds`，禁止硬编码 slug 字面量。旧路径 `fp` → composition，`sandbox` / `benchmark` / `colorimetric` → tokens，`emissive` → oled。
 
 ### 2.3 兼容门面层 (`src/color/`)
 

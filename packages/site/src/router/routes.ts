@@ -17,11 +17,12 @@ import {
   DefaultStudioView,
   isStudioLegacyId,
   StudioLegacyRedirects,
+  StudioViewIds,
   StudioViews,
   type StudioView,
 } from '../features/studio/routes.ts'
 
-export { DefaultStudioView, StudioViews }
+export { DefaultStudioView, StudioViewIds, StudioViews }
 export type { StudioView }
 
 export type AppRoute =

@@ -1,3 +1,3 @@
-export const OledViewId = 'oled' as const
+export const OledStudioSlug = 'oled' as const
 
-export const OledLegacyIds = ['emissive'] as const
+export const OledLegacySlugs = ['emissive'] as const

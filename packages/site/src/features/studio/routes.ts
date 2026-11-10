@@ -1,24 +1,41 @@
-import { CompositionViewId } from '../composition/routes.ts'
-import { ExportViewId } from '../export/routes.ts'
-import { OledLegacyIds, OledViewId } from '../oled/routes.ts'
-import { TokensLegacyIds, TokensViewId } from '../tokens/routes.ts'
+import { CompositionLegacySlugs, CompositionStudioSlug } from '../composition/routes.ts'
+import { ExportStudioSlug } from '../export/routes.ts'
+import { OledLegacySlugs, OledStudioSlug } from '../oled/routes.ts'
+import { TokensLegacySlugs, TokensStudioSlug } from '../tokens/routes.ts'
+
+export const StudioViewIds = {
+  Tokens: TokensStudioSlug,
+  Oled: OledStudioSlug,
+  Composition: CompositionStudioSlug,
+  Export: ExportStudioSlug,
+} as const
+
+export type StudioView = (typeof StudioViewIds)[keyof typeof StudioViewIds]
 
 export const StudioViews = [
-  TokensViewId,
-  OledViewId,
-  CompositionViewId,
-  ExportViewId,
-] as const
+  StudioViewIds.Tokens,
+  StudioViewIds.Oled,
+  StudioViewIds.Composition,
+  StudioViewIds.Export,
+] as const satisfies readonly StudioView[]
 
-export type StudioView = (typeof StudioViews)[number]
+export const DefaultStudioView: StudioView = StudioViewIds.Tokens
 
-export const DefaultStudioView: StudioView = TokensViewId
+function legacyRedirectsFor<const T extends readonly string[]>(
+  target: StudioView,
+  legacy: T,
+): { readonly [K in T[number]]: StudioView } {
+  const out = {} as { readonly [K in T[number]]: StudioView }
+  for (const id of legacy) {
+    (out as Record<string, StudioView>)[id] = target
+  }
+  return out
+}
 
 export const StudioLegacyRedirects = {
-  [TokensLegacyIds[0]]: TokensViewId,
-  [TokensLegacyIds[1]]: TokensViewId,
-  [TokensLegacyIds[2]]: TokensViewId,
-  [OledLegacyIds[0]]: OledViewId,
+  ...legacyRedirectsFor(StudioViewIds.Tokens, TokensLegacySlugs),
+  ...legacyRedirectsFor(StudioViewIds.Oled, OledLegacySlugs),
+  ...legacyRedirectsFor(StudioViewIds.Composition, CompositionLegacySlugs),
 } as const
 
 export type StudioLegacyId = keyof typeof StudioLegacyRedirects

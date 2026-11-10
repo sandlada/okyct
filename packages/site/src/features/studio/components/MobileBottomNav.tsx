@@ -1,14 +1,14 @@
 import { Code2, Cpu, Layers, Palette } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { useRouter } from '../../../router/index.tsx'
-import { studioPath, type StudioView } from '../../../router/routes.ts'
+import { studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
 import { Tabs } from '../../../ui/Tabs.tsx'
 
 const MobileTabs: readonly { id: StudioView; key: MessageKey; icon: typeof Palette }[] = [
-  { id: 'tokens', key: 'studio.mobile.tokens', icon: Palette },
-  { id: 'oled', key: 'studio.mobile.oled', icon: Cpu },
-  { id: 'fp', key: 'studio.mobile.fp', icon: Layers },
-  { id: 'export', key: 'studio.mobile.export', icon: Code2 },
+  { id: StudioViewIds.Tokens, key: 'studio.mobile.tokens', icon: Palette },
+  { id: StudioViewIds.Oled, key: 'studio.mobile.oled', icon: Cpu },
+  { id: StudioViewIds.Composition, key: 'studio.mobile.fp', icon: Layers },
+  { id: StudioViewIds.Export, key: 'studio.mobile.export', icon: Code2 },
 ]
 
 export function MobileBottomNav() {

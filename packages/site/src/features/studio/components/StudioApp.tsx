@@ -9,6 +9,7 @@ import { MobileBottomNav } from './MobileBottomNav.tsx'
 import { SidebarControls } from './SidebarControls.tsx'
 import { TopNav } from './TopNav.tsx'
 import { useRouter } from '../../../router/index.tsx'
+import { StudioViewIds } from '../routes.ts'
 
 export default function StudioApp() {
   const { route } = useRouter()
@@ -49,10 +50,10 @@ export default function StudioApp() {
             schemeRecomputing ? 'opacity-[0.92]' : 'opacity-100'
           }`}
         >
-          {view === 'tokens' && <TokensView />}
-          {view === 'oled' && <OledView />}
-          {view === 'fp' && <FpPlaygroundView />}
-          {view === 'export' && <TokenExportView />}
+          {view === StudioViewIds.Tokens && <TokensView />}
+          {view === StudioViewIds.Oled && <OledView />}
+          {view === StudioViewIds.Composition && <FpPlaygroundView />}
+          {view === StudioViewIds.Export && <TokenExportView />}
         </main>
       </div>
 

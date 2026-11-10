@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { Link } from '../../../router/index.tsx'
-import { studioPath, type StudioView } from '../../../router/routes.ts'
+import { studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
 import { useAppDispatch, useAppSelector } from '../../../app/store.ts'
 import { BenchmarkFairMatrixTable } from '../../benchmark/components/BenchmarkFairMatrixTable.tsx'
 import { SiteFooter } from '../../chrome/components/SiteFooter.tsx'
@@ -55,11 +55,11 @@ const StudioCards: readonly {
   bodyKey: MessageKey
   icon: typeof Palette
 }[] = [
-  { link: { kind: 'studio', view: 'tokens' }, titleKey: 'studio.tokens.title', bodyKey: 'studio.tokens.body', icon: Palette },
-  { link: { kind: 'studio', view: 'oled' }, titleKey: 'studio.oled.title', bodyKey: 'studio.oled.body', icon: Cpu },
-  { link: { kind: 'studio', view: 'fp' }, titleKey: 'studio.fp.title', bodyKey: 'studio.fp.body', icon: Layers },
+  { link: { kind: 'studio', view: StudioViewIds.Tokens }, titleKey: 'studio.tokens.title', bodyKey: 'studio.tokens.body', icon: Palette },
+  { link: { kind: 'studio', view: StudioViewIds.Oled }, titleKey: 'studio.oled.title', bodyKey: 'studio.oled.body', icon: Cpu },
+  { link: { kind: 'studio', view: StudioViewIds.Composition }, titleKey: 'studio.fp.title', bodyKey: 'studio.fp.body', icon: Layers },
   { link: { kind: 'landing', hash: 'benchmarks' }, titleKey: 'studio.benchmark.title', bodyKey: 'studio.benchmark.body', icon: Scale },
-  { link: { kind: 'studio', view: 'export' }, titleKey: 'studio.export.title', bodyKey: 'studio.export.body', icon: Code2 },
+  { link: { kind: 'studio', view: StudioViewIds.Export }, titleKey: 'studio.export.title', bodyKey: 'studio.export.body', icon: Code2 },
 ]
 
 export function LandingPage() {

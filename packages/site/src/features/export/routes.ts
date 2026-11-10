@@ -1,1 +1,1 @@
-export const ExportViewId = 'export' as const
+export const ExportStudioSlug = 'export' as const

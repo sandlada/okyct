@@ -2,7 +2,7 @@
 import { Sun, Moon, Code2, Menu } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { Link, useRouter } from '../../../router/index.tsx'
-import { landingPath, studioPath, type StudioView } from '../../../router/routes.ts'
+import { landingPath, studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
 import { useTheme } from '../../theme/use-theme.ts'
 import { useAppDispatch } from '../../../app/store.ts'
 import { setMobileDrawerOpen } from '../slice.ts'
@@ -10,10 +10,10 @@ import { LocaleSwitcher } from '../../chrome/components/LocaleSwitcher.tsx'
 import { Tabs } from '../../../ui/Tabs.tsx'
 
 const NavItems: readonly { view: StudioView; key: MessageKey }[] = [
-  { view: 'tokens', key: 'studio.tab.tokens' },
-  { view: 'oled', key: 'studio.tab.oled' },
-  { view: 'fp', key: 'studio.tab.fp' },
-  { view: 'export', key: 'studio.tab.export' },
+  { view: StudioViewIds.Tokens, key: 'studio.tab.tokens' },
+  { view: StudioViewIds.Oled, key: 'studio.tab.oled' },
+  { view: StudioViewIds.Composition, key: 'studio.tab.fp' },
+  { view: StudioViewIds.Export, key: 'studio.tab.export' },
 ]
 
 interface TopNavProps {
@@ -84,7 +84,7 @@ export function TopNav() {
 
         <button
           type="button"
-          onClick={() => onTabChange('export')}
+          onClick={() => onTabChange(StudioViewIds.Export)}
           className="flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] text-xs font-semibold rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors whitespace-nowrap shrink-0"
         >
           <Code2 className="w-3.5 h-3.5" />
