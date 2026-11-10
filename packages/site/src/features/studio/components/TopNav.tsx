@@ -37,7 +37,7 @@ export function TopNav() {
   const onTabChange = (view: StudioView) => navigate(studioPath(locale, view))
 
   return (
-    <header className="h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 md:px-6 flex items-center justify-between gap-4 md:gap-6 shrink-0 select-none z-30">
+    <header className="h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 flex items-center justify-between gap-4 shrink-0 select-none z-30">
       {/* Zone 1: Brand Wordmark */}
       <div className="flex items-center gap-2 shrink-0">
         <Link
@@ -61,7 +61,7 @@ export function TopNav() {
       />
 
       {/* Zone 3: Actions & Mobile Drawer Toggle */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         {true && (
           <button
             type="button"

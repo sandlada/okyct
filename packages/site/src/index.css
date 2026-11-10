@@ -41,6 +41,24 @@ html.dark body {
   background-color: var(--okyct-page-dark);
 }
 
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"]:not([aria-disabled="true"]),
+  a[href],
+  summary,
+  select:not(:disabled),
+  label:has(:is(input, select, button):not(:disabled)),
+  input:is([type="checkbox"], [type="radio"], [type="color"], [type="file"], [type="range"]):not(:disabled) {
+    cursor: pointer;
+  }
+
+  :is(button, select, input, summary):disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
 /* 原生取色器去壳，使其与胶囊控件融为一体 */
 input[type="color"] {
   border: none;

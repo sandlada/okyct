@@ -103,7 +103,7 @@ export function LandingPage() {
               {t('hero.eyebrow')}
             </span>
 
-            <h1 className="mt-7 font-display text-[clamp(2.55rem,7.2vw,6.1rem)] font-medium leading-[0.95] tracking-[-0.045em] text-balance">
+            <h1 className="mt-7 font-display text-[clamp(2.55rem,7.2vw,6.1rem)] font-bold leading-[0.95] tracking-[-0.045em] [word-spacing:0.08em]">
               {t('hero.titleLineOne')}
               <br />
               <span
@@ -151,7 +151,7 @@ export function LandingPage() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                   {t('model.eyebrow')}
                 </span>
-                <h2 className="mt-4 max-w-2xl font-display text-[clamp(1.7rem,3.4vw,2.9rem)] font-medium leading-[1.08] tracking-[-0.03em] text-balance">
+                <h2 className="mt-6 max-w-5xl font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
                   {t('model.title')}
                 </h2>
               </div>
@@ -197,14 +197,14 @@ export function LandingPage() {
         <section id="benchmarks" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
           <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
             <div className="flex flex-col gap-4 pl-7 sm:pl-9">
-              <div className="max-w-2xl">
+              <div>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                   {t('benchmarks.eyebrow')}
                 </span>
-                <h2 className="mt-4 font-display text-[clamp(1.7rem,3.4vw,2.9rem)] font-medium leading-[1.08] tracking-[-0.03em] text-balance">
+                <h2 className="mt-6 max-w-5xl font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
                   {t('benchmarks.title')}
                 </h2>
-                <p className="mt-5 text-sm leading-relaxed text-neutral-600 sm:text-base dark:text-neutral-400">
+                <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
                   {t('benchmarks.body')}
                 </p>
               </div>
@@ -248,14 +248,14 @@ export function LandingPage() {
           <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
             <div className="overflow-hidden rounded-[2rem] bg-neutral-950 px-7 py-14 text-white sm:rounded-[2.5rem] sm:px-9 sm:py-20">
               <div className="flex flex-col gap-12">
-                <div className="max-w-3xl">
+                <div className="max-w-5xl">
                   <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
                     {t('displays.eyebrow')}
                   </span>
-                  <h2 className="mt-5 font-display text-[clamp(1.8rem,4vw,3.4rem)] font-medium leading-[1.05] tracking-[-0.03em] text-balance">
+                  <h2 className="mt-6 font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
                     {t('displays.title')}
                   </h2>
-                  <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
+                  <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-white/55 sm:text-[17px]">
                     {t('displays.body')}
                   </p>
                 </div>
@@ -322,14 +322,14 @@ export function LandingPage() {
         <section id="palette" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
           <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
             <div className="flex flex-col gap-10 pl-7 lg:flex-row lg:items-end lg:justify-between sm:pl-9">
-              <div className="max-w-2xl">
+              <div className="max-w-5xl">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                   {t('palette.eyebrow')}
                 </span>
-                <h2 className="mt-4 font-display text-[clamp(1.8rem,4vw,3.2rem)] font-medium leading-[1.05] tracking-[-0.035em] text-balance">
+                <h2 className="mt-6 font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
                   {t('palette.title')}
                 </h2>
-                <p className="mt-5 text-sm leading-relaxed text-neutral-600 sm:text-base dark:text-neutral-400">
+                <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
                   {t('palette.body')}
                 </p>
               </div>
@@ -388,14 +388,14 @@ export function LandingPage() {
         <section id="studio" className="relative scroll-mt-24 pb-24 sm:pb-32">
           <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
             <div className="flex flex-col gap-6 pl-5 sm:flex-row sm:items-end sm:justify-between sm:pl-5">
-              <div className="max-w-2xl">
+              <div className="max-w-5xl">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
                   {t('studio.eyebrow')}
                 </span>
-                <h2 className="mt-4 font-display text-[clamp(1.8rem,4vw,3.2rem)] font-medium leading-[1.05] tracking-[-0.035em] text-balance">
+                <h2 className="mt-6 font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
                   {t('studio.title')}
                 </h2>
-                <p className="mt-5 text-sm leading-relaxed text-neutral-600 sm:text-base dark:text-neutral-400">
+                <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
                   {t('studio.body')}
                 </p>
               </div>
@@ -460,10 +460,10 @@ export function LandingPage() {
                 className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full opacity-30 blur-3xl"
                 style={{ background: palette.accents.tertiary }}
               />
-              <h2 className="relative mx-auto max-w-3xl font-display text-[clamp(2rem,5vw,4rem)] font-medium leading-[1.02] tracking-[-0.04em] text-balance">
+              <h2 className="relative mx-auto max-w-5xl font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
                 {t('cta.title')}
               </h2>
-              <p className="relative mx-auto mt-5 max-w-xl text-sm leading-relaxed text-neutral-600 sm:text-base dark:text-neutral-400">
+              <p className="relative mx-auto mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
                 {t('cta.body')}
               </p>
               <div className="relative mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
