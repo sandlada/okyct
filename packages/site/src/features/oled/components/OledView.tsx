@@ -138,8 +138,8 @@ export function OledView() {
 
   return (
     <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex flex-col gap-5 sm:gap-6 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 max-w-[1600px] mx-auto w-full">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm sm:text-base font-bold font-display tracking-tight flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5">
+        <h2 className="text-base sm:text-lg font-bold font-display tracking-tight flex items-center gap-2">
           <Cpu className="w-4 h-4 text-neutral-500 shrink-0" />
           {copy.heading}
         </h2>

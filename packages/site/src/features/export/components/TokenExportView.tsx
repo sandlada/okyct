@@ -8,9 +8,7 @@ import { setCssSchemeMode, setExportFormat, setTailwindFallback } from '../slice
 import { Tabs } from '../../../ui/Tabs.tsx'
 
 const EnglishCopy = {
-  pageTitle: 'Token matrix & production code export',
-  pageDescription:
-    'Export bundles every MD3 system token plus the custom semantic color quadruplets.',
+  pageTitle: 'Export',
   copiedToClipboard: 'Copied to clipboard',
   copyFullCode: 'Copy full code',
   cssClass: 'Classes',
@@ -20,9 +18,7 @@ const EnglishCopy = {
 }
 
 const TraditionalCopy: typeof EnglishCopy = {
-  pageTitle: 'Token 矩陣與生產程式碼匯出',
-  pageDescription:
-    '匯出內容自動包含全部 MD3 系統 Token 與自訂擴充語意色四元組。',
+  pageTitle: '匯出',
   copiedToClipboard: '已複製到剪貼簿',
   copyFullCode: '複製整段程式碼',
   cssClass: '類名',
@@ -44,19 +40,17 @@ export function TokenExportView() {
   const exportCode = useAppSelector(selectExportCode)
 
   return (
-    <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex flex-col gap-6 sm:gap-8 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 relative">
+    <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex flex-col gap-6 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 max-w-[1600px] mx-auto w-full">
       {/* 头部标题 */}
-      <div>
-        <h2 className="text-base sm:text-lg font-bold font-display tracking-tight">
+      <div className="px-4 sm:px-5">
+        <h2 className="text-base sm:text-lg font-bold font-display tracking-tight flex items-center gap-2">
+          <FileCode className="w-4 h-4 text-neutral-500 shrink-0" />
           {copy.pageTitle}
         </h2>
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-          {copy.pageDescription}
-        </p>
       </div>
 
       {/* 生产级多格式代码导出器 */}
-      <section className="p-4 sm:p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col gap-4">
+      <section className="p-4 sm:p-5 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <Tabs
             label={copy.pageTitle}

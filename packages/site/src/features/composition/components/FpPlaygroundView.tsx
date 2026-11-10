@@ -244,10 +244,12 @@ export function FpPlaygroundView() {
   const handleCopy = (text: string) => dispatch(copyFpText(text))
   return (
     <div className="flex-1 p-3 sm:p-6 overflow-y-auto flex flex-col gap-6 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 max-w-[1600px] mx-auto w-full">
-      <h2 className="text-sm sm:text-base font-bold font-display tracking-tight flex items-center gap-2">
-        <Layers className="w-4 h-4 text-neutral-500 shrink-0" />
-        {copy.pageTitle}
-      </h2>
+      <div className="px-4 sm:px-5">
+        <h2 className="text-base sm:text-lg font-bold font-display tracking-tight flex items-center gap-2">
+          <Layers className="w-4 h-4 text-neutral-500 shrink-0" />
+          {copy.pageTitle}
+        </h2>
+      </div>
 
       {/* ============================================================= */}
       {/* 1. N 层颜色叠加可视化合成器 (N-Layer Interactive Stacker) */}
