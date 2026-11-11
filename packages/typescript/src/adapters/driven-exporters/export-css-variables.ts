@@ -1,16 +1,17 @@
 
 import {
-  STANDARD_TONES,
+  StandardTones,
   StandardPaletteKeys,
   SystemColorTokens,
+  CssSchemeModes,
+  type CssSchemeMode,
   type DynamicSchemeColors,
   type ResolvedCustomColor,
 } from '../../ports/index.ts'
 import type { PaletteSet } from '../../application/index.ts'
 import { kebabCase } from './internal/kebab-case.ts'
 
-export const CssSchemeModes = ['class', 'light-dark'] as const
-export type CssSchemeMode = (typeof CssSchemeModes)[number]
+export { CssSchemeModes, type CssSchemeMode }
 
 const customTuple = (color: ResolvedCustomColor) => {
   const k = kebabCase(color.name)
@@ -45,7 +46,7 @@ export function exportCssVariables(
   const paletteEntries = (indent = '  ') => {
     const list: string[] = []
     for (const key of StandardPaletteKeys) {
-      for (const t of STANDARD_TONES) {
+      for (const t of StandardTones) {
         list.push(`${indent}--md-ref-palette-${kebabCase(key)}-${t}: ${palettes[key].tone(t)};`)
       }
     }

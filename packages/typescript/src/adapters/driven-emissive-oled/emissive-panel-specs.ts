@@ -1,7 +1,7 @@
 
 import type { EmissivePanelType, EmissivePanelSpec } from '../../ports/outbound/display-physics.port.ts'
 
-export const EMISSIVE_PANEL_SPECS: Record<EmissivePanelType, EmissivePanelSpec> = {
+export const EmissivePanelSpecs: Record<EmissivePanelType, EmissivePanelSpec> = {
   'standard-lcd': {
     id: 'standard-lcd',
     name: 'Standard IPS / Mini-LED LCD',

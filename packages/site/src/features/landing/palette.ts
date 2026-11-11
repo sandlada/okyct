@@ -5,7 +5,7 @@
 
 import {
   createPalettesFromSource,
-  STANDARD_TONES,
+  StandardTones,
   type StandardTone,
 } from '../../color/palettes.ts'
 import { findMaxChromaForTone, hexToOkyct, okyctToHex } from '../../color/math.ts'
@@ -99,7 +99,7 @@ export function buildLandingPalette(seedHex: string): LandingPalette {
   const rows: LandingPaletteRow[] = LandingToneRowKeys.map((key) => ({
     key,
     labelKey: LandingToneRowLabels[key],
-    swatches: STANDARD_TONES.map((tone) => ({
+    swatches: StandardTones.map((tone) => ({
       tone,
       hex: palettes[key].tone(tone),
     })),

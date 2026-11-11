@@ -4,8 +4,14 @@
  * 约束：仅依赖 domain/models 与同层契约
  */
 
-import type { DynamicSchemeColors, ResolvedCustomColor } from '../inbound/scheme-building.port.ts';
-import type { PaletteSet, ITonalPalettePort } from '../inbound/palette-generation.port.ts';
+import type { DynamicSchemeColors, ResolvedCustomColor } from '../inbound/scheme-building.port.ts'
+import type { PaletteSet, ITonalPalettePort } from '../inbound/palette-generation.port.ts'
+
+export const CssSchemeModes = ['class', 'light-dark'] as const
+export type CssSchemeMode = (typeof CssSchemeModes)[number]
+
+export const TailwindFallbackModes = ['none', 'light-dark'] as const
+export type TailwindFallbackMode = (typeof TailwindFallbackModes)[number]
 
 export interface ITokenExporterPort<TPalette extends ITonalPalettePort = ITonalPalettePort> {
   exportCssVariables(
@@ -13,26 +19,29 @@ export interface ITokenExporterPort<TPalette extends ITonalPalettePort = ITonalP
     darkScheme: DynamicSchemeColors,
     palettes: PaletteSet<TPalette>,
     customColorsLight?: ResolvedCustomColor[],
-    customColorsDark?: ResolvedCustomColor[]
-  ): string;
+    customColorsDark?: ResolvedCustomColor[],
+    schemeMode?: CssSchemeMode
+  ): string
 
   exportTailwindV4(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: ResolvedCustomColor[]
-  ): string;
+    customColorsLight?: ResolvedCustomColor[],
+    customColorsDark?: ResolvedCustomColor[],
+    fallback?: TailwindFallbackMode
+  ): string
 
   exportW3cDesignTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
     customColorsLight?: ResolvedCustomColor[],
     customColorsDark?: ResolvedCustomColor[]
-  ): string;
+  ): string
 
   exportTypeScriptTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
     customColorsLight?: ResolvedCustomColor[],
     customColorsDark?: ResolvedCustomColor[]
-  ): string;
+  ): string
 }

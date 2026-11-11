@@ -1,6 +1,6 @@
 
 import type { TokenDictionary } from './token-dictionary.ts'
-import { computeColorEmissiveTelemetry } from '../driven-emissive-oled/compute-color-emissive-telemetry.ts'
+import { computeColorEmissiveTelemetry } from '../driven-emissive-oled/index.ts'
 
 export interface OledPowerAuditReport {
   passed: boolean

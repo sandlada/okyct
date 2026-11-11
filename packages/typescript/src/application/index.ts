@@ -3,7 +3,8 @@
  */
 
 export {
-  STANDARD_TONES,
+  StandardTones,
+  PaletteVariants,
   StandardPaletteKeys,
   type StandardTone,
   type StandardPaletteKey,
@@ -11,6 +12,8 @@ export {
 } from '../ports/inbound/palette-generation.port.ts'
 
 export {
+  ThemeModes,
+  EmissivePanelTypes,
   SystemColorTokens,
   type SystemColorToken,
   type DynamicSchemeColors,
@@ -18,9 +21,9 @@ export {
   type ResolvedCustomColor,
   type ContrastAuditItem,
   type ThemeMode,
+  type EmissivePanelType,
+  type EmissiveSchemeOptions,
 } from '../ports/inbound/scheme-building.port.ts'
-
-export type { EmissiveSchemeOptions } from '../ports/outbound/display-physics.port.ts'
 
 export type {
   ColorLayer,
@@ -40,6 +43,7 @@ export * from './scheme-token-role-map.ts'
 export * from './build-dynamic-scheme-with-physics.ts'
 export * from './resolve-custom-colors.ts'
 export * from './audit-scheme-contrast.ts'
+export * from './scheme-building-use-case.ts'
 export * from './stack-layers.ts'
 export * from './stack-state-layers.ts'
 export * from './audit-stacked-contrast.ts'

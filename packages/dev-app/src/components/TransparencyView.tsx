@@ -5,7 +5,7 @@ import {
   type SystemColorToken,
   type DynamicSchemeColors,
   type StandardTone,
-  STANDARD_TONES,
+  StandardTones,
 } from '@sandlada/okyct'
 import {
   type SeedColorMetrics,

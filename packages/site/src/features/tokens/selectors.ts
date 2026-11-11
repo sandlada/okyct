@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { STANDARD_TONES, TonalPalette, type PaletteSet } from '../../color/palettes.ts'
+import { StandardTones, TonalPalette, type PaletteSet } from '../../color/palettes.ts'
 import type { RootState } from '../../app/store.ts'
 import { simulateCvd } from '../../color/benchmark.ts'
 import { getContrastRatio, hexToOkyct } from '../../color/math.ts'
@@ -185,7 +185,7 @@ export const selectRampFamilies = createSelector([selectPalettes, selectCustomLi
       key,
       label: undefined as string | undefined,
       hue: palettes[key].hue,
-      swatches: STANDARD_TONES.map((tone) => ({
+      swatches: StandardTones.map((tone) => ({
         tone,
         hex: palettes[key].tone(tone),
       })),
@@ -206,7 +206,7 @@ export const selectRampFamilies = createSelector([selectPalettes, selectCustomLi
           key: color.id,
           label: color.label,
           hue: palette.hue,
-          swatches: STANDARD_TONES.map((tone) => ({
+          swatches: StandardTones.map((tone) => ({
             tone,
             hex: palette.tone(tone),
           })),

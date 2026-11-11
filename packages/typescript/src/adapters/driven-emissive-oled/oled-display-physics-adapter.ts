@@ -1,6 +1,6 @@
 
 import type { EmissivePanelType, EmissivePanelSpec, IDisplayPhysicsPort } from '../../ports/outbound/display-physics.port.ts'
-import { EMISSIVE_PANEL_SPECS } from './emissive-panel-specs.ts'
+import { EmissivePanelSpecs } from './emissive-panel-specs.ts'
 import { applyBlueBurnInGuard } from './apply-blue-burn-in-guard.ts'
 import { applySubpixelEdgeCompensation } from './apply-subpixel-edge-compensation.ts'
 import { computeColorEmissiveTelemetry } from './compute-color-emissive-telemetry.ts'
@@ -8,7 +8,7 @@ import { analyzeEmissiveSchemeMetrics } from './analyze-emissive-scheme-metrics.
 
 export class OledDisplayPhysicsAdapter implements IDisplayPhysicsPort {
   getPanelSpec(profile: EmissivePanelType): EmissivePanelSpec {
-    return EMISSIVE_PANEL_SPECS[profile]
+    return EmissivePanelSpecs[profile]
   }
   applyBlueBurnInGuard = applyBlueBurnInGuard
   applySubpixelEdgeCompensation = applySubpixelEdgeCompensation

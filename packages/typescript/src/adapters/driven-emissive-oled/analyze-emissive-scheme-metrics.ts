@@ -2,13 +2,13 @@
 import { hexToOkyct, getContrastRatio } from '../../domain/index.ts'
 import type { DynamicSchemeColors } from '../../ports/inbound/scheme-building.port.ts'
 import type { EmissivePanelType, SchemeEmissiveReport } from '../../ports/outbound/display-physics.port.ts'
-import { EMISSIVE_PANEL_SPECS } from './emissive-panel-specs.ts'
+import { EmissivePanelSpecs } from './emissive-panel-specs.ts'
 import { computeColorEmissiveTelemetry } from './compute-color-emissive-telemetry.ts'
 
-const BACKPLANE_STATIC_MW = 95
-const LCD_CONSTANT_BACKLIGHT_MW = 540
+const BackplaneStaticMw = 95
+const LcdConstantBacklightMw = 540
 
-const UI_AREA_WEIGHTS: Array<{ role: keyof DynamicSchemeColors; weight: number }> = [
+const UiAreaWeights: ReadonlyArray<{ role: keyof DynamicSchemeColors; weight: number }> = [
   { role: 'surface', weight: 0.42 },
   { role: 'surfaceContainerLowest', weight: 0.14 },
   { role: 'surfaceContainerLow', weight: 0.12 },
@@ -25,12 +25,12 @@ export function analyzeEmissiveSchemeMetrics(
   scheme: DynamicSchemeColors,
   profile: EmissivePanelType
 ): SchemeEmissiveReport {
-  const spec = EMISSIVE_PANEL_SPECS[profile]
+  const spec = EmissivePanelSpecs[profile]
 
   if (profile === 'standard-lcd') {
     let weightedApl = 0
     let weightedBlueStress = 0
-    for (const item of UI_AREA_WEIGHTS) {
+    for (const item of UiAreaWeights) {
       const hex = scheme[item.role] as string
       const t = computeColorEmissiveTelemetry(hex)
       weightedApl += t.aplPercent * item.weight
@@ -45,7 +45,7 @@ export function analyzeEmissiveSchemeMetrics(
     return {
       profile,
       spec,
-      estimatedTotalPowerMw: LCD_CONSTANT_BACKLIGHT_MW,
+      estimatedTotalPowerMw: LcdConstantBacklightMw,
       powerSavingsVsLcdPct: 0,
       channelPowerBreakdownMw: { r: 180, g: 180, b: 180 },
       aplPercent: Math.round(weightedApl * 10) / 10,
@@ -66,7 +66,7 @@ export function analyzeEmissiveSchemeMetrics(
   let weightedBlueStress = 0
   let pixelOffArea = 0
 
-  for (const item of UI_AREA_WEIGHTS) {
+  for (const item of UiAreaWeights) {
     const hex = scheme[item.role] as string
     const t = computeColorEmissiveTelemetry(hex)
     weightedR += t.channelPowerMw.r * item.weight
@@ -85,9 +85,9 @@ export function analyzeEmissiveSchemeMetrics(
   )
 
   const emissiveLightMw = weightedR + weightedG + weightedB
-  const totalMw = Math.round(BACKPLANE_STATIC_MW + emissiveLightMw)
+  const totalMw = Math.round(BackplaneStaticMw + emissiveLightMw)
   const savingsPct = Math.round(
-    ((LCD_CONSTANT_BACKLIGHT_MW - totalMw) / LCD_CONSTANT_BACKLIGHT_MW) * 100
+    ((LcdConstantBacklightMw - totalMw) / LcdConstantBacklightMw) * 100
   )
 
   const surfTone = scheme.tones.surface

@@ -1,14 +1,22 @@
 
 import { SystemColorTokens, type DynamicSchemeColors, type ResolvedCustomColor } from '../../ports/index.ts'
 
+interface W3cDesignTokenLeaf {
+  $value: string
+  $type: 'color'
+  $description: string
+}
+
+type W3cDesignTokenGroup = Record<string, W3cDesignTokenLeaf | Record<string, W3cDesignTokenLeaf>>
+
 export function exportW3cDesignTokens(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
   customColorsLight: ResolvedCustomColor[] = [],
   customColorsDark: ResolvedCustomColor[] = []
 ): string {
-  const buildGroup = (scheme: DynamicSchemeColors, customs: ResolvedCustomColor[]) => {
-    const group: Record<string, any> = {}
+  const buildGroup = (scheme: DynamicSchemeColors, customs: ResolvedCustomColor[]): W3cDesignTokenGroup => {
+    const group: W3cDesignTokenGroup = {}
     for (const k of SystemColorTokens) {
       group[k] = {
         $value: scheme[k],

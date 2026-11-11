@@ -1,7 +1,7 @@
 
 import type { EmissivePanelType } from '../../ports/outbound/display-physics.port.ts'
 import type { TokenDictionary } from './token-dictionary.ts'
-import { applyEmissiveProfileToTokenHex } from '../driven-emissive-oled/apply-emissive-profile-to-token-hex.ts'
+import { applyEmissiveProfileToTokenHex } from '../driven-emissive-oled/index.ts'
 
 export const optimizeForOled = (options: {
   profile: EmissivePanelType

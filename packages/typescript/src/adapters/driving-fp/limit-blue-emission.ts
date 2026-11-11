@@ -1,5 +1,5 @@
 
-import { applyBlueBurnInGuard } from '../driven-emissive-oled/apply-blue-burn-in-guard.ts'
+import { applyBlueBurnInGuard } from '../driven-emissive-oled/index.ts'
 
 export const limitBlueEmission = (
   options: { maxBlueAttenuation?: number; hueShiftDeg?: number } = {}

@@ -22,7 +22,7 @@ import {
   type DynamicSchemeColors,
   type PaletteVariant,
   type EmissivePanelType,
-  STANDARD_TONES,
+  StandardTones,
   type StandardTone,
   TonalPalette,
 } from '@sandlada/okyct'
@@ -158,7 +158,7 @@ export function analyzePaletteStops(
   palette: TonalPalette,
   paletteName: string
 ): PaletteStopDetail[] {
-  return STANDARD_TONES.map((tone) => {
+  return StandardTones.map((tone) => {
     const targetChroma = palette.targetChroma
     const maxGamutChroma = findMaxChromaForTone(palette.hue, tone)
 

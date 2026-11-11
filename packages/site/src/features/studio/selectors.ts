@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { EMISSIVE_PANEL_SPECS, type EmissivePanelType } from '../../color/emissive.ts'
+import { EmissivePanelSpecs, type EmissivePanelType } from '../../color/emissive.ts'
 import { createPalettesFromSource } from '../../color/palettes.ts'
 import {
   buildDynamicScheme,
@@ -18,7 +18,7 @@ export const EmissivePanelIds = [
 
 export const selectEmissiveChoices = EmissivePanelIds.map((id) => ({
   id,
-  description: EMISSIVE_PANEL_SPECS[id].description,
+  description: EmissivePanelSpecs[id].description,
 }))
 
 const selectSettledHex = (state: RootState) => state.studio.settledSourceHex

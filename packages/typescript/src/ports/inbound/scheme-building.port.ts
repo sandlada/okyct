@@ -1,20 +1,34 @@
 /**
  * [Hexagonal Layer: Inbound Port]
  * 按需定制 MD3 CSS Tokens 动态方案求解、扩展色四元组与对比度审计驱动端契约 (一个口对应一个文件)
- * 约束：仅依赖 domain/models 与同层契约
+ * 约束：仅依赖 domain/models 与同级 inbound 契约，零 outbound 反向依赖
  */
 
 import type { PaletteSet, ITonalPalettePort } from './palette-generation.port.ts'
-import type { EmissiveSchemeOptions } from '../outbound/display-physics.port.ts'
 
-export type ThemeMode = 'light' | 'dark'
+export const ThemeModes = ['light', 'dark'] as const
+export type ThemeMode = (typeof ThemeModes)[number]
+
+export const EmissivePanelTypes = [
+  'standard-lcd',
+  'oled-true-black',
+  'amoled-anti-smear',
+  'micro-oled-xr',
+] as const
+export type EmissivePanelType = (typeof EmissivePanelTypes)[number]
+
+export interface EmissiveSchemeOptions {
+  profile?: EmissivePanelType
+  burnInGuard?: boolean
+  antiFringing?: boolean
+}
 
 export interface CustomColorConfig {
   id: string
-  name: string        // 语义标识符 (如 'info', 'brandGold')
-  label: string       // 显示名称 (如 '信息蓝', '品牌金')
-  sourceHex: string   // 原始输入 Hex
-  harmonize: boolean  // 是否向主色进行色相和谐偏移
+  name: string
+  label: string
+  sourceHex: string
+  harmonize: boolean
 }
 
 export interface ResolvedCustomColor {
@@ -114,7 +128,6 @@ export type SystemColorToken = (typeof SystemColorTokens)[number]
 export type DynamicSchemeColors = {
   [K in SystemColorToken]: string
 } & {
-  // 对应的色调值 (Tone 记录，方便色度学分析与无障碍审计)
   tones: Record<SystemColorToken, number>
 }
 

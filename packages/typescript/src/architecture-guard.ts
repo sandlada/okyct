@@ -9,17 +9,18 @@
  * 4. adapters (driving + driven)-> 实现 ports 契约并向内依赖 application / domain
  */
 
-export type HexagonalLayerId = 'domain' | 'ports' | 'application' | 'adapters';
+export const HexagonalLayerIds = ['domain', 'ports', 'application', 'adapters'] as const
+export type HexagonalLayerId = (typeof HexagonalLayerIds)[number]
 
 export interface HexagonalLayerRule {
-  layer: HexagonalLayerId;
-  subDirectories: readonly string[];
-  allowedDependencies: readonly HexagonalLayerId[];
-  forbiddenDependencies: readonly HexagonalLayerId[];
-  responsibility: string;
+  layer: HexagonalLayerId
+  subDirectories: readonly string[]
+  allowedDependencies: readonly HexagonalLayerId[]
+  forbiddenDependencies: readonly HexagonalLayerId[]
+  responsibility: string
 }
 
-export const HEXAGONAL_ARCHITECTURE_MANIFEST: readonly HexagonalLayerRule[] = [
+export const HexagonalArchitectureManifest: readonly HexagonalLayerRule[] = [
   {
     layer: 'domain',
     subDirectories: ['domain/models', 'domain/services'],
@@ -39,7 +40,7 @@ export const HEXAGONAL_ARCHITECTURE_MANIFEST: readonly HexagonalLayerRule[] = [
     subDirectories: ['application'],
     allowedDependencies: ['domain', 'ports'],
     forbiddenDependencies: ['adapters'],
-    responsibility: '应用用例编排层：TonalPalette、MD3 38-Token 动态方案、N层物理/感知叠加用例，通过 Port 接口实施依赖倒置。',
+    responsibility: '应用用例编排层：TonalPalette、按需定制 MD3 CSS Tokens 动态方案、N层物理/感知叠加用例，通过 Port 接口实施依赖倒置。',
   },
   {
     layer: 'adapters',
@@ -53,40 +54,40 @@ export const HEXAGONAL_ARCHITECTURE_MANIFEST: readonly HexagonalLayerRule[] = [
     forbiddenDependencies: [],
     responsibility: '驱动与被驱动适配器层：OLED/MicroOLED 面板物理模型、多格式代码导出、图像量化与 FP 柯里化算子。',
   },
-] as const;
+] as const
 
 export interface ArchitectureAuditResult {
-  passed: boolean;
-  layersVerified: number;
-  modelsCount: number;
-  inboundPortsCount: number;
-  outboundPortsCount: number;
-  summary: string;
+  passed: boolean
+  layersVerified: number
+  modelsCount: number
+  inboundPortsCount: number
+  outboundPortsCount: number
+  summary: string
 }
 
 /**
  * 执行六边形架构依赖反转与单文件契约粒度自检
  */
 export function verifyHexagonalArchitectureBoundaries(): ArchitectureAuditResult {
-  const domainRule = HEXAGONAL_ARCHITECTURE_MANIFEST.find((r) => r.layer === 'domain')!;
-  const portsRule = HEXAGONAL_ARCHITECTURE_MANIFEST.find((r) => r.layer === 'ports')!;
-  const appRule = HEXAGONAL_ARCHITECTURE_MANIFEST.find((r) => r.layer === 'application')!;
+  const domainRule = HexagonalArchitectureManifest.find((r) => r.layer === 'domain')!
+  const portsRule = HexagonalArchitectureManifest.find((r) => r.layer === 'ports')!
+  const appRule = HexagonalArchitectureManifest.find((r) => r.layer === 'application')!
 
-  const domainZeroOuterDeps = domainRule.allowedDependencies.length === 0;
+  const domainZeroOuterDeps = domainRule.allowedDependencies.length === 0
   const portsOnlyDependsOnDomain =
-    portsRule.allowedDependencies.length === 1 && portsRule.allowedDependencies[0] === 'domain';
-  const appNeverDependsOnAdapters = !appRule.allowedDependencies.includes('adapters');
+    portsRule.allowedDependencies.length === 1 && portsRule.allowedDependencies[0] === 'domain'
+  const appNeverDependsOnAdapters = !appRule.allowedDependencies.includes('adapters')
 
-  const passed = domainZeroOuterDeps && portsOnlyDependsOnDomain && appNeverDependsOnAdapters;
+  const passed = domainZeroOuterDeps && portsOnlyDependsOnDomain && appNeverDependsOnAdapters
 
   return {
     passed,
-    layersVerified: HEXAGONAL_ARCHITECTURE_MANIFEST.length,
-    modelsCount: 6,
+    layersVerified: HexagonalArchitectureManifest.length,
+    modelsCount: 10,
     inboundPortsCount: 3,
     outboundPortsCount: 3,
     summary: passed
       ? 'Hexagonal 4-Layer Dependency Inversion Verified (domain ← ports ← application ← adapters)'
       : 'Hexagonal Architecture Boundary Violation Detected',
-  };
+  }
 }

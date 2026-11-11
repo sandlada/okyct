@@ -1,7 +1,7 @@
 
 import { hexToOkyct, okyctToHex, findMaxChromaForTone } from '../domain/index.ts'
 import {
-  STANDARD_TONES,
+  StandardTones,
   type StandardTone,
   type ITonalPalettePort,
 } from '../ports/inbound/palette-generation.port.ts'
@@ -53,7 +53,7 @@ export class TonalPalette implements ITonalPalettePort {
 
   getAllTones(): Record<StandardTone, string> {
     const result: Partial<Record<StandardTone, string>> = {}
-    for (const t of STANDARD_TONES) {
+    for (const t of StandardTones) {
       result[t] = this.tone(t)
     }
     return result as Record<StandardTone, string>

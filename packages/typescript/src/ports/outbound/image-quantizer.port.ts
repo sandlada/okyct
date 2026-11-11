@@ -4,21 +4,21 @@
  * 约束：仅依赖 domain/models，零 DOM 依赖
  */
 
-import type { OKYCT } from '../../domain/models/index.ts';
+import type { OKYCT } from '../../domain/models/index.ts'
 
 export interface ExtractedSeedColor {
-  hex: string;
-  okyct: OKYCT;
-  populationRatio: number; // 面积占比 [0, 1]
-  salienceScore: number;   // 综合显著性得分
+  hex: string
+  okyct: OKYCT
+  populationRatio: number
+  salienceScore: number
 }
 
 export interface ImagePixelBuffer {
-  readonly data: Uint8ClampedArray | readonly number[];
-  readonly width?: number;
-  readonly height?: number;
+  readonly data: Uint8ClampedArray | readonly number[]
+  readonly width?: number
+  readonly height?: number
 }
 
 export interface IImageQuantizerPort {
-  extractSeedsFromImageData(imageData: ImagePixelBuffer, maxColors?: number): ExtractedSeedColor[];
+  extractSeedsFromImageData(imageData: ImagePixelBuffer, maxColors?: number): ExtractedSeedColor[]
 }

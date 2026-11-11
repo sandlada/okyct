@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
-import { EMISSIVE_PANEL_SPECS } from '../../color/emissive.ts'
+import { EmissivePanelSpecs } from '../../color/emissive.ts'
 import { buildDynamicScheme } from '../../color/scheme.ts'
 import type { RootState } from '../../app/store.ts'
 import { selectPalettes, selectScheme } from '../studio/selectors.ts'
@@ -35,8 +35,8 @@ export const selectOledScreen = createSelector(
       isDark: mode === 'dark',
       running: oled.running,
       speedId: oled.speedId,
-      oledRiseMs: EMISSIVE_PANEL_SPECS['oled-true-black'].smearRiseTimeMs,
-      amoledRiseMs: EMISSIVE_PANEL_SPECS['amoled-anti-smear'].smearRiseTimeMs,
+      oledRiseMs: EmissivePanelSpecs['oled-true-black'].smearRiseTimeMs,
+      amoledRiseMs: EmissivePanelSpecs['amoled-anti-smear'].smearRiseTimeMs,
       oledColors: paint('oled-true-black'),
       amoledColors: paint('amoled-anti-smear'),
     }

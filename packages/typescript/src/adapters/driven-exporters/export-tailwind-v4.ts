@@ -1,9 +1,14 @@
 
-import { SystemColorTokens, type DynamicSchemeColors, type ResolvedCustomColor } from '../../ports/index.ts'
+import {
+  SystemColorTokens,
+  TailwindFallbackModes,
+  type TailwindFallbackMode,
+  type DynamicSchemeColors,
+  type ResolvedCustomColor,
+} from '../../ports/index.ts'
 import { kebabCase } from './internal/kebab-case.ts'
 
-export const TailwindFallbackModes = ['none', 'light-dark'] as const
-export type TailwindFallbackMode = (typeof TailwindFallbackModes)[number]
+export { TailwindFallbackModes, type TailwindFallbackMode }
 
 const colorVar = (token: string, light: string, dark: string, fallback: TailwindFallbackMode) => {
   if (fallback === 'light-dark') {
