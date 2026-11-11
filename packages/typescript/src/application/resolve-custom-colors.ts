@@ -1,5 +1,5 @@
 
-import { getContrastRatio, solveTonesForContrast, hexToOkyct } from '../domain/index.ts'
+import { getContrastRatio, solveTonesForContrast, hexToOkyct, shortestHueDelta } from '../domain/index.ts'
 import type { CustomColorConfig, ResolvedCustomColor } from '../ports/inbound/scheme-building.port.ts'
 import { TonalPalette } from './tonal-palette.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
@@ -19,8 +19,7 @@ export function resolveCustomColors(
 
     const origOkyct = hexToOkyct(cfg.sourceHex)
     const harmOkyct = hexToOkyct(effectiveHex)
-    let hueDiff = Math.abs(harmOkyct.h - origOkyct.h) % 360
-    if (hueDiff > 180) hueDiff = 360 - hueDiff
+    const hueDiff = shortestHueDelta(harmOkyct.h, origOkyct.h)
 
     const palette = TonalPalette.fromHex(effectiveHex)
 

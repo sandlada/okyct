@@ -1,5 +1,5 @@
 
-import { rgbToOkyct, okyctToHex } from '../../domain/index.ts'
+import { rgbToOkyct, okyctToHex, shortestHueDelta } from '../../domain/index.ts'
 import type { ExtractedSeedColor, ImagePixelBuffer } from '../../ports/outbound/image-quantizer.port.ts'
 
 export function extractSeedsFromImageData(
@@ -11,11 +11,13 @@ export function extractSeedsFromImageData(
   const chromaSum = new Float64Array(360)
   const toneSum = new Float64Array(360)
 
+  let totalOpaquePixels = 0
   let validPixels = 0
 
   for (let i = 0; i < data.length; i += 4) {
     const a = data[i + 3]
     if (a < 128) continue
+    totalOpaquePixels++
 
     const r = data[i] / 255
     const g = data[i + 1] / 255
@@ -34,7 +36,7 @@ export function extractSeedsFromImageData(
     validPixels++
   }
 
-  if (validPixels === 0) {
+  if (validPixels === 0 || totalOpaquePixels === 0) {
     return [
       {
         hex: '#1A73E8',
@@ -51,6 +53,7 @@ export function extractSeedsFromImageData(
     if (hueBins[h] === 0) continue
 
     let neighborPop = 0
+    let rawClusterPop = 0
     let weightedChroma = 0
     let weightedTone = 0
 
@@ -58,17 +61,18 @@ export function extractSeedsFromImageData(
       const idx = (h + offset + 360) % 360
       const weight = 1 - Math.abs(offset) / 9
       neighborPop += hueBins[idx] * weight
+      rawClusterPop += hueBins[idx]
       weightedChroma += chromaSum[idx] * weight
       weightedTone += toneSum[idx] * weight
     }
 
     const avgC = weightedChroma / neighborPop
     const avgT = weightedTone / neighborPop
-    const popRatio = neighborPop / validPixels
+    const popRatio = rawClusterPop / totalOpaquePixels
 
     const chromaFactor = Math.pow(Math.min(0.28, avgC) / 0.14, 1.15)
     const tonePenalty = avgT < 20 || avgT > 85 ? 0.65 : 1.0
-    const score = popRatio * 100 * chromaFactor * tonePenalty
+    const score = (neighborPop / validPixels) * 100 * chromaFactor * tonePenalty
 
     scores.push({ hue: h, score, avgC, avgT, popRatio })
   }
@@ -77,11 +81,9 @@ export function extractSeedsFromImageData(
 
   const selected: ExtractedSeedColor[] = []
   for (const candidate of scores) {
-    const isTooClose = selected.some((existing) => {
-      let diff = Math.abs(existing.okyct.h - candidate.hue) % 360
-      if (diff > 180) diff = 360 - diff
-      return diff < 28
-    })
+    const isTooClose = selected.some(
+      (existing) => shortestHueDelta(existing.okyct.h, candidate.hue) < 28
+    )
 
     if (!isTooClose) {
       const clampedT = Math.max(35, Math.min(72, candidate.avgT))

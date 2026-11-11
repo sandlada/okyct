@@ -2,11 +2,11 @@
 import { hexToRgb, srgbToLinear } from '../../domain/index.ts'
 import type { ColorEmissiveTelemetry } from '../../ports/outbound/display-physics.port.ts'
 
-const WEIGHT_R = 1.45
-const WEIGHT_G = 1.00
-const WEIGHT_B = 2.40
-const WEIGHT_SUM = WEIGHT_R + WEIGHT_G + WEIGHT_B
-const FULL_WHITE_OLED_MW = 820
+const WeightR = 1.05
+const WeightG = 0.85
+const WeightB = 2.40
+const WeightSum = WeightR + WeightG + WeightB
+const FullWhiteOledMw = 1000
 
 export function computeColorEmissiveTelemetry(hex: string): ColorEmissiveTelemetry {
   const rgb = hexToRgb(hex)
@@ -21,9 +21,9 @@ export function computeColorEmissiveTelemetry(hex: string): ColorEmissiveTelemet
   const gDrive = isPixelOff ? 0 : Math.pow(gLin, gammaDrive)
   const bDrive = isPixelOff ? 0 : Math.pow(bLin, gammaDrive)
 
-  const rMw = (rDrive * WEIGHT_R / WEIGHT_SUM) * FULL_WHITE_OLED_MW
-  const gMw = (gDrive * WEIGHT_G / WEIGHT_SUM) * FULL_WHITE_OLED_MW
-  const bMw = (bDrive * WEIGHT_B / WEIGHT_SUM) * FULL_WHITE_OLED_MW
+  const rMw = (rDrive * WeightR / WeightSum) * FullWhiteOledMw
+  const gMw = (gDrive * WeightG / WeightSum) * FullWhiteOledMw
+  const bMw = (bDrive * WeightB / WeightSum) * FullWhiteOledMw
 
   const powerMw = isPixelOff ? 0 : rMw + gMw + bMw
   const aplPercent = ((rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114) * 100)
