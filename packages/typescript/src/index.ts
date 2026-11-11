@@ -8,10 +8,9 @@
  * - Layer 4: adapters/     (OLED物理面板、多格式导出、图像量化、CAM16评测、FP组合子)
  */
 
-export * from './domain/index.ts';
-export * from './ports/index.ts';
-export * from './application/index.ts';
-export { type PaletteSet } from './application/index.ts';
-export * from './adapters/index.ts';
-export * from './architecture-guard.ts';
-
+export * from './domain/index.ts'
+export * from './ports/index.ts'
+export * from './application/index.ts'
+export { type PaletteSet } from './application/index.ts'
+export * from './adapters/index.ts'
+export * from './architecture-guard.ts'
