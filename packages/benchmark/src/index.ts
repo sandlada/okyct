@@ -7,3 +7,4 @@
 export * from './types.ts'
 export * from './runners.ts'
 export * from './cvd.ts'
+export * from './benchmark-matrix.ts'

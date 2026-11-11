@@ -6,6 +6,7 @@ import {
   type RampAnalysisResult,
 } from '../utils/drift-analyzer.ts'
 import type { SpectrumSweepPoint } from '@sandlada/benchmark'
+import { BenchmarkMatrixPanel } from './BenchmarkMatrixPanel.tsx'
 
 export interface HueDriftViewProps {
   seedHex: string
@@ -83,6 +84,8 @@ export const HueDriftView: React.FC<HueDriftViewProps> = ({
             <span className="font-mono text-xs text-neutral-300 font-bold">{rampAnalysis.sourceHex}</span>
           </div>
         </div>
+
+        <BenchmarkMatrixPanel summaries={rampAnalysis.summaries} />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {rampAnalysis.summaries.map((summary) => (
