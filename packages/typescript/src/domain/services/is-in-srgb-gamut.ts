@@ -25,7 +25,7 @@ export function isInSrgbGamut(h: number, c: number, t: number): GamutCheckResult
     b: linearToSrgb(linear.b),
   }
 
-  const eps = 1e-6
+  const eps = 1e-5
   const inGamut = (
     srgb.r >= -eps && srgb.r <= 1.0 + eps &&
     srgb.g >= -eps && srgb.g <= 1.0 + eps &&

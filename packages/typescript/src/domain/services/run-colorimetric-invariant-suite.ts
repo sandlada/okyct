@@ -9,6 +9,7 @@ import { hexToOkyct } from './hex-to-okyct.ts'
 import { findMaxChromaForTone } from './find-max-chroma-for-tone.ts'
 import { getContrastRatio } from './get-contrast-ratio.ts'
 import { solveTonesForContrast } from './solve-tones-for-contrast.ts'
+import { shortestHueDelta } from './shortest-hue-delta.ts'
 
 const HexRoundTripSeeds = ['#2563EB', '#0000FF', '#FF0000', '#FFD600', '#FF00FF'] as const
 const HexRoundTripTones = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95] as const
@@ -16,11 +17,6 @@ const HexHueDriftMidToneCapDeg = 0.5
 const HexHueDriftHighlightCapDeg = 0.5
 const HexToneDeltaCap = 0.35
 const HexMinChromaForHue = 0.01
-
-function shortestHueDeltaDeg(h1: number, h2: number): number {
-  const diff = Math.abs(h1 - h2) % 360
-  return diff > 180 ? 360 - diff : diff
-}
 
 function tonalStopHex(sourceHue: number, targetChroma: number, tone: number): string {
   let effectiveChroma = targetChroma
@@ -77,8 +73,7 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
       }
       const backOkyct = rgbToOkyct(rgb)
       if (backOkyct.c > 0.01) {
-        let hDiff = Math.abs(backOkyct.h - h) % 360
-        if (hDiff > 180) hDiff = 360 - hDiff
+        const hDiff = shortestHueDelta(backOkyct.h, h)
         if (hDiff > maxHueDriftDeg) maxHueDriftDeg = hDiff
       }
       gamutSamples++
@@ -99,7 +94,7 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
       if (toneDelta > HexToneDeltaCap) hexRoundTripViolations++
 
       if (measured.c > HexMinChromaForHue) {
-        const hDrift = shortestHueDeltaDeg(measured.h, source.h)
+        const hDrift = shortestHueDelta(measured.h, source.h)
         if (hDrift > maxHexHueDriftDeg) maxHexHueDriftDeg = hDrift
         const cap = tone >= 90 ? HexHueDriftHighlightCapDeg : HexHueDriftMidToneCapDeg
         if (hDrift > cap) hexRoundTripViolations++
@@ -114,12 +109,12 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
     const solved = solveTonesForContrast(bgT, 4.5)
     if (solved.darkForegroundTone !== null) {
       const ratio = getContrastRatio(bgT, solved.darkForegroundTone)
-      if (ratio < 4.49) contrastViolations++
+      if (ratio < 4.5) contrastViolations++
       contrastSamples++
     }
     if (solved.lightForegroundTone !== null) {
       const ratio = getContrastRatio(bgT, solved.lightForegroundTone)
-      if (ratio < 4.49) contrastViolations++
+      if (ratio < 4.5) contrastViolations++
       contrastSamples++
     }
   }
@@ -129,11 +124,11 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
       id: 'round-trip',
       name: 'sRGB ↔ OKYCT 正逆向往返还原精度',
       formula: 'max |RGB - okyctToRgb(rgbToOkyct(RGB))|',
-      passed: maxRoundTripError < 5e-3,
+      passed: maxRoundTripError < 1e-4,
       measuredValue: maxRoundTripError.toExponential(2),
-      threshold: '< 5.00e-3',
+      threshold: '< 1.00e-4',
       samplesChecked: roundTripSamples,
-      details: '验证 7 次牛顿切线迭代求解 dY/dL 在完整 sRGB 立方体网格上的双向无损还原能力。',
+      details: '验证单变量牛顿切线迭代求解 dY/dL 在完整 sRGB 立方体网格上的双向无损还原能力。',
     },
     {
       id: 'tone-bijection',

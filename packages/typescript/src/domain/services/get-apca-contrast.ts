@@ -1,24 +1,33 @@
 
 import { toneToY } from './tone-to-y.ts'
 
+const ApcaBlkThrs = 0.022
+const ApcaBlkClmp = 1.414
+const ApcaDeltaYMin = 0.0005
+const ApcaLoClip = 0.1
+const ApcaLoConOffset = 0.027
+const ApcaScale = 1.14
+
 export function getApcaContrast(txtTone: number, bgTone: number): number {
-  const txtY = toneToY(txtTone)
-  const bgY = toneToY(bgTone)
+  let txtY = toneToY(txtTone)
+  let bgY = toneToY(bgTone)
 
-  const deltaY = txtY - bgY
-  const absDelta = Math.abs(deltaY)
-  if (absDelta < 0.0005) return 0
-
-  let sapc = 0
-  if (bgY > txtY) {
-    const yBgExp = Math.pow(bgY, 0.56)
-    const yTxtExp = Math.pow(txtY, 0.57)
-    sapc = (yBgExp - yTxtExp) * 1.14
-  } else {
-    const yBgExp = Math.pow(bgY, 0.65)
-    const yTxtExp = Math.pow(txtY, 0.62)
-    sapc = (yBgExp - yTxtExp) * 1.14
+  if (txtY < ApcaBlkThrs) {
+    txtY += Math.pow(ApcaBlkThrs - txtY, ApcaBlkClmp)
+  }
+  if (bgY < ApcaBlkThrs) {
+    bgY += Math.pow(ApcaBlkThrs - bgY, ApcaBlkClmp)
   }
 
-  return Math.round(sapc * 100)
+  if (Math.abs(bgY - txtY) < ApcaDeltaYMin) return 0
+
+  if (bgY > txtY) {
+    const sapc = (Math.pow(bgY, 0.56) - Math.pow(txtY, 0.57)) * ApcaScale
+    if (sapc < ApcaLoClip) return 0
+    return Math.round((sapc - ApcaLoConOffset) * 100)
+  } else {
+    const sapc = (Math.pow(bgY, 0.65) - Math.pow(txtY, 0.62)) * ApcaScale
+    if (sapc > -ApcaLoClip) return 0
+    return Math.round((sapc + ApcaLoConOffset) * 100)
+  }
 }

@@ -2,13 +2,19 @@
 import type { RGB } from '../models/index.ts'
 
 export function hexToRgb(hex: string): RGB {
-  let cleaned = hex.replace(/^#/, '').trim()
+  if (typeof hex !== 'string') {
+    throw new Error(`Invalid hex color input: expected string, received ${typeof hex}`)
+  }
+
+  let cleaned = hex.trim().replace(/^#/, '')
   if (cleaned.length === 3) {
-    cleaned = cleaned.split('').map(ch => ch + ch).join('')
+    cleaned = cleaned.split('').map((ch) => ch + ch).join('')
   }
-  if (cleaned.length !== 6) {
-    return { r: 0.25, g: 0.4, b: 0.9 }
+
+  if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) {
+    throw new Error(`Invalid hex color format: "${hex}". Expected #RGB or #RRGGBB hexadecimal string.`)
   }
+
   const intVal = parseInt(cleaned, 16)
   return {
     r: ((intVal >> 16) & 255) / 255,

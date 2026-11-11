@@ -3,20 +3,33 @@ import type { ContrastSolution } from '../models/index.ts'
 import { toneToY } from './tone-to-y.ts'
 import { yToTone } from './y-to-tone.ts'
 
+const QuantizationToneMargin = 0.35
+
 export function solveTonesForContrast(
   bgTone: number,
   targetRatio: number
 ): ContrastSolution {
+  if (!Number.isFinite(bgTone) || bgTone < 0 || bgTone > 100) {
+    throw new Error(`Invalid bgTone: ${bgTone}. Expected a finite number in [0, 100].`)
+  }
+  if (!Number.isFinite(targetRatio) || targetRatio < 1 || targetRatio > 21) {
+    throw new Error(`Invalid targetRatio: ${targetRatio}. Expected a finite number in [1, 21].`)
+  }
+
   const bgY = toneToY(bgTone)
 
   const darkTargetY = (bgY + 0.05) / targetRatio - 0.05
-  const darkTone = darkTargetY >= 0 ? yToTone(darkTargetY) : null
+  const darkTone = darkTargetY >= 0
+    ? Math.max(0, Math.floor(yToTone(darkTargetY) - QuantizationToneMargin))
+    : null
 
   const lightTargetY = targetRatio * (bgY + 0.05) - 0.05
-  const lightTone = lightTargetY <= 1.0 ? yToTone(lightTargetY) : null
+  const lightTone = lightTargetY <= 1.0
+    ? Math.min(100, Math.ceil(yToTone(lightTargetY) + QuantizationToneMargin))
+    : null
 
   return {
-    darkForegroundTone: darkTone !== null ? Math.floor(darkTone) : null,
-    lightForegroundTone: lightTone !== null ? Math.ceil(lightTone) : null,
+    darkForegroundTone: darkTone,
+    lightForegroundTone: lightTone,
   }
 }

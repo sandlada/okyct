@@ -6,9 +6,9 @@ export function xyzToOklab(xyz: XYZ): OKLab {
   const m = 0.0329845436 * xyz.x + 0.9293118715 * xyz.y + 0.0361456387 * xyz.z
   const s = 0.0482003018 * xyz.x + 0.2643662691 * xyz.y + 0.6338517070 * xyz.z
 
-  const l_ = Math.cbrt(Math.max(0, l))
-  const m_ = Math.cbrt(Math.max(0, m))
-  const s_ = Math.cbrt(Math.max(0, s))
+  const l_ = Math.cbrt(l)
+  const m_ = Math.cbrt(m)
+  const s_ = Math.cbrt(s)
 
   return {
     L: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,

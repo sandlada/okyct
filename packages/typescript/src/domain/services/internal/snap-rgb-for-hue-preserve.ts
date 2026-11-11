@@ -7,15 +7,11 @@ import type { RGB } from '../../models/index.ts'
 import { hexToRgb } from '../hex-to-rgb.ts'
 import { rgbToOkyct } from '../rgb-to-okyct.ts'
 import { rgbToHex } from '../rgb-to-hex.ts'
+import { shortestHueDelta } from '../shortest-hue-delta.ts'
 
 const HueSnapChannelRadius = 1
 const HueSnapMaxToneDelta = 0.35
 const HueSnapMinChromaForDrift = 0.01
-
-function shortestHueDeltaDeg(h1: number, h2: number): number {
-  const diff = Math.abs(h1 - h2) % 360
-  return diff > 180 ? 360 - diff : diff
-}
 
 function rgbFromBytes(r: number, g: number, b: number): RGB {
   return { r: r / 255, g: g / 255, b: b / 255 }
@@ -39,7 +35,7 @@ export function snapRgbToHexForHuePreserve(
   let bestHex = baselineHex
   let bestDrift =
     baselineOkyct.c > HueSnapMinChromaForDrift
-      ? shortestHueDeltaDeg(baselineOkyct.h, referenceHueDeg)
+      ? shortestHueDelta(baselineOkyct.h, referenceHueDeg)
       : 0
   let bestToneErr = Math.abs(baselineOkyct.t - nominalTone)
 
@@ -62,7 +58,7 @@ export function snapRgbToHexForHuePreserve(
 
         const drift =
           candidate.c > HueSnapMinChromaForDrift
-            ? shortestHueDeltaDeg(candidate.h, referenceHueDeg)
+            ? shortestHueDelta(candidate.h, referenceHueDeg)
             : 0
 
         const better =
