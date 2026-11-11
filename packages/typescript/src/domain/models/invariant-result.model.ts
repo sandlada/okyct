@@ -5,12 +5,12 @@
  */
 
 export interface InvariantTestResult {
-  id: string;
-  name: string;
-  formula: string;
-  passed: boolean;
-  measuredValue: string;
-  threshold: string;
-  samplesChecked: number;
-  details: string;
+  id: string
+  name: string
+  formula: string
+  passed: boolean
+  measuredValue: string
+  threshold: string
+  samplesChecked: number
+  details: string
 }

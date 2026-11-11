@@ -5,6 +5,6 @@
  */
 
 export interface ContrastSolution {
-  darkForegroundTone: number | null;
-  lightForegroundTone: number | null;
+  darkForegroundTone: number | null
+  lightForegroundTone: number | null
 }

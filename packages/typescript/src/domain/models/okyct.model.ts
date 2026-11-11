@@ -5,7 +5,7 @@
  */
 
 export interface OKYCT {
-  h: number; // 色相 Hue: [0, 360)
-  c: number; // 色度 Chroma: [0, ~0.4]
-  t: number; // 视明度 Tone: [0, 100] (对应 CIE L* / Y 相对亮度)
+  h: number
+  c: number
+  t: number
 }
