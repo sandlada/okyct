@@ -3,7 +3,7 @@ import {
   type PaletteVariant,
   type EmissivePanelType,
   createPalettesFromSource,
-  buildDynamicSchemeWithPhysics,
+  buildDynamicScheme,
 } from '@sandlada/okyct'
 import { Controls } from './components/Controls.tsx'
 import { TransparencyView } from './components/TransparencyView.tsx'
@@ -39,11 +39,11 @@ export const App: React.FC = () => {
 
   // 3. 分别求解浅色与深色方案
   const lightScheme = useMemo(() => {
-    return buildDynamicSchemeWithPhysics(palettes, false, contrastLevel, { profile: panelType })
+    return buildDynamicScheme(palettes, false, contrastLevel, { profile: panelType })
   }, [palettes, contrastLevel, panelType])
 
   const darkScheme = useMemo(() => {
-    return buildDynamicSchemeWithPhysics(palettes, true, contrastLevel, { profile: panelType })
+    return buildDynamicScheme(palettes, true, contrastLevel, { profile: panelType })
   }, [palettes, contrastLevel, panelType])
 
   // 当前激活方案（根据单选 light / dark 决定）

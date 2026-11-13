@@ -1,16 +1,14 @@
 /**
- * OKYCT 语义角色：原生 buildDynamicSchemeWithPhysics
+ * OKYCT 语义角色：原生 createTheme / buildDynamicScheme
  */
 
 import {
-  buildDynamicSchemeWithPhysics,
-  createPalettesFromSource,
+  createTheme,
   type DynamicSchemeColors,
   type SystemColorToken,
 } from '@sandlada/okyct'
 import {
   SemanticContrastRoleTokens,
-  type SemanticContrastRoleToken,
   type SemanticRoleHexMap,
 } from '../semantic-role-contract.ts'
 
@@ -26,11 +24,9 @@ export function generateOkyctSemanticRoles(seedHex: string): {
   light: SemanticRoleHexMap
   dark: SemanticRoleHexMap
 } {
-  const palettes = createPalettesFromSource(seedHex, 'tonalSpot', true)
-  const lightScheme = buildDynamicSchemeWithPhysics(palettes, false, 0, {})
-  const darkScheme = buildDynamicSchemeWithPhysics(palettes, true, 0, {})
+  const theme = createTheme(seedHex)
   return {
-    light: pickRoleHexMap(lightScheme),
-    dark: pickRoleHexMap(darkScheme),
+    light: pickRoleHexMap(theme.schemes.light),
+    dark: pickRoleHexMap(theme.schemes.dark),
   }
 }

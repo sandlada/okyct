@@ -139,47 +139,40 @@ function quotedKeys(raw: string): string {
 }
 
 export function renderPipelineSource(steps: readonly PipelineStep[]): string {
-  const stepLines = steps.filter((step) => step.enabled).map((step) => {
+  const stepCalls = steps.filter((step) => step.enabled).map((step) => {
     switch (step.op) {
       case 'pickTokens':
-        return `  pickTokens([${quotedKeys(step.keysArg)}])`
+        return `pickTokens([${quotedKeys(step.keysArg)}])`
       case 'omitTokens':
-        return `  omitTokens([${quotedKeys(step.keysArg)}])`
+        return `omitTokens([${quotedKeys(step.keysArg)}])`
       case 'renameCase':
-        return `  renameCase('${step.caseArg}')`
+        return `renameCase('${step.caseArg}')`
       case 'withPrefix':
-        return `  withPrefix('${step.prefixArg}')`
+        return `withPrefix('${step.prefixArg}')`
       case 'mapWithAlpha':
-        return `  mapTokens(withAlpha(${step.alphaArg}))`
+        return `mapTokens(withAlpha(${step.alphaArg}))`
       case 'nestTokens':
-        return `  nestTokens('${step.separatorArg || '-'}')`
+        return `nestTokens('${step.separatorArg || '-'}')`
       case 'toCssRuleBlock':
-        return `  toCssRuleBlock('${step.selectorArg || ':root'}')`
+        return `toCssRuleBlock('${step.selectorArg || ':root'}')`
       case 'validateContract':
-        return `  validateContract([${quotedKeys(step.keysArg)}])`
+        return `validateContract([${quotedKeys(step.keysArg)}])`
       case 'optimizeForOled':
-        return `  optimizeForOled({ profile: '${step.oledProfileArg || 'amoled-anti-smear'}', burnInGuard: ${step.burnInGuardArg ?? true}, antiFringing: true })`
+        return `optimizeForOled({ profile: '${step.oledProfileArg || 'amoled-anti-smear'}', burnInGuard: ${step.burnInGuardArg ?? true}, antiFringing: true })`
       case 'auditOledPower':
-        return `  auditOledPower({ maxAvgPowerMw: 320, maxBlueStress: 65 })`
+        return `auditOledPower({ maxAvgPowerMw: 320, maxBlueStress: 65 })`
       default: {
         const unknownOp: never = step.op
         throw new Error(`Unknown pipeline operator: ${String(unknownOp)}`)
       }
     }
   })
-  const body = stepLines.join(',\n')
-  return `import { pipe, flow, pickTokens, omitTokens, renameCase, withPrefix, mapTokens, withAlpha, nestTokens, toCssRuleBlock, validateContract, optimizeForOled, auditOledPower } from './color/fp';
 
-// 1. Point-Free 左结合函数组合子 flow(...) — 严格遵循 func(args)(dataLast)
-export const transformThemeTokens = flow(
-${body}
-);
+  const nestedExpr = stepCalls.reduce((acc, call) => `${call}(\n  ${acc.replace(/\n/g, '\n  ')}\n)`, 'themeTokens')
 
-// 2. 立即求值管道 pipe(dataFirst, ...curriedOps)
-const result = pipe(
-  themeTokens,
-${body}
-);`
+  return `import { pickTokens, omitTokens, renameCase, withPrefix, mapTokens, withAlpha, nestTokens, toCssRuleBlock, validateContract, optimizeForOled, auditOledPower } from './color/fp'
+
+const result = ${nestedExpr}`
 }
 
 export const DefaultPipelineSteps: PipelineStep[] = [

@@ -15,7 +15,7 @@ import {
   runColorimetricInvariantSuite,
   type InvariantTestResult,
   createPalettesFromSource,
-  buildDynamicSchemeWithPhysics,
+  buildDynamicScheme,
   auditSchemeContrast,
   SystemColorTokens,
   type SystemColorToken,

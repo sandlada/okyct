@@ -71,7 +71,7 @@ const EnglishCopy = {
   snapshot: 'Snapshot',
   stepSnapshot: (index: number) => `Step #${index} snapshot`,
   evalOutput: 'Evaluation output',
-  tsSource: 'TS source (pipe)',
+  tsSource: 'TS source',
   backToFinal: 'Back to final output',
   copied: 'Copied',
   copyContent: 'Copy content',
@@ -145,7 +145,7 @@ const TraditionalCopy: typeof EnglishCopy = {
   snapshot: '快照',
   stepSnapshot: (index: number) => `步驟 #${index} 快照`,
   evalOutput: '求值輸出',
-  tsSource: 'TS 原始碼（pipe）',
+  tsSource: 'TS 原始碼',
   backToFinal: '返回最終輸出',
   copied: '已複製',
   copyContent: '複製內容',
@@ -640,7 +640,7 @@ export function FpPlaygroundView() {
             </div>
           </div>
 
-          {/* 右侧：实时求值结果与生成的 pipe/flow 代码视图 */}
+          {/* 右侧：实时求值结果与生成的 TS 代码视图 */}
           <div className="flex flex-col gap-3 min-w-0 lg:sticky lg:top-4">
             <div className="flex items-center justify-between gap-2">
               <Tabs

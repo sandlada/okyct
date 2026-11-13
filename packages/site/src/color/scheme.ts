@@ -6,18 +6,20 @@
 export {
   SystemColorTokens,
   type SystemColorToken,
-  type SchemeRoleKind,
-  type SchemeTokenRoleBinding,
-  SchemeTokenRoleMap,
   type DynamicSchemeColors,
   type CustomColorConfig,
   type ResolvedCustomColor,
   type ContrastAuditItem,
   type ThemeMode,
   type EmissiveSchemeOptions,
-  buildDynamicSchemeWithPhysics,
   resolveCustomColors,
   auditSchemeContrast,
 } from '@sandlada/okyct/application'
 
-export { buildDynamicScheme } from '@sandlada/okyct/adapters'
+export {
+  buildDynamicScheme,
+  createTheme,
+  type BuildSchemeOptions,
+  type CreateThemeOptions,
+  type OkyctTheme,
+} from '@sandlada/okyct/adapters'
