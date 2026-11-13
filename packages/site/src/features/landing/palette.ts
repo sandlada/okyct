@@ -94,7 +94,10 @@ export function buildSpectrumRing(seedHex: string): readonly string[] {
 }
 
 export function buildLandingPalette(seedHex: string): LandingPalette {
-  const palettes = createPalettesFromSource(seedHex, 'tonalSpot', true)
+  const palettes = createPalettesFromSource(seedHex, {
+    variant: 'tonalSpot',
+    harmonizeSemantics: true,
+  })
 
   const rows: LandingPaletteRow[] = LandingToneRowKeys.map((key) => ({
     key,
@@ -109,8 +112,8 @@ export function buildLandingPalette(seedHex: string): LandingPalette {
     seedHex,
     rows,
     schemes: {
-      light: buildDynamicScheme(palettes, false),
-      dark: buildDynamicScheme(palettes, true),
+      light: buildDynamicScheme(palettes, { mode: 'light' }),
+      dark: buildDynamicScheme(palettes, { mode: 'dark' }),
     },
     accents: {
       primary: palettes.primary.tone(58),

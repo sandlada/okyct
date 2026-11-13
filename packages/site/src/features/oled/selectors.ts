@@ -23,7 +23,11 @@ export const selectOledScreen = createSelector(
   ],
   (palettes, scheme, contrast, burnInGuard, antiFringing, mode, oled) => {
     const paint = (profile: 'oled-true-black' | 'amoled-anti-smear'): ScrollColumnColors => {
-      const column = buildDynamicScheme(palettes, true, contrast, { profile, burnInGuard, antiFringing })
+      const column = buildDynamicScheme(palettes, {
+        mode: 'dark',
+        contrastLevel: contrast,
+        emissive: { profile, burnInGuard, antiFringing },
+      })
       return {
         bg: column.surface,
         row: column.surfaceContainerHigh,

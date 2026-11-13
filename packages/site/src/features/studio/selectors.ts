@@ -35,7 +35,8 @@ const selectLiveContrast = (state: RootState) => state.studio.contrastLevel
 
 export const selectPalettes = createSelector(
   [selectSettledHex, selectVariant, selectHarmonize],
-  (hex, variant, harmonize) => createPalettesFromSource(hex, variant, harmonize),
+  (hex, variant, harmonize) =>
+    createPalettesFromSource(hex, { variant, harmonizeSemantics: harmonize }),
 )
 
 const selectEmissiveOpts = createSelector(
@@ -46,27 +47,31 @@ const selectEmissiveOpts = createSelector(
 export const selectScheme = createSelector(
   [selectPalettes, selectThemeMode, selectSettledContrast, selectEmissiveOpts],
   (palettes, mode, contrast, opts): DynamicSchemeColors =>
-    buildDynamicScheme(palettes, mode === 'dark', contrast, opts),
+    buildDynamicScheme(palettes, { mode, contrastLevel: contrast, emissive: opts }),
 )
 
 export const selectLightScheme = createSelector(
   [selectPalettes, selectSettledContrast, selectEmissiveOpts],
-  (palettes, contrast, opts) => buildDynamicScheme(palettes, false, contrast, opts),
+  (palettes, contrast, opts) =>
+    buildDynamicScheme(palettes, { mode: 'light', contrastLevel: contrast, emissive: opts }),
 )
 
 export const selectDarkScheme = createSelector(
   [selectPalettes, selectSettledContrast, selectEmissiveOpts],
-  (palettes, contrast, opts) => buildDynamicScheme(palettes, true, contrast, opts),
+  (palettes, contrast, opts) =>
+    buildDynamicScheme(palettes, { mode: 'dark', contrastLevel: contrast, emissive: opts }),
 )
 
 export const selectCustomLight = createSelector(
   [selectCustomColors, selectSettledHex, selectSettledContrast],
-  (colors, hex, contrast): ResolvedCustomColor[] => resolveCustomColors(colors, hex, false, contrast),
+  (colors, hex, contrast): ResolvedCustomColor[] =>
+    resolveCustomColors(colors, hex, { mode: 'light', contrastLevel: contrast }),
 )
 
 export const selectCustomDark = createSelector(
   [selectCustomColors, selectSettledHex, selectSettledContrast],
-  (colors, hex, contrast) => resolveCustomColors(colors, hex, true, contrast),
+  (colors, hex, contrast) =>
+    resolveCustomColors(colors, hex, { mode: 'dark', contrastLevel: contrast }),
 )
 
 export const selectSchemePending = createSelector(

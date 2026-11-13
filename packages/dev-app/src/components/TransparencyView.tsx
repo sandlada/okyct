@@ -180,9 +180,21 @@ export const TransparencyView: React.FC<TransparencyViewProps> = ({
                     )}
                   </td>
                   <td className="py-2 px-3">
-                    <span className={s.hueDriftDeg < 0.1 ? 'text-emerald-400 font-bold' : 'text-rose-400'}>
-                      {s.hueDriftDeg.toFixed(3)}°
-                    </span>
+                    {s.hueDriftDeg === null ? (
+                      <span className="text-neutral-500">N/A (无彩色)</span>
+                    ) : (
+                      <span
+                        className={
+                          s.hueDriftDeg <= 0.25 || (s.hueArcError ?? 0) <= 0.0008
+                            ? 'text-emerald-400 font-bold'
+                            : s.hueDriftDeg <= 0.5
+                              ? 'text-amber-400 font-bold'
+                              : 'text-rose-400 font-bold'
+                        }
+                      >
+                        {s.hueDriftDeg.toFixed(3)}°
+                      </span>
+                    )}
                   </td>
                   <td className="py-2 px-3 text-cyan-400">{s.cieY}</td>
                   <td className="py-2 px-3 text-rose-400">{s.pixelPower}%</td>

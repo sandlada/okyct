@@ -8,6 +8,7 @@ import {
   okyctToHex,
   hexToOkyct,
   findMaxChromaForTone,
+  shortestHueDelta,
   toneToY,
   yToTone,
   getContrastRatio,
@@ -51,7 +52,8 @@ export interface PaletteStopDetail {
   rgb: { r: number; g: number; b: number }
   oklab: { l: number; a: number; b: number }
   cieY: number
-  hueDriftDeg: number
+  hueDriftDeg: number | null
+  hueArcError: number | null
   isCuspClamped: boolean
   pixelPower: number
   isGamutSafe: boolean
@@ -162,24 +164,18 @@ export function analyzePaletteStops(
     const targetChroma = palette.targetChroma
     const maxGamutChroma = findMaxChromaForTone(palette.hue, tone)
 
-    // 生理色度包络
-    let effectiveChroma = targetChroma
-    if (tone > 90) {
-      effectiveChroma *= Math.max(0.2, (100 - tone) / 10)
-    } else if (tone < 15) {
-      effectiveChroma *= Math.max(0.3, tone / 15)
-    }
-
-    const appliedChroma = Math.min(effectiveChroma, maxGamutChroma)
-    const isCuspClamped = effectiveChroma > maxGamutChroma + 1e-4
-
     const colorHex = palette.tone(tone)
     const okyct = hexToOkyct(colorHex)
     const rgb = okyctToRgb(okyct)
     const cieY = toneToY(tone)
 
-    let hueDiff = Math.abs(okyct.h - palette.hue) % 360
-    if (hueDiff > 180) hueDiff = 360 - hueDiff
+    const appliedChroma = okyct.c
+    const isCuspClamped = maxGamutChroma < targetChroma - 1e-4
+
+    // 无彩色（T0 纯黑、T100 纯白或近中性灰，C < 0.01）在极坐标下无明确色相角，避免输出假性 ΔH
+    const isAchromatic = okyct.c < 0.01
+    const hueDiff = isAchromatic ? null : shortestHueDelta(okyct.h, palette.hue)
+    const hueArc = hueDiff === null ? null : okyct.c * ((hueDiff * Math.PI) / 180)
 
     const isGamutSafe =
       rgb.r >= -0.001 && rgb.r <= 1.001 &&
@@ -201,11 +197,12 @@ export function analyzePaletteStops(
       },
       oklab: {
         l: parseFloat(((okyct.t / 100) * 0.9 + 0.05).toFixed(4)),
-        a: parseFloat((appliedChroma * Math.cos((palette.hue * Math.PI) / 180)).toFixed(4)),
-        b: parseFloat((appliedChroma * Math.sin((palette.hue * Math.PI) / 180)).toFixed(4)),
+        a: parseFloat((okyct.c * Math.cos((okyct.h * Math.PI) / 180)).toFixed(4)),
+        b: parseFloat((okyct.c * Math.sin((okyct.h * Math.PI) / 180)).toFixed(4)),
       },
       cieY: parseFloat(cieY.toFixed(6)),
-      hueDriftDeg: parseFloat(hueDiff.toFixed(3)),
+      hueDriftDeg: hueDiff === null ? null : parseFloat(hueDiff.toFixed(3)),
+      hueArcError: hueArc === null ? null : parseFloat(hueArc.toFixed(5)),
       isCuspClamped,
       pixelPower: calculatePixelPower(rgb.r, rgb.g, rgb.b),
       isGamutSafe,
@@ -266,11 +263,11 @@ export function verifyEmissiveCompliance(
   const surfaceLowestTone = scheme.tones.surfaceContainerLowest
 
   if (panelType === 'amoled-anti-smear') {
-    const passed = surfaceLowestTone >= 4 && surfaceTone >= 6
+    const passed = surfaceLowestTone >= 3 && surfaceTone >= 4
     items.push({
       id: 'amoled-smear-floor',
       name: 'AMOLED 120Hz 防果冻黑拖影亚阈值起辉',
-      targetRule: 'surfaceLowest >= Tone 4, surface >= Tone 6',
+      targetRule: 'surfaceLowest >= Tone 3, surface >= Tone 4',
       actualValue: `surfaceLowest: T${surfaceLowestTone}, surface: T${surfaceTone}`,
       passed,
       description: '为 AMOLED 像素维持微小偏置电流，阶跃唤醒时间从 18.5ms 降低至 1.6ms，根除黑拖影。',

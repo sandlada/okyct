@@ -31,19 +31,27 @@ export const App: React.FC = () => {
   // 2. 生成全套 TonalPalette 集合
   const palettes = useMemo(() => {
     try {
-      return createPalettesFromSource(seedHex, variant)
+      return createPalettesFromSource(seedHex, { variant })
     } catch {
-      return createPalettesFromSource('#2563EB', variant)
+      return createPalettesFromSource('#2563EB', { variant })
     }
   }, [seedHex, variant])
 
   // 3. 分别求解浅色与深色方案
   const lightScheme = useMemo(() => {
-    return buildDynamicScheme(palettes, false, contrastLevel, { profile: panelType })
+    return buildDynamicScheme(palettes, {
+      mode: 'light',
+      contrastLevel,
+      emissive: { profile: panelType },
+    })
   }, [palettes, contrastLevel, panelType])
 
   const darkScheme = useMemo(() => {
-    return buildDynamicScheme(palettes, true, contrastLevel, { profile: panelType })
+    return buildDynamicScheme(palettes, {
+      mode: 'dark',
+      contrastLevel,
+      emissive: { profile: panelType },
+    })
   }, [palettes, contrastLevel, panelType])
 
   // 当前激活方案（根据单选 light / dark 决定）
