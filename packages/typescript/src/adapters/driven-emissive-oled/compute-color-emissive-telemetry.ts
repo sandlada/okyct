@@ -1,4 +1,3 @@
-
 import { hexToRgb, srgbToLinear } from '../../domain/index.ts'
 import type { ColorEmissiveTelemetry } from '../../ports/outbound/display-physics.port.ts'
 
@@ -26,7 +25,8 @@ export function computeColorEmissiveTelemetry(hex: string): ColorEmissiveTelemet
   const bMw = (bDrive * WeightB / WeightSum) * FullWhiteOledMw
 
   const powerMw = isPixelOff ? 0 : rMw + gMw + bMw
-  const aplPercent = ((rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114) * 100)
+  // Physical linear CIE Y luminance APL (%)
+  const aplPercent = (0.2126729 * rLin + 0.7151522 * gLin + 0.0721750 * bLin) * 100
 
   const meanOther = (rDrive + gDrive) * 0.5
   const blueAsymmetry = Math.max(0, bDrive - meanOther * 0.6)

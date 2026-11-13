@@ -1,14 +1,14 @@
 /**
  * OKYCT Color Engine — Unified Ergonomic Public Entry
  *
- * 架构分层 (Hexagonal / Ports & Adapters):
- * - Layer 1: ./domain       (纯色度学数学与对比度核心)
- * - Layer 2: ./ports        (驱动端与被驱动端契约边界)
- * - Layer 3: ./application  (调色板、MD3 令牌与叠层编排用例)
- * - Layer 4: ./adapters     (一站式主题构建、OLED 物理面板、多格式导出、图像量化、FP 组合子)
+ * Hexagonal / Ports & Adapters layers:
+ * - Layer 1: ./domain       (Pure colorimetric math & contrast solvers)
+ * - Layer 2: ./ports        (Inbound & outbound contract boundaries)
+ * - Layer 3: ./application  (Palettes, dynamic MD3 schemes, and layer stacking)
+ * - Layer 4: ./adapters     (Theme builder, OLED physics, exporters, image quantizer, FP combinators)
  */
 
-// 1. 一站式主题构建、动态配色方案与调色板 API
+// 1. Theme building, dynamic schemes & tonal palettes
 export {
   createTheme,
   type CreateThemeOptions,
@@ -46,10 +46,14 @@ export {
   type StandardTone,
   type PaletteVariant,
   type StandardPaletteKey,
+  type TonalPaletteOptions,
+  type CreatePalettesOptions,
   type PaletteSet,
   type ThemeMode,
   type EmissivePanelType,
   type EmissiveSchemeOptions,
+  type BuildDynamicSchemeOptions,
+  type ResolveCustomColorsOptions,
   type SystemColorToken,
   type DynamicSchemeColors,
   type CustomColorInput,
@@ -58,7 +62,7 @@ export {
   type ContrastAuditItem,
 } from './application/index.ts'
 
-// 2. 核心色度学转换、色域检测与无障碍对比度求解
+// 2. Core colorimetric conversion, gamut queries & contrast solvers
 export {
   hexToOkyct,
   okyctToHex,
@@ -70,12 +74,23 @@ export {
   toneToY,
   yToTone,
   shortestHueDelta,
+  findGamutCusp,
   findMaxChromaForTone,
+  isInGamut,
   isInSrgbGamut,
   getContrastRatio,
   getApcaContrast,
   solveTonesForContrast,
+  solveTonesForApca,
   runColorimetricInvariantSuite,
+  GamutTargets,
+  GamutMappingModes,
+  ContrastMetrics,
+  type GamutTarget,
+  type GamutMappingMode,
+  type ColorConversionOptions,
+  type GamutCusp,
+  type ContrastMetric,
   type ColorToneInput,
   type OKYCT,
   type RGB,
@@ -84,7 +99,7 @@ export {
   type InvariantTestResult,
 } from './domain/index.ts'
 
-// 3. 自发光显示物理遥测、图像种子提取与 N 层状态叠加
+// 3. Emissive display telemetry, image seed extraction & N-layer stacking
 export {
   EmissivePanelSpecs,
   computeColorEmissiveTelemetry,
@@ -110,7 +125,7 @@ export {
   type StackedContrastReport,
 } from './application/index.ts'
 
-// 4. 函数式编程柯里化组合子 (Data-Last Curried Combinators)
+// 4. Data-last curried FP combinators
 export {
   toTokenDictionary,
   renameCase,
@@ -137,5 +152,5 @@ export {
   type OledPowerAuditReport,
 } from './adapters/index.ts'
 
-// 5. 六边形架构拓扑自检守卫
+// 5. Hexagonal architecture dependency guard
 export * from './architecture-guard.ts'

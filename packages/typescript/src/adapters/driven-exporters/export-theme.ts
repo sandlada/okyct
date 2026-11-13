@@ -63,7 +63,10 @@ export function exportTheme(
     ? input.palettes
     : input.palettes ?? (
         input.sourceHex !== undefined
-          ? createPalettesFromSource(input.sourceHex, input.variant, input.harmonizeSemantics)
+          ? createPalettesFromSource(input.sourceHex, {
+              variant: input.variant,
+              harmonizeSemantics: input.harmonizeSemantics,
+            })
           : undefined
       )
   const customLight = isTheme ? (input.customColors?.light ?? []) : (input.customColorsLight ?? [])

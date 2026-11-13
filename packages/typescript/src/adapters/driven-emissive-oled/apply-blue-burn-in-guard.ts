@@ -1,32 +1,32 @@
-
 import { hexToOkyct, okyctToHex, shortestHueDelta } from '../../domain/index.ts'
 
 const BlueHazardCenterHue = 265
-const BlueHazardHalfWindowDeg = 40
+const BlueHazardHalfWindowDeg = 42
 
 export function applyBlueBurnInGuard(
   hex: string,
   options: { maxBlueAttenuation?: number; hueShiftDeg?: number } = {}
 ): string {
   const maxAtten = options.maxBlueAttenuation ?? 0.22
-  const maxShift = options.hueShiftDeg ?? 6.0
+  const maxShift = options.hueShiftDeg ?? 3.0
   if (!Number.isFinite(maxAtten) || maxAtten < 0 || maxAtten > 1) {
     throw new Error(`Invalid maxBlueAttenuation: ${maxAtten}. Expected a finite number in [0, 1].`)
   }
-  if (!Number.isFinite(maxShift)) {
-    throw new Error(`Invalid hueShiftDeg: ${maxShift}. Expected a finite number.`)
+  if (!Number.isFinite(maxShift) || maxShift < 0) {
+    throw new Error(`Invalid hueShiftDeg: ${maxShift}. Expected a non-negative finite number.`)
   }
 
   const okyct = hexToOkyct(hex)
   if (okyct.c < 0.025) return hex
 
   const angularDist = shortestHueDelta(okyct.h, BlueHazardCenterHue)
-  if (angularDist > BlueHazardHalfWindowDeg) return hex
+  if (angularDist >= BlueHazardHalfWindowDeg) return hex
 
-  const weight = Math.cos((angularDist / BlueHazardHalfWindowDeg) * (Math.PI / 2))
+  // C1-continuous raised-cosine window across [223°, 307°]; shifts smoothly toward cyan/green
+  // to offload inefficient blue OLED drive onto higher-efficacy green subpixels with zero 265° jump.
+  const weight = 0.5 * (1 + Math.cos((angularDist / BlueHazardHalfWindowDeg) * Math.PI))
   const newChroma = okyct.c * (1 - maxAtten * weight)
-  const shiftSign = okyct.h <= BlueHazardCenterHue ? -1 : 1
-  const newHue = (okyct.h + shiftSign * maxShift * weight + 360) % 360
+  const newHue = (okyct.h - maxShift * weight + 360) % 360
 
   return okyctToHex({
     h: newHue,

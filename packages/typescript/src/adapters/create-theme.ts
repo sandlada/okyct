@@ -1,4 +1,4 @@
-import { hexToOkyct, type OKYCT } from '../domain/index.ts'
+import { hexToOkyct, type ContrastMetric, type GamutTarget, type OKYCT } from '../domain/index.ts'
 import {
   ThemeModes,
   auditSchemeContrast,
@@ -7,7 +7,6 @@ import {
   type ContrastAuditItem,
   type CustomColorInput,
   type DynamicSchemeColors,
-  type EmissivePanelType,
   type EmissiveSchemeOptions,
   type PaletteSet,
   type PaletteVariant,
@@ -28,10 +27,11 @@ export interface CreateThemeOptions {
   variant?: PaletteVariant
   harmonizeSemantics?: boolean
   contrastLevel?: number
+  contrastMetric?: ContrastMetric
+  gamut?: GamutTarget
+  hkCompensation?: boolean
+  softKnee?: boolean
   emissive?: EmissiveSchemeOptions
-  profile?: EmissivePanelType
-  burnInGuard?: boolean
-  antiFringing?: boolean
   customColors?: readonly CustomColorInput[] | Record<string, string>
 }
 
@@ -40,6 +40,7 @@ export interface OkyctTheme {
   readonly sourceOkyct: OKYCT
   readonly variant: PaletteVariant
   readonly contrastLevel: number
+  readonly contrastMetric: ContrastMetric
   readonly emissive: Required<EmissiveSchemeOptions>
   readonly palettes: PaletteSet
   readonly schemes: {
@@ -104,6 +105,7 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
     throw new Error(`Invalid contrastLevel: ${rawContrast}. Expected a finite number in [-1.0, 1.0].`)
   }
   const contrastLevel = Math.max(-1.0, Math.min(1.0, rawContrast))
+  const contrastMetric: ContrastMetric = opts.contrastMetric ?? 'both'
 
   if (
     opts.emissive !== undefined &&
@@ -113,23 +115,47 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
   }
 
   const emissive: Required<EmissiveSchemeOptions> = {
-    profile: opts.emissive?.profile ?? opts.profile ?? 'standard-lcd',
-    burnInGuard: opts.emissive?.burnInGuard ?? opts.burnInGuard ?? false,
-    antiFringing: opts.emissive?.antiFringing ?? opts.antiFringing ?? false,
+    profile: opts.emissive?.profile ?? 'standard-lcd',
+    burnInGuard: opts.emissive?.burnInGuard ?? false,
+    antiFringing: opts.emissive?.antiFringing ?? false,
   }
 
-  const palettes = createPalettesFromSource(sourceHex, variant, harmonizeSemantics)
-  const lightScheme = buildDynamicScheme(palettes, false, contrastLevel, emissive)
-  const darkScheme = buildDynamicScheme(palettes, true, contrastLevel, emissive)
+  const palettes = createPalettesFromSource(sourceHex, {
+    variant,
+    harmonizeSemantics,
+    gamut: opts.gamut,
+    hkCompensation: opts.hkCompensation,
+    softKnee: opts.softKnee,
+  })
+  const lightScheme = buildDynamicScheme(palettes, {
+    mode: 'light',
+    contrastLevel,
+    contrastMetric,
+    emissive,
+  })
+  const darkScheme = buildDynamicScheme(palettes, {
+    mode: 'dark',
+    contrastLevel,
+    contrastMetric,
+    emissive,
+  })
 
   const customConfigs = normalizeCustomColorInputs(opts.customColors)
   const customLight =
     customConfigs.length > 0
-      ? resolveCustomColors(customConfigs, sourceHex, false, contrastLevel)
+      ? resolveCustomColors(customConfigs, sourceHex, {
+          mode: 'light',
+          contrastLevel,
+          contrastMetric,
+        })
       : []
   const customDark =
     customConfigs.length > 0
-      ? resolveCustomColors(customConfigs, sourceHex, true, contrastLevel)
+      ? resolveCustomColors(customConfigs, sourceHex, {
+          mode: 'dark',
+          contrastLevel,
+          contrastMetric,
+        })
       : []
 
   return {
@@ -137,6 +163,7 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
     sourceOkyct,
     variant,
     contrastLevel,
+    contrastMetric,
     emissive,
     palettes,
     schemes: {
