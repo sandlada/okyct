@@ -1,10 +1,13 @@
+import type { TokenSource } from './token-dictionary.ts'
+import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
 
-import type { TokenDictionary } from './token-dictionary.ts'
+export const diffThemeParity = (referenceDict: TokenSource) => {
+  const normalizedRef = normalizeTokenDict(referenceDict)
+  const refKeys = new Set(Object.keys(normalizedRef))
 
-export const diffThemeParity = (referenceDict: TokenDictionary) =>
-  (targetDict: TokenDictionary): { isSymmetric: boolean; asymmetryKeys: string[] } => {
-    const refKeys = new Set(Object.keys(referenceDict))
-    const targetKeys = new Set(Object.keys(targetDict))
+  return (targetDict: TokenSource): { isSymmetric: boolean; asymmetryKeys: string[] } => {
+    const normalizedTarget = normalizeTokenDict(targetDict)
+    const targetKeys = new Set(Object.keys(normalizedTarget))
 
     const asymmetryKeys: string[] = []
     for (const k of refKeys) {
@@ -19,3 +22,4 @@ export const diffThemeParity = (referenceDict: TokenDictionary) =>
       asymmetryKeys,
     }
   }
+}

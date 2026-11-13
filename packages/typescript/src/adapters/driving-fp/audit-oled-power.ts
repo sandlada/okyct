@@ -1,5 +1,5 @@
-
-import type { TokenDictionary } from './token-dictionary.ts'
+import type { TokenSource } from './token-dictionary.ts'
+import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
 import { computeColorEmissiveTelemetry } from '../driven-emissive-oled/index.ts'
 
 export interface OledPowerAuditReport {
@@ -14,12 +14,19 @@ export interface OledPowerAuditReport {
 
 export const auditOledPower = (
   options: { maxAvgPowerMw?: number; maxBlueStress?: number } = {}
-) =>
-  (dict: TokenDictionary): OledPowerAuditReport => {
-    const maxPowerThreshold = options.maxAvgPowerMw ?? 320
-    const maxBlueThreshold = options.maxBlueStress ?? 65
+) => {
+  const maxPowerThreshold = options.maxAvgPowerMw ?? 320
+  const maxBlueThreshold = options.maxBlueStress ?? 65
+  if (!Number.isFinite(maxPowerThreshold) || maxPowerThreshold < 0) {
+    throw new Error(`Invalid maxAvgPowerMw threshold: ${maxPowerThreshold}. Expected a non-negative finite number.`)
+  }
+  if (!Number.isFinite(maxBlueThreshold) || maxBlueThreshold < 0) {
+    throw new Error(`Invalid maxBlueStress threshold: ${maxBlueThreshold}. Expected a non-negative finite number.`)
+  }
 
-    const entries = Object.entries(dict).filter(([, v]) => /^#([0-9a-f]{6})$/i.test(v.trim()))
+  return (dict: TokenSource): OledPowerAuditReport => {
+    const normalized = normalizeTokenDict(dict)
+    const entries = Object.entries(normalized).filter(([, v]) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim()))
     if (entries.length === 0) {
       return {
         passed: true,
@@ -62,3 +69,4 @@ export const auditOledPower = (
       totalTokensEvaluated: entries.length,
     }
   }
+}

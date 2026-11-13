@@ -1,11 +1,18 @@
+import type { TokenSource } from './token-dictionary.ts'
+import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
 
-import type { TokenDictionary } from './token-dictionary.ts'
+export const toCssRuleBlock = (selector: string) => {
+  const trimmedSelector = selector.trim()
+  if (trimmedSelector.length === 0) {
+    throw new Error('Invalid CSS selector for toCssRuleBlock: expected a non-empty string.')
+  }
 
-export const toCssRuleBlock = (selector: string) =>
-  (dict: TokenDictionary): string => {
-    const lines = Object.entries(dict).map(([k, v]) => {
+  return (dict: TokenSource): string => {
+    const normalized = normalizeTokenDict(dict)
+    const lines = Object.entries(normalized).map(([k, v]) => {
       const keyName = k.startsWith('--') ? k : `--${k}`
       return `  ${keyName}: ${v};`
     })
-    return `${selector} {\n${lines.join('\n')}\n}`
+    return `${trimmedSelector} {\n${lines.join('\n')}\n}`
   }
+}
