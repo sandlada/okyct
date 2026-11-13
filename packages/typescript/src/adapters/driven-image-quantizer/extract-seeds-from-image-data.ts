@@ -6,6 +6,18 @@ export function extractSeedsFromImageData(
   imageData: ImagePixelBuffer,
   maxColors = 4
 ): ExtractedSeedColor[] {
+  if (
+    imageData === null ||
+    typeof imageData !== 'object' ||
+    imageData.data === null ||
+    imageData.data === undefined ||
+    typeof imageData.data.length !== 'number'
+  ) {
+    throw new Error('Invalid imageData input: expected an ImagePixelBuffer object with a data array.')
+  }
+  if (!Number.isFinite(maxColors) || maxColors < 1) {
+    throw new Error(`Invalid maxColors: ${maxColors}. Expected a finite number >= 1.`)
+  }
   const { data } = imageData
   const hueBins = new Float64Array(360)
   const chromaSum = new Float64Array(360)

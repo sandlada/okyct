@@ -1,6 +1,6 @@
 
-import { hexToOkyct, okyctToHex } from '../../domain/index.ts'
-import type { EmissivePanelType } from '../../ports/outbound/display-physics.port.ts'
+import { hexToOkyct, okyctToHex } from '../../../domain/index.ts'
+import type { EmissivePanelType } from '../../../ports/outbound/display-physics.port.ts'
 
 export function applySubpixelEdgeCompensation(
   hex: string,

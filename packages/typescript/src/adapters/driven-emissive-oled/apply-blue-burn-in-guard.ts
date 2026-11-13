@@ -10,6 +10,12 @@ export function applyBlueBurnInGuard(
 ): string {
   const maxAtten = options.maxBlueAttenuation ?? 0.22
   const maxShift = options.hueShiftDeg ?? 6.0
+  if (!Number.isFinite(maxAtten) || maxAtten < 0 || maxAtten > 1) {
+    throw new Error(`Invalid maxBlueAttenuation: ${maxAtten}. Expected a finite number in [0, 1].`)
+  }
+  if (!Number.isFinite(maxShift)) {
+    throw new Error(`Invalid hueShiftDeg: ${maxShift}. Expected a finite number.`)
+  }
 
   const okyct = hexToOkyct(hex)
   if (okyct.c < 0.025) return hex
