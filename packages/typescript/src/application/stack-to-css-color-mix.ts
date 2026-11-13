@@ -1,11 +1,29 @@
 
-export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) =>
-  (layers: ReadonlyArray<{ color: string; opacity: number }>) =>
-    (baseExpr: string): string => {
-      const space = options.space || 'oklch'
+export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) => {
+  const space = options.space ?? 'oklch'
+  if (space !== 'oklch' && space !== 'srgb') {
+    throw new Error(`Invalid color-mix space: "${String(space)}". Expected 'oklch' or 'srgb'.`)
+  }
+
+  return (layers: ReadonlyArray<{ color: string; opacity: number }>) => {
+    if (!Array.isArray(layers)) {
+      throw new Error('Invalid layers input: expected an array of { color, opacity } entries.')
+    }
+
+    return (baseExpr: string): string => {
+      if (typeof baseExpr !== 'string' || baseExpr.trim().length === 0) {
+        throw new Error('Invalid baseExpr for stackToCssColorMix: expected a non-empty string.')
+      }
       let currentExpr = baseExpr
 
-      for (const layer of layers) {
+      for (let i = 0; i < layers.length; i++) {
+        const layer = layers[i]
+        if (typeof layer.color !== 'string' || layer.color.trim().length === 0) {
+          throw new Error(`Invalid layer color at index ${i}: expected a non-empty string.`)
+        }
+        if (!Number.isFinite(layer.opacity)) {
+          throw new Error(`Invalid layer opacity at index ${i}: ${layer.opacity}. Expected a finite number.`)
+        }
         const clampedOpacity = Math.max(0, Math.min(1, layer.opacity))
         const pct = Number((clampedOpacity * 100).toFixed(2))
         const remainPct = Number((100 - pct).toFixed(2))
@@ -14,3 +32,5 @@ export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) =
 
       return currentExpr
     }
+  }
+}

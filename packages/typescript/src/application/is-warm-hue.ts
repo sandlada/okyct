@@ -1,4 +1,8 @@
 
 export function isWarmHue(hue: number): boolean {
-  return (hue >= 20 && hue <= 110) || hue >= 340
+  if (!Number.isFinite(hue)) {
+    throw new Error(`Invalid hue value: ${hue}. Expected a finite number.`)
+  }
+  const normalized = ((hue % 360) + 360) % 360
+  return (normalized >= 20 && normalized <= 110) || normalized >= 340
 }

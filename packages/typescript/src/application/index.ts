@@ -17,6 +17,7 @@ export {
   SystemColorTokens,
   type SystemColorToken,
   type DynamicSchemeColors,
+  type CustomColorInput,
   type CustomColorConfig,
   type ResolvedCustomColor,
   type ContrastAuditItem,
@@ -38,14 +39,10 @@ export * from './palette-set.ts'
 export * from './harmonize-hex.ts'
 export * from './is-warm-hue.ts'
 export * from './create-palettes-from-source.ts'
-export * from './palette-generation-use-case.ts'
-export * from './scheme-token-role-map.ts'
 export * from './build-dynamic-scheme-with-physics.ts'
 export * from './resolve-custom-colors.ts'
 export * from './audit-scheme-contrast.ts'
-export * from './scheme-building-use-case.ts'
 export * from './stack-layers.ts'
 export * from './stack-state-layers.ts'
 export * from './audit-stacked-contrast.ts'
 export * from './stack-to-css-color-mix.ts'
-export * from './layer-stacking-use-case.ts'

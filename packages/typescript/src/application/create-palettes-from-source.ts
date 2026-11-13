@@ -1,6 +1,6 @@
 
 import { hexToOkyct } from '../domain/index.ts'
-import type { PaletteVariant } from '../ports/inbound/palette-generation.port.ts'
+import { PaletteVariants, type PaletteVariant } from '../ports/inbound/palette-generation.port.ts'
 import { TonalPalette } from './tonal-palette.ts'
 import type { PaletteSet } from './palette-set.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
@@ -11,6 +11,9 @@ export function createPalettesFromSource(
   variant: PaletteVariant = 'tonalSpot',
   harmonizeSemantics = true
 ): PaletteSet {
+  if (!PaletteVariants.includes(variant)) {
+    throw new Error(`Invalid palette variant: "${String(variant)}". Expected one of: ${PaletteVariants.join(', ')}.`)
+  }
   const source = hexToOkyct(sourceHex)
   const h = source.h
   const c = Math.max(0.04, source.c)

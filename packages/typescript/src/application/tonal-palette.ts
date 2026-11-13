@@ -12,8 +12,11 @@ export class TonalPalette implements ITonalPalettePort {
   private readonly cache = new Map<number, string>()
 
   constructor(hue: number, targetChroma: number) {
+    if (!Number.isFinite(hue) || !Number.isFinite(targetChroma) || targetChroma < 0) {
+      throw new Error(`Invalid TonalPalette arguments: hue=${hue}, targetChroma=${targetChroma}. Expected finite hue and non-negative chroma.`)
+    }
     this.hue = (hue % 360 + 360) % 360
-    this.targetChroma = Math.max(0, targetChroma)
+    this.targetChroma = targetChroma
   }
 
   static fromHex(hex: string): TonalPalette {
@@ -26,6 +29,9 @@ export class TonalPalette implements ITonalPalettePort {
   }
 
   tone(toneValue: number): string {
+    if (!Number.isFinite(toneValue)) {
+      throw new Error(`Invalid tone value: ${toneValue}. Expected a finite number in [0, 100].`)
+    }
     const t = Math.max(0, Math.min(100, Math.round(toneValue)))
     if (this.cache.has(t)) {
       return this.cache.get(t)!

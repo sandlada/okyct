@@ -87,6 +87,9 @@ export const stackLayers = (options: StackOptions = {}) =>
   (layers: readonly ColorLayer[]) =>
     (baseColor: string): CompositedResult => {
       const blendSpace = options.blendSpace || 'linear-srgb'
+      if (blendSpace !== 'linear-srgb' && blendSpace !== 'gamma-srgb' && blendSpace !== 'okyct') {
+        throw new Error(`Invalid blendSpace: "${String(blendSpace)}". Expected 'linear-srgb', 'gamma-srgb', or 'okyct'.`)
+      }
       const traces: LayerStepTrace[] = []
 
       let currentHex = baseColor
@@ -105,6 +108,9 @@ export const stackLayers = (options: StackOptions = {}) =>
 
       for (let i = 0; i < layers.length; i++) {
         const layer = layers[i]
+        if (!Number.isFinite(layer.opacity)) {
+          throw new Error(`Invalid layer opacity at index ${i}: ${layer.opacity}. Expected a finite number.`)
+        }
         const blended = blendTwoColors(layer.color, layer.opacity, currentHex, 1.0, blendSpace)
         currentHex = blended.hex
         currentOkyct = rgbToOkyct(hexToRgb(currentHex))

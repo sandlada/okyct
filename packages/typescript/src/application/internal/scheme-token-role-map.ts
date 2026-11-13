@@ -1,6 +1,6 @@
 
-import type { SystemColorToken } from '../ports/inbound/scheme-building.port.ts'
-import type { PaletteSet } from './palette-set.ts'
+import type { SystemColorToken } from '../../ports/inbound/scheme-building.port.ts'
+import type { PaletteSet } from '../palette-set.ts'
 
 export type SchemeRoleKind = 'surface' | 'foreground' | 'accent'
 

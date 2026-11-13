@@ -2,6 +2,9 @@
 import { hexToOkyct, okyctToHex } from '../domain/index.ts'
 
 export function harmonizeHex(designHex: string, sourceHex: string, maxShiftAngle = 18): string {
+  if (!Number.isFinite(maxShiftAngle) || maxShiftAngle < 0) {
+    throw new Error(`Invalid maxShiftAngle: ${maxShiftAngle}. Expected a non-negative finite number.`)
+  }
   const design = hexToOkyct(designHex)
   const source = hexToOkyct(sourceHex)
 

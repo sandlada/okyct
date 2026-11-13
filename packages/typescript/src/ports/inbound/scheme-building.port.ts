@@ -23,7 +23,15 @@ export interface EmissiveSchemeOptions {
   antiFringing?: boolean
 }
 
-export interface CustomColorConfig {
+export interface CustomColorInput {
+  id?: string
+  name: string
+  label?: string
+  sourceHex: string
+  harmonize?: boolean
+}
+
+export interface CustomColorConfig extends CustomColorInput {
   id: string
   name: string
   label: string
@@ -152,7 +160,7 @@ export interface ISchemeBuildingPort<TPalette extends ITonalPalettePort = ITonal
   ): DynamicSchemeColors
 
   resolveCustomColors(
-    configs: readonly CustomColorConfig[],
+    configs: readonly CustomColorInput[],
     primarySeedHex: string,
     isDark: boolean,
     contrastLevel?: number

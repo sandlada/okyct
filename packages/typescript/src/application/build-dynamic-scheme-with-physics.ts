@@ -1,6 +1,7 @@
 
 import { getContrastRatio, solveTonesForContrast, hexToOkyct } from '../domain/index.ts'
 import {
+  EmissivePanelTypes,
   SystemColorTokens,
   type SystemColorToken,
   type DynamicSchemeColors,
@@ -10,7 +11,40 @@ import {
 import type { IDisplayPhysicsPort } from '../ports/outbound/display-physics.port.ts'
 import type { PaletteSet } from './palette-set.ts'
 import { TonalPalette } from './tonal-palette.ts'
-import { SchemeTokenRoleMap, type SchemeRoleKind } from './scheme-token-role-map.ts'
+import { SchemeTokenRoleMap, type SchemeRoleKind } from './internal/scheme-token-role-map.ts'
+
+const FallbackPanelSpecs: Record<
+  EmissivePanelType,
+  {
+    lightPeakToneCap: number
+    darkSurfaceTones: {
+      lowest: number
+      surface: number
+      low: number
+      container: number
+      high: number
+      highest: number
+      bright: number
+    }
+  }
+> = {
+  'standard-lcd': {
+    lightPeakToneCap: 100,
+    darkSurfaceTones: { lowest: 4, surface: 6, low: 10, container: 12, high: 17, highest: 22, bright: 24 },
+  },
+  'oled-true-black': {
+    lightPeakToneCap: 100,
+    darkSurfaceTones: { lowest: 0, surface: 0, low: 5, container: 9, high: 14, highest: 20, bright: 24 },
+  },
+  'amoled-anti-smear': {
+    lightPeakToneCap: 99,
+    darkSurfaceTones: { lowest: 4, surface: 6, low: 10, container: 12, high: 17, highest: 22, bright: 24 },
+  },
+  'micro-oled-xr': {
+    lightPeakToneCap: 92,
+    darkSurfaceTones: { lowest: 6, surface: 8, low: 12, container: 15, high: 20, highest: 25, bright: 28 },
+  },
+}
 
 export function buildDynamicSchemeWithPhysics(
   palettes: PaletteSet,
@@ -22,25 +56,20 @@ export function buildDynamicSchemeWithPhysics(
     'getPanelSpec' | 'applyBlueBurnInGuard' | 'applySubpixelEdgeCompensation'
   >
 ): DynamicSchemeColors {
+  if (!Number.isFinite(contrastLevel)) {
+    throw new Error(`Invalid contrastLevel: ${contrastLevel}. Expected a finite number in [-1.0, 1.0].`)
+  }
   const c = Math.max(-1.0, Math.min(1.0, contrastLevel))
   const profile: EmissivePanelType = emissiveOptions.profile ?? 'standard-lcd'
+  if (!EmissivePanelTypes.includes(profile)) {
+    throw new Error(`Invalid emissive profile: "${String(profile)}". Expected one of: ${EmissivePanelTypes.join(', ')}.`)
+  }
   const burnInGuard = emissiveOptions.burnInGuard ?? false
   const antiFringing = emissiveOptions.antiFringing ?? false
 
   const panelSpec = physicsPort
     ? physicsPort.getPanelSpec(profile)
-    : {
-        lightPeakToneCap: 100,
-        darkSurfaceTones: {
-          lowest: 4,
-          surface: 6,
-          low: 10,
-          container: 12,
-          high: 17,
-          highest: 22,
-          bright: 24,
-        },
-      }
+    : FallbackPanelSpecs[profile]
 
   const peakWhiteCap = panelSpec.lightPeakToneCap
   const fgHighlightCap = antiFringing

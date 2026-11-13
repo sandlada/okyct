@@ -17,31 +17,31 @@ export interface ITokenExporterPort<TPalette extends ITonalPalettePort = ITonalP
   exportCssVariables(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    palettes: PaletteSet<TPalette>,
-    customColorsLight?: ResolvedCustomColor[],
-    customColorsDark?: ResolvedCustomColor[],
+    palettes?: PaletteSet<TPalette>,
+    customColorsLight?: readonly ResolvedCustomColor[],
+    customColorsDark?: readonly ResolvedCustomColor[],
     schemeMode?: CssSchemeMode
   ): string
 
   exportTailwindV4(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: ResolvedCustomColor[],
-    customColorsDark?: ResolvedCustomColor[],
+    customColorsLight?: readonly ResolvedCustomColor[],
+    customColorsDark?: readonly ResolvedCustomColor[],
     fallback?: TailwindFallbackMode
   ): string
 
   exportW3cDesignTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: ResolvedCustomColor[],
-    customColorsDark?: ResolvedCustomColor[]
+    customColorsLight?: readonly ResolvedCustomColor[],
+    customColorsDark?: readonly ResolvedCustomColor[]
   ): string
 
   exportTypeScriptTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: ResolvedCustomColor[],
-    customColorsDark?: ResolvedCustomColor[]
+    customColorsLight?: readonly ResolvedCustomColor[],
+    customColorsDark?: readonly ResolvedCustomColor[]
   ): string
 }
