@@ -1,14 +1,16 @@
 
-import type { ContrastSolution } from '../models/index.ts'
+import type { ColorToneInput, ContrastSolution } from '../models/index.ts'
 import { toneToY } from './tone-to-y.ts'
 import { yToTone } from './y-to-tone.ts'
+import { resolveToneInput } from './internal/resolve-tone-input.ts'
 
 const QuantizationToneMargin = 0.35
 
 export function solveTonesForContrast(
-  bgTone: number,
-  targetRatio: number
+  bgToneOrColor: ColorToneInput,
+  targetRatio = 4.5
 ): ContrastSolution {
+  const bgTone = resolveToneInput(bgToneOrColor)
   if (!Number.isFinite(bgTone) || bgTone < 0 || bgTone > 100) {
     throw new Error(`Invalid bgTone: ${bgTone}. Expected a finite number in [0, 100].`)
   }

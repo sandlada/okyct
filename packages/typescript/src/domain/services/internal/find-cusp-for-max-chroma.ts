@@ -3,7 +3,7 @@
  * 通用色域尖峰 (Gamut Cusp) 搜索算法
  */
 
-import type { GamutCusp } from '../../models/index.ts'
+import type { GamutCusp } from './gamut-cusp.model.ts'
 
 export function findCuspForMaxChroma(
   h: number,

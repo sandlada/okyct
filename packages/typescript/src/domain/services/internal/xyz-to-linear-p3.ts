@@ -1,5 +1,6 @@
 
-import type { RGB, XYZ } from '../models/index.ts'
+import type { RGB } from '../../models/index.ts'
+import type { XYZ } from './xyz.model.ts'
 
 export function xyzToLinearP3(xyz: XYZ): RGB {
   return {

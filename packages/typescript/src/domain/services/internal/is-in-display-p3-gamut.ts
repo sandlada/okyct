@@ -1,10 +1,11 @@
 
-import type { RGB, P3GamutCheckResult } from '../models/index.ts'
-import { toneToY } from './tone-to-y.ts'
+import type { RGB } from '../../models/index.ts'
+import type { P3GamutCheckResult } from './p3-gamut-check-result.model.ts'
+import { toneToY } from '../tone-to-y.ts'
 import { oklabToXyz } from './oklab-to-xyz.ts'
 import { xyzToLinearP3 } from './xyz-to-linear-p3.ts'
-import { linearToSrgb } from './linear-to-srgb.ts'
-import { solveOklabLForTargetY } from './internal/solve-oklab-l-for-target-y.ts'
+import { linearToSrgb } from '../linear-to-srgb.ts'
+import { solveOklabLForTargetY } from './solve-oklab-l-for-target-y.ts'
 
 export function isInDisplayP3Gamut(h: number, c: number, t: number): P3GamutCheckResult {
   if (t <= 0.001) return { inGamut: true, p3Rgb: { r: 0, g: 0, b: 0 } }

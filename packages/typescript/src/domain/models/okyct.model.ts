@@ -9,3 +9,5 @@ export interface OKYCT {
   c: number
   t: number
 }
+
+export type ColorToneInput = number | string | OKYCT

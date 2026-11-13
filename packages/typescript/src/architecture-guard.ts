@@ -83,7 +83,7 @@ export function verifyHexagonalArchitectureBoundaries(): ArchitectureAuditResult
   return {
     passed,
     layersVerified: HexagonalArchitectureManifest.length,
-    modelsCount: 10,
+    modelsCount: 5,
     inboundPortsCount: 3,
     outboundPortsCount: 3,
     summary: passed

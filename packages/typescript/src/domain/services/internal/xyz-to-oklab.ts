@@ -1,5 +1,6 @@
 
-import type { XYZ, OKLab } from '../models/index.ts'
+import type { XYZ } from './xyz.model.ts'
+import type { OKLab } from './oklab.model.ts'
 
 export function xyzToOklab(xyz: XYZ): OKLab {
   const l = 0.8189330101 * xyz.x + 0.3618667424 * xyz.y - 0.1288597137 * xyz.z

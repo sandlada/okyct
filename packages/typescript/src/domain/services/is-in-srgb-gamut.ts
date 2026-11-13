@@ -1,19 +1,38 @@
 
-import type { RGB, GamutCheckResult } from '../models/index.ts'
+import type { RGB, OKYCT, GamutCheckResult } from '../models/index.ts'
 import { toneToY } from './tone-to-y.ts'
-import { oklabToXyz } from './oklab-to-xyz.ts'
-import { xyzToLinearRgb } from './xyz-to-linear-rgb.ts'
+import { oklabToXyz } from './internal/oklab-to-xyz.ts'
+import { xyzToLinearRgb } from './internal/xyz-to-linear-rgb.ts'
 import { linearToSrgb } from './linear-to-srgb.ts'
 import { solveOklabLForTargetY } from './internal/solve-oklab-l-for-target-y.ts'
 
-export function isInSrgbGamut(h: number, c: number, t: number): GamutCheckResult {
-  if (t <= 0.001) return { inGamut: true, rgb: { r: 0, g: 0, b: 0 } }
-  if (t >= 99.999) return { inGamut: true, rgb: { r: 1, g: 1, b: 1 } }
+export function isInSrgbGamut(color: OKYCT): GamutCheckResult
+export function isInSrgbGamut(h: number, c: number, t: number): GamutCheckResult
+export function isInSrgbGamut(hOrColor: number | OKYCT, c?: number, t?: number): GamutCheckResult {
+  const hVal = typeof hOrColor === 'number' ? hOrColor : hOrColor.h
+  const cVal = typeof hOrColor === 'number' ? (c ?? NaN) : hOrColor.c
+  const tVal = typeof hOrColor === 'number' ? (t ?? NaN) : hOrColor.t
 
-  const targetY = toneToY(t)
-  const rad = (h * Math.PI) / 180
-  const a = c * Math.cos(rad)
-  const b = c * Math.sin(rad)
+  if (
+    !Number.isFinite(hVal) ||
+    !Number.isFinite(cVal) ||
+    !Number.isFinite(tVal) ||
+    cVal < 0 ||
+    tVal < 0 ||
+    tVal > 100
+  ) {
+    throw new Error(
+      `Invalid OKYCT coordinates for gamut check: h=${hVal}, c=${cVal}, t=${tVal}. Expected finite h, c >= 0, and t in [0, 100].`
+    )
+  }
+
+  if (tVal <= 0.001) return { inGamut: true, rgb: { r: 0, g: 0, b: 0 } }
+  if (tVal >= 99.999) return { inGamut: true, rgb: { r: 1, g: 1, b: 1 } }
+
+  const targetY = toneToY(tVal)
+  const rad = (hVal * Math.PI) / 180
+  const a = cVal * Math.cos(rad)
+  const b = cVal * Math.sin(rad)
 
   const L = solveOklabLForTargetY(targetY, a, b)
   const xyz = oklabToXyz({ L, a, b })
