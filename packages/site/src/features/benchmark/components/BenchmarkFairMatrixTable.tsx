@@ -65,18 +65,23 @@ export function BenchmarkFairMatrixTable({ matrix }: BenchmarkFairMatrixTablePro
               <td className="whitespace-nowrap py-4 pr-4 align-top text-[12px] text-neutral-500 dark:text-neutral-400">
                 {t(row.condKey)}
               </td>
-              {row.cells.map((cell, index) => (
-                <td
-                  key={`${row.labelKey}-${matrix.columns[index].id}`}
-                  className={`whitespace-nowrap py-4 pr-4 align-top tabular-nums text-[13px] ${
-                    index === row.bestIndex
-                      ? 'font-bold text-neutral-900 dark:text-white'
-                      : 'text-neutral-500 dark:text-neutral-400'
-                  }`}
-                >
-                  {cell}
-                </td>
-              ))}
+              {row.cells.map((cell, index) => {
+                const isBest =
+                  row.bestIndex >= 0 &&
+                  (index === row.bestIndex || cell === row.cells[row.bestIndex])
+                return (
+                  <td
+                    key={`${row.labelKey}-${matrix.columns[index].id}`}
+                    className={`whitespace-nowrap py-4 pr-4 align-top tabular-nums text-[13px] ${
+                      isBest
+                        ? 'font-bold text-neutral-900 dark:text-white'
+                        : 'text-neutral-500 dark:text-neutral-400'
+                    }`}
+                  >
+                    {cell}
+                  </td>
+                )
+              })}
             </tr>
           ))}
         </tbody>

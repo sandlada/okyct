@@ -119,6 +119,7 @@ function medianMs(samples: readonly number[]): number {
 
 export function runModelBenchmark(sourceHex: string): ModelComparisonResult[] {
   const timingRuns = 20
+  const batchSize = 10
   const results: ModelComparisonResult[] = []
 
   for (const model of ModelCatalog) {
@@ -126,8 +127,10 @@ export function runModelBenchmark(sourceHex: string): ModelComparisonResult[] {
     const timings: number[] = []
     for (let i = 0; i < timingRuns; i++) {
       const t0 = performance.now()
-      buildStops(sourceHex, model.generate)
-      timings.push(performance.now() - t0)
+      for (let b = 0; b < batchSize; b++) {
+        buildStops(sourceHex, model.generate)
+      }
+      timings.push((performance.now() - t0) / batchSize)
     }
 
     const stops = buildStops(sourceHex, model.generate)
