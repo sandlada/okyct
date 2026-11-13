@@ -17,10 +17,10 @@ function stripTones(scheme: DynamicSchemeColors): Record<SystemColorToken, strin
 export function exportTypeScriptTokens(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  customColorsLight: ResolvedCustomColor[] = [],
-  customColorsDark: ResolvedCustomColor[] = []
+  customColorsLight: readonly ResolvedCustomColor[] = [],
+  customColorsDark: readonly ResolvedCustomColor[] = []
 ): string {
-  const buildCustomMap = (customs: ResolvedCustomColor[]) => {
+  const buildCustomMap = (customs: readonly ResolvedCustomColor[]) => {
     const res: Record<string, { color: string; onColor: string; colorContainer: string; onColorContainer: string }> = {}
     for (const c of customs) {
       res[c.name] = {

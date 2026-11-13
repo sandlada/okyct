@@ -20,10 +20,13 @@ const colorVar = (token: string, light: string, dark: string, fallback: Tailwind
 export function exportTailwindV4(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  customColorsLight: ResolvedCustomColor[] = [],
-  customColorsDark: ResolvedCustomColor[] = [],
+  customColorsLight: readonly ResolvedCustomColor[] = [],
+  customColorsDark: readonly ResolvedCustomColor[] = [],
   fallback: TailwindFallbackMode = 'light-dark'
 ): string {
+  if (!TailwindFallbackModes.includes(fallback)) {
+    throw new Error(`Invalid tailwindFallback: "${String(fallback)}". Expected one of: ${TailwindFallbackModes.join(', ')}.`)
+  }
   const darkByName = new Map(customColorsDark.map((color) => [color.name, color]))
 
   const systemLines = SystemColorTokens
@@ -37,6 +40,9 @@ export function exportTailwindV4(
     .flatMap((color) => {
       const dark = darkByName.get(color.name) ?? color
       const k = kebabCase(color.name)
+      if (!k) {
+        throw new Error(`Invalid custom color name: "${color.name}". Expected at least one alphanumeric word.`)
+      }
       return [
         `  --color-${k}: ${colorVar(`--md-custom-color-${k}`, color.color, dark.color, fallback)};`,
         `  --color-on-${k}: ${colorVar(`--md-custom-color-on-${k}`, color.onColor, dark.onColor, fallback)};`,

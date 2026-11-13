@@ -12,10 +12,10 @@ type W3cDesignTokenGroup = Record<string, W3cDesignTokenLeaf | Record<string, W3
 export function exportW3cDesignTokens(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  customColorsLight: ResolvedCustomColor[] = [],
-  customColorsDark: ResolvedCustomColor[] = []
+  customColorsLight: readonly ResolvedCustomColor[] = [],
+  customColorsDark: readonly ResolvedCustomColor[] = []
 ): string {
-  const buildGroup = (scheme: DynamicSchemeColors, customs: ResolvedCustomColor[]): W3cDesignTokenGroup => {
+  const buildGroup = (scheme: DynamicSchemeColors, customs: readonly ResolvedCustomColor[]): W3cDesignTokenGroup => {
     const group: W3cDesignTokenGroup = {}
     for (const k of SystemColorTokens) {
       group[k] = {
