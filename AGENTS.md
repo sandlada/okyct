@@ -147,8 +147,8 @@ $$\text{Ratio} = \frac{\max(Y_1, Y_2) + 0.05}{\min(Y_1, Y_2) + 0.05}$$
 
 ### 3.7 函数式编程组合子 (FP Currying)
 
-在 `adapters/driving-fp/` 中提供面向流水线工程的柯里化管道算子：
-- 支持 `pipe(input, fn1, fn2, ...)` 与 `flow(fn1, fn2, ...)`。
+在 `adapters/driving-fp/` 中提供面向流水线工程的柯里化算子：
+- 遵循「纯函数 + 高阶函数 + 数据后置（Data-Last / Currying）」，以嵌套调用组合，不另设 `pipe` 或 `flow`。
 - 所有变换函数均为 `func(options)(dataLast)` 形式，便于与构建工具链和流式数据直接结合。
 
 ---
