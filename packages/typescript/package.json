@@ -37,7 +37,8 @@
   },
   "scripts": {
     "build": "tsc --emitDeclarationOnly false",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test test/**/*.test.ts"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
