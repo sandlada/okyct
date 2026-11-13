@@ -1,86 +1,88 @@
-
 import {
-  hexToRgb,
-  rgbToHex,
-  srgbToLinear,
-  linearToSrgb,
-  rgbToOkyct,
-  okyctToRgb,
   getContrastRatio,
+  hexToRgb,
+  linearToSrgb,
+  okyctToRgb,
+  rgbToHex,
+  rgbToOkyct,
+  srgbToLinear,
   type RGB,
 } from '../domain/index.ts'
-import type { ColorLayer, LayerStepTrace, CompositedResult, StackOptions } from '../ports/inbound/layer-stacking.port.ts'
+import type {
+  ColorLayer,
+  CompositedResult,
+  LayerStepTrace,
+  StackOptions,
+} from '../ports/inbound/layer-stacking.port.ts'
 
-function blendTwoColors(
-  fgColor: string,
+interface BlendState {
+  rgb: RGB
+  alpha: number
+}
+
+function blendState(
+  fgRgb: RGB,
   fgAlpha: number,
-  bgColor: string,
-  bgAlpha = 1.0,
-  blendSpace: 'linear-srgb' | 'gamma-srgb' | 'okyct' = 'linear-srgb'
-): { hex: string; alpha: number } {
-  const fgRgb = hexToRgb(fgColor)
-  const bgRgb = hexToRgb(bgColor)
+  bg: BlendState,
+  blendSpace: 'linear-srgb' | 'gamma-srgb' | 'okyct'
+): BlendState {
+  const aFg = Math.max(0, Math.min(1, fgAlpha))
+  const aBg = Math.max(0, Math.min(1, bg.alpha))
+  const aOut = aFg + aBg * (1 - aFg)
 
-  const a_fg = Math.max(0, Math.min(1, fgAlpha))
-  const a_bg = Math.max(0, Math.min(1, bgAlpha))
+  if (aOut <= 0) {
+    return { rgb: { r: 0, g: 0, b: 0 }, alpha: 0 }
+  }
 
-  const a_out = a_fg + a_bg * (1 - a_fg)
-  if (a_out <= 0) return { hex: '#000000', alpha: 0 }
-
-  const wFg = a_fg / a_out
-  const wBg = (a_bg * (1 - a_fg)) / a_out
+  const wFg = aFg / aOut
+  const wBg = (aBg * (1 - aFg)) / aOut
 
   if (blendSpace === 'okyct') {
     const fgOkyct = rgbToOkyct(fgRgb)
-    const bgOkyct = rgbToOkyct(bgRgb)
+    const bgOkyct = rgbToOkyct(bg.rgb)
 
     const fgRad = (fgOkyct.h * Math.PI) / 180
     const bgRad = (bgOkyct.h * Math.PI) / 180
 
+    // Orthogonal OKLab vector interpolation: complements neutralize naturally to gray
     const aMix = fgOkyct.c * Math.cos(fgRad) * wFg + bgOkyct.c * Math.cos(bgRad) * wBg
     const bMix = fgOkyct.c * Math.sin(fgRad) * wFg + bgOkyct.c * Math.sin(bgRad) * wBg
 
     let hOut = (Math.atan2(bMix, aMix) * 180) / Math.PI
     if (hOut < 0) hOut += 360
 
-    const vectorChroma = Math.hypot(aMix, bMix)
-    const scalarChroma = fgOkyct.c * wFg + bgOkyct.c * wBg
-    const cOut = vectorChroma * 0.7 + scalarChroma * 0.3
-
+    const cOut = Math.hypot(aMix, bMix)
     const tOut = fgOkyct.t * wFg + bgOkyct.t * wBg
 
-    const outRgb = okyctToRgb({ h: hOut, c: cOut, t: tOut })
-    return { hex: rgbToHex(outRgb), alpha: a_out }
+    return {
+      rgb: okyctToRgb({ h: hOut, c: cOut, t: tOut }),
+      alpha: aOut,
+    }
   }
-
-  let r_out = 0
-  let g_out = 0
-  let b_out = 0
 
   if (blendSpace === 'linear-srgb') {
-    const fgLin = { r: srgbToLinear(fgRgb.r), g: srgbToLinear(fgRgb.g), b: srgbToLinear(fgRgb.b) }
-    const bgLin = { r: srgbToLinear(bgRgb.r), g: srgbToLinear(bgRgb.g), b: srgbToLinear(bgRgb.b) }
+    const rLin = srgbToLinear(fgRgb.r) * wFg + srgbToLinear(bg.rgb.r) * wBg
+    const gLin = srgbToLinear(fgRgb.g) * wFg + srgbToLinear(bg.rgb.g) * wBg
+    const bLin = srgbToLinear(fgRgb.b) * wFg + srgbToLinear(bg.rgb.b) * wBg
 
-    const r_lin = fgLin.r * wFg + bgLin.r * wBg
-    const g_lin = fgLin.g * wFg + bgLin.g * wBg
-    const b_lin = fgLin.b * wFg + bgLin.b * wBg
-
-    r_out = linearToSrgb(r_lin)
-    g_out = linearToSrgb(g_lin)
-    b_out = linearToSrgb(b_lin)
-  } else {
-    r_out = fgRgb.r * wFg + bgRgb.r * wBg
-    g_out = fgRgb.g * wFg + bgRgb.g * wBg
-    b_out = fgRgb.b * wFg + bgRgb.b * wBg
+    return {
+      rgb: {
+        r: Math.max(0, Math.min(1, linearToSrgb(rLin))),
+        g: Math.max(0, Math.min(1, linearToSrgb(gLin))),
+        b: Math.max(0, Math.min(1, linearToSrgb(bLin))),
+      },
+      alpha: aOut,
+    }
   }
 
-  const outRgb: RGB = {
-    r: Math.max(0, Math.min(1, r_out)),
-    g: Math.max(0, Math.min(1, g_out)),
-    b: Math.max(0, Math.min(1, b_out)),
+  return {
+    rgb: {
+      r: Math.max(0, Math.min(1, fgRgb.r * wFg + bg.rgb.r * wBg)),
+      g: Math.max(0, Math.min(1, fgRgb.g * wFg + bg.rgb.g * wBg)),
+      b: Math.max(0, Math.min(1, fgRgb.b * wFg + bg.rgb.b * wBg)),
+    },
+    alpha: aOut,
   }
-
-  return { hex: rgbToHex(outRgb), alpha: a_out }
 }
 
 export const stackLayers = (options: StackOptions = {}) =>
@@ -88,16 +90,19 @@ export const stackLayers = (options: StackOptions = {}) =>
     (baseColor: string): CompositedResult => {
       const blendSpace = options.blendSpace || 'linear-srgb'
       if (blendSpace !== 'linear-srgb' && blendSpace !== 'gamma-srgb' && blendSpace !== 'okyct') {
-        throw new Error(`Invalid blendSpace: "${String(blendSpace)}". Expected 'linear-srgb', 'gamma-srgb', or 'okyct'.`)
+        throw new Error(
+          `Invalid blendSpace: "${String(blendSpace)}". Expected 'linear-srgb', 'gamma-srgb', or 'okyct'.`
+        )
       }
       const traces: LayerStepTrace[] = []
 
-      let currentHex = baseColor
-      let currentOkyct = rgbToOkyct(hexToRgb(currentHex))
+      let state: BlendState = { rgb: hexToRgb(baseColor), alpha: 1.0 }
+      let currentHex = rgbToHex(state.rgb)
+      let currentOkyct = rgbToOkyct(state.rgb)
 
       traces.push({
         stepIndex: 0,
-        label: 'Base 底层',
+        label: 'Base',
         layerColor: baseColor,
         layerOpacity: 1.0,
         accumulatedHex: currentHex,
@@ -111,9 +116,9 @@ export const stackLayers = (options: StackOptions = {}) =>
         if (!Number.isFinite(layer.opacity)) {
           throw new Error(`Invalid layer opacity at index ${i}: ${layer.opacity}. Expected a finite number.`)
         }
-        const blended = blendTwoColors(layer.color, layer.opacity, currentHex, 1.0, blendSpace)
-        currentHex = blended.hex
-        currentOkyct = rgbToOkyct(hexToRgb(currentHex))
+        state = blendState(hexToRgb(layer.color), layer.opacity, state, blendSpace)
+        currentHex = rgbToHex(state.rgb)
+        currentOkyct = rgbToOkyct(state.rgb)
 
         traces.push({
           stepIndex: i + 1,

@@ -1,23 +1,93 @@
-
-import { getContrastRatio, solveTonesForContrast, hexToOkyct, shortestHueDelta } from '../domain/index.ts'
-import type { CustomColorInput, ResolvedCustomColor } from '../ports/inbound/scheme-building.port.ts'
-import { TonalPalette } from './tonal-palette.ts'
+import {
+  ContrastMetrics,
+  getApcaContrast,
+  getContrastRatio,
+  hexToOkyct,
+  shortestHueDelta,
+  solveTonesForContrast,
+  type ContrastMetric,
+} from '../domain/index.ts'
+import {
+  ThemeModes,
+  type CustomColorInput,
+  type ResolveCustomColorsOptions,
+  type ResolvedCustomColor,
+} from '../ports/inbound/scheme-building.port.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
+import { TonalPalette } from './tonal-palette.ts'
+
+function meetsTarget(
+  fgHex: string,
+  bgHex: string,
+  minRatio: number,
+  minApca: number,
+  metric: ContrastMetric
+): boolean {
+  if (metric !== 'apca' && getContrastRatio(fgHex, bgHex) < minRatio) return false
+  if (metric !== 'wcag' && Math.abs(getApcaContrast(fgHex, bgHex)) < minApca) return false
+  return true
+}
+
+function resolveForegroundHex(
+  palette: TonalPalette,
+  initialTone: number,
+  bgHex: string,
+  preferLight: boolean,
+  minRatio: number,
+  minApca: number,
+  metric: ContrastMetric
+): string {
+  let tone = initialTone
+  let fgHex = palette.tone(tone)
+  if (meetsTarget(fgHex, bgHex, minRatio, minApca, metric)) return fgHex
+
+  const solved = solveTonesForContrast(bgHex, minRatio, { metric, targetLc: minApca })
+  tone = preferLight
+    ? (solved.lightForegroundTone ?? 100)
+    : (solved.darkForegroundTone ?? 0)
+  fgHex = palette.tone(tone)
+
+  let steps = 0
+  while (!meetsTarget(fgHex, bgHex, minRatio, minApca, metric) && steps < 20) {
+    tone = preferLight ? Math.min(100, tone + 0.5) : Math.max(0, tone - 0.5)
+    fgHex = palette.tone(tone)
+    if (tone <= 0 || tone >= 100) break
+    steps++
+  }
+
+  return fgHex
+}
 
 export function resolveCustomColors(
   configs: readonly CustomColorInput[],
   primarySeedHex: string,
-  isDark: boolean,
-  contrastLevel = 0.0
+  options: ResolveCustomColorsOptions = {}
 ): ResolvedCustomColor[] {
   if (!Array.isArray(configs)) {
     throw new Error('Invalid custom color configs: expected an array of CustomColorInput.')
   }
-  if (!Number.isFinite(contrastLevel)) {
-    throw new Error(`Invalid contrastLevel: ${contrastLevel}. Expected a finite number in [-1.0, 1.0].`)
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new Error('Invalid resolveCustomColors options: expected an object.')
   }
-  const clampedContrast = Math.max(-1.0, Math.min(1.0, contrastLevel))
+  const mode = options.mode ?? 'dark'
+  if (!ThemeModes.includes(mode)) {
+    throw new Error(`Invalid theme mode: "${String(mode)}". Expected one of: ${ThemeModes.join(', ')}.`)
+  }
+  const rawContrast = options.contrastLevel ?? 0.0
+  if (!Number.isFinite(rawContrast)) {
+    throw new Error(`Invalid contrastLevel: ${rawContrast}. Expected a finite number in [-1.0, 1.0].`)
+  }
+  const contrastMetric = options.contrastMetric ?? 'both'
+  if (!ContrastMetrics.includes(contrastMetric)) {
+    throw new Error(
+      `Invalid contrastMetric: "${String(contrastMetric)}". Expected one of: ${ContrastMetrics.join(', ')}.`
+    )
+  }
+
+  const isDark = mode === 'dark'
+  const clampedContrast = Math.max(-1.0, Math.min(1.0, rawContrast))
   const targetRatio = clampedContrast >= 0.8 ? 7.0 : clampedContrast >= 0.35 ? 5.8 : 4.5
+  const targetApca = clampedContrast >= 0.8 ? 75 : clampedContrast >= 0.35 ? 65 : 60
 
   return configs.map((cfg) => {
     if (cfg === null || typeof cfg !== 'object' || Array.isArray(cfg)) {
@@ -47,26 +117,32 @@ export function resolveCustomColors(
 
     const harmOkyct = hexToOkyct(effectiveHex)
     const hueDiff = shortestHueDelta(harmOkyct.h, origOkyct.h)
-
     const palette = TonalPalette.fromHex(effectiveHex)
 
     const colorTone = isDark ? (clampedContrast > 0.3 ? 86 : 80) : (clampedContrast > 0.3 ? 32 : 40)
-    let onColorTone = isDark ? 20 : 100
     const containerTone = isDark ? 30 : 90
-    let onContainerTone = isDark ? 90 : 10
 
-    if (getContrastRatio(onColorTone, colorTone) < targetRatio) {
-      const solved = solveTonesForContrast(colorTone, targetRatio)
-      onColorTone = isDark
-        ? (solved.darkForegroundTone ?? 0)
-        : (solved.lightForegroundTone ?? 100)
-    }
-    if (getContrastRatio(onContainerTone, containerTone) < targetRatio) {
-      const solved = solveTonesForContrast(containerTone, targetRatio)
-      onContainerTone = isDark
-        ? (solved.lightForegroundTone ?? 100)
-        : (solved.darkForegroundTone ?? 0)
-    }
+    const colorHex = palette.tone(colorTone)
+    const containerHex = palette.tone(containerTone)
+
+    const onColorHex = resolveForegroundHex(
+      palette,
+      isDark ? 20 : 100,
+      colorHex,
+      !isDark,
+      targetRatio,
+      targetApca,
+      contrastMetric
+    )
+    const onContainerHex = resolveForegroundHex(
+      palette,
+      isDark ? 90 : 10,
+      containerHex,
+      isDark,
+      targetRatio,
+      targetApca,
+      contrastMetric
+    )
 
     return {
       id,
@@ -75,12 +151,14 @@ export function resolveCustomColors(
       sourceHex: cfg.sourceHex,
       harmonizedHex: effectiveHex,
       hueShiftDeg: parseFloat(hueDiff.toFixed(1)),
-      color: palette.tone(colorTone),
-      onColor: palette.tone(onColorTone),
-      colorContainer: palette.tone(containerTone),
-      onColorContainer: palette.tone(onContainerTone),
-      wcagRatioColor: parseFloat(getContrastRatio(onColorTone, colorTone).toFixed(2)),
-      wcagRatioContainer: parseFloat(getContrastRatio(onContainerTone, containerTone).toFixed(2)),
+      color: colorHex,
+      onColor: onColorHex,
+      colorContainer: containerHex,
+      onColorContainer: onContainerHex,
+      wcagRatioColor: parseFloat(getContrastRatio(onColorHex, colorHex).toFixed(2)),
+      wcagRatioContainer: parseFloat(getContrastRatio(onContainerHex, containerHex).toFixed(2)),
+      apcaLcColor: Math.abs(getApcaContrast(onColorHex, colorHex)),
+      apcaLcContainer: Math.abs(getApcaContrast(onContainerHex, containerHex)),
     }
   })
 }

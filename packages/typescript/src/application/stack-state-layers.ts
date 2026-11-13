@@ -32,7 +32,7 @@ export const stackStateLayers = (states: Array<'hover' | 'focus' | 'pressed' | '
     const layers: ColorLayer[] = opacities.map(({ state, opacity }) => ({
       color: pair.stateColor,
       opacity,
-      label: `${state.toUpperCase()} 状态层 (${Math.round(opacity * 100)}%)`,
+      label: `${state.toUpperCase()} State Layer (${Math.round(opacity * 100)}%)`,
     }))
 
     return stackLayers({ blendSpace: 'linear-srgb' })(layers)(pair.base)

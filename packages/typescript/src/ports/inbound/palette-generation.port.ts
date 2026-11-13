@@ -1,8 +1,10 @@
 /**
  * [Hexagonal Layer: Inbound Port]
- * 调色板生成与色相和谐驱动端契约 (一个口对应一个文件)
- * 约束：仅依赖 domain/models
+ * Palette generation and hue harmonization driver contract.
+ * Constraint: depends only on domain/models.
  */
+
+import type { GamutTarget } from '../../domain/models/index.ts'
 
 export const StandardTones = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99, 100] as const
 export type StandardTone = (typeof StandardTones)[number]
@@ -16,6 +18,17 @@ export const PaletteVariants = [
   'fidelity',
 ] as const
 export type PaletteVariant = (typeof PaletteVariants)[number]
+
+export interface TonalPaletteOptions {
+  gamut?: GamutTarget
+  hkCompensation?: boolean
+  softKnee?: boolean
+}
+
+export interface CreatePalettesOptions extends TonalPaletteOptions {
+  variant?: PaletteVariant
+  harmonizeSemantics?: boolean
+}
 
 export interface ITonalPalettePort {
   readonly hue: number
@@ -52,8 +65,7 @@ export interface PaletteSet<TPalette extends ITonalPalettePort = ITonalPalettePo
 export interface IPaletteGenerationPort<TPalette extends ITonalPalettePort = ITonalPalettePort> {
   createPalettesFromSource(
     sourceHex: string,
-    variant?: PaletteVariant,
-    harmonizeSemantics?: boolean
+    options?: CreatePalettesOptions
   ): PaletteSet<TPalette>
   harmonizeHex(designHex: string, sourceHex: string, maxShiftAngle?: number): string
   isWarmHue(hue: number): boolean

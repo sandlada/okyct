@@ -1,6 +1,9 @@
-
-import { getContrastRatio, getApcaContrast } from '../domain/index.ts'
-import type { SystemColorToken, DynamicSchemeColors, ContrastAuditItem } from '../ports/inbound/scheme-building.port.ts'
+import { getApcaContrast, getContrastRatio, hexToOkyct } from '../domain/index.ts'
+import type {
+  ContrastAuditItem,
+  DynamicSchemeColors,
+  SystemColorToken,
+} from '../ports/inbound/scheme-building.port.ts'
 
 export function auditSchemeContrast(scheme: DynamicSchemeColors): ContrastAuditItem[] {
   const pairs: ReadonlyArray<{
@@ -35,16 +38,18 @@ export function auditSchemeContrast(scheme: DynamicSchemeColors): ContrastAuditI
   ]
 
   return pairs.map((p) => {
-    const fgTone = scheme.tones[p.fg] ?? 50
-    const bgTone = scheme.tones[p.bg] ?? 50
+    const fgHex = scheme[p.fg]
+    const bgHex = scheme[p.bg]
+    const fgTone = typeof fgHex === 'string' ? hexToOkyct(fgHex).t : (scheme.tones[p.fg] ?? 50)
+    const bgTone = typeof bgHex === 'string' ? hexToOkyct(bgHex).t : (scheme.tones[p.bg] ?? 50)
     const wcag = getContrastRatio(fgTone, bgTone)
     const apca = Math.abs(getApcaContrast(fgTone, bgTone))
 
     return {
       fgRole: p.fg,
       bgRole: p.bg,
-      fgTone,
-      bgTone,
+      fgTone: parseFloat(fgTone.toFixed(2)),
+      bgTone: parseFloat(bgTone.toFixed(2)),
       wcagRatio: parseFloat(wcag.toFixed(2)),
       wcagPassAA: wcag >= p.minRatio,
       wcagPassAAA: wcag >= 7.0,

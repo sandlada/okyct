@@ -1,19 +1,37 @@
-
 import { hexToOkyct } from '../domain/index.ts'
-import { PaletteVariants, type PaletteVariant } from '../ports/inbound/palette-generation.port.ts'
-import { TonalPalette } from './tonal-palette.ts'
-import type { PaletteSet } from './palette-set.ts'
+import {
+  PaletteVariants,
+  type CreatePalettesOptions,
+  type PaletteVariant,
+  type TonalPaletteOptions,
+} from '../ports/inbound/palette-generation.port.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
 import { isWarmHue } from './is-warm-hue.ts'
+import type { PaletteSet } from './palette-set.ts'
+import { TonalPalette } from './tonal-palette.ts'
 
 export function createPalettesFromSource(
   sourceHex: string,
-  variant: PaletteVariant = 'tonalSpot',
-  harmonizeSemantics = true
+  options: CreatePalettesOptions = {}
 ): PaletteSet {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new Error('Invalid createPalettesFromSource options: expected an object.')
+  }
+  const variant: PaletteVariant = options.variant ?? 'tonalSpot'
   if (!PaletteVariants.includes(variant)) {
     throw new Error(`Invalid palette variant: "${String(variant)}". Expected one of: ${PaletteVariants.join(', ')}.`)
   }
+  if (options.harmonizeSemantics !== undefined && typeof options.harmonizeSemantics !== 'boolean') {
+    throw new Error('Invalid harmonizeSemantics option: expected a boolean.')
+  }
+  const harmonizeSemantics = options.harmonizeSemantics ?? true
+
+  const paletteOpts: TonalPaletteOptions = {
+    gamut: options.gamut,
+    hkCompensation: options.hkCompensation,
+    softKnee: options.softKnee,
+  }
+
   const source = hexToOkyct(sourceHex)
   const h = source.h
   const c = Math.max(0.04, source.c)
@@ -33,90 +51,89 @@ export function createPalettesFromSource(
   const neutralChroma = isWarmHue(h) ? 0.012 : 0.014
   const neutralVariantChroma = neutralChroma * 2.2
 
+  const errorPalette = TonalPalette.fromHex(errorHex, paletteOpts)
+  const warningPalette = TonalPalette.fromHex(warningHex, paletteOpts)
+  const successPalette = TonalPalette.fromHex(successHex, paletteOpts)
+  const infoPalette = TonalPalette.fromHex(infoHex, paletteOpts)
+
   switch (variant) {
-    case 'vibrant': {
+    case 'vibrant':
       return {
-        primary: new TonalPalette(h, Math.max(0.12, c)),
-        secondary: new TonalPalette((h + 25) % 360, Math.max(0.08, c * 0.7)),
-        tertiary: new TonalPalette((h + 60) % 360, Math.max(0.1, c * 0.85)),
-        neutral: new TonalPalette(h, neutralChroma * 1.5),
-        neutralVariant: new TonalPalette(h, neutralVariantChroma * 1.3),
-        error: TonalPalette.fromHex(errorHex),
-        warning: TonalPalette.fromHex(warningHex),
-        success: TonalPalette.fromHex(successHex),
-        info: TonalPalette.fromHex(infoHex),
+        primary: new TonalPalette(h, Math.max(0.12, c), paletteOpts),
+        secondary: new TonalPalette((h + 25) % 360, Math.max(0.08, c * 0.7), paletteOpts),
+        tertiary: new TonalPalette((h + 60) % 360, Math.max(0.1, c * 0.85), paletteOpts),
+        neutral: new TonalPalette(h, neutralChroma * 1.5, paletteOpts),
+        neutralVariant: new TonalPalette(h, neutralVariantChroma * 1.3, paletteOpts),
+        error: errorPalette,
+        warning: warningPalette,
+        success: successPalette,
+        info: infoPalette,
       }
-    }
 
-    case 'expressive': {
+    case 'expressive':
       return {
-        primary: new TonalPalette(h, Math.max(0.1, c)),
-        secondary: new TonalPalette((h + 90) % 360, Math.max(0.07, c * 0.65)),
-        tertiary: new TonalPalette((h + 180) % 360, Math.max(0.09, c * 0.8)),
-        neutral: new TonalPalette((h + 15) % 360, neutralChroma * 1.4),
-        neutralVariant: new TonalPalette((h + 15) % 360, neutralVariantChroma * 1.3),
-        error: TonalPalette.fromHex(errorHex),
-        warning: TonalPalette.fromHex(warningHex),
-        success: TonalPalette.fromHex(successHex),
-        info: TonalPalette.fromHex(infoHex),
+        primary: new TonalPalette(h, Math.max(0.1, c), paletteOpts),
+        secondary: new TonalPalette((h + 90) % 360, Math.max(0.07, c * 0.65), paletteOpts),
+        tertiary: new TonalPalette((h + 180) % 360, Math.max(0.09, c * 0.8), paletteOpts),
+        neutral: new TonalPalette((h + 15) % 360, neutralChroma * 1.4, paletteOpts),
+        neutralVariant: new TonalPalette((h + 15) % 360, neutralVariantChroma * 1.3, paletteOpts),
+        error: errorPalette,
+        warning: warningPalette,
+        success: successPalette,
+        info: infoPalette,
       }
-    }
 
-    case 'neutral': {
+    case 'neutral':
       return {
-        primary: new TonalPalette(h, Math.min(0.08, c * 0.6)),
-        secondary: new TonalPalette(h, Math.min(0.04, c * 0.35)),
-        tertiary: new TonalPalette((h + 40) % 360, Math.min(0.05, c * 0.45)),
-        neutral: new TonalPalette(h, neutralChroma * 0.8),
-        neutralVariant: new TonalPalette(h, neutralVariantChroma * 0.8),
-        error: TonalPalette.fromHex(errorHex),
-        warning: TonalPalette.fromHex(warningHex),
-        success: TonalPalette.fromHex(successHex),
-        info: TonalPalette.fromHex(infoHex),
+        primary: new TonalPalette(h, Math.min(0.08, c * 0.6), paletteOpts),
+        secondary: new TonalPalette(h, Math.min(0.04, c * 0.35), paletteOpts),
+        tertiary: new TonalPalette((h + 40) % 360, Math.min(0.05, c * 0.45), paletteOpts),
+        neutral: new TonalPalette(h, neutralChroma * 0.8, paletteOpts),
+        neutralVariant: new TonalPalette(h, neutralVariantChroma * 0.8, paletteOpts),
+        error: errorPalette,
+        warning: warningPalette,
+        success: successPalette,
+        info: infoPalette,
       }
-    }
 
-    case 'monochrome': {
+    case 'monochrome':
       return {
-        primary: new TonalPalette(h, 0),
-        secondary: new TonalPalette(h, 0),
-        tertiary: new TonalPalette(h, 0),
-        neutral: new TonalPalette(h, 0),
-        neutralVariant: new TonalPalette(h, 0),
-        error: TonalPalette.fromHex(errorHex),
-        warning: TonalPalette.fromHex(warningHex),
-        success: TonalPalette.fromHex(successHex),
-        info: TonalPalette.fromHex(infoHex),
+        primary: new TonalPalette(h, 0, paletteOpts),
+        secondary: new TonalPalette(h, 0, paletteOpts),
+        tertiary: new TonalPalette(h, 0, paletteOpts),
+        neutral: new TonalPalette(h, 0, paletteOpts),
+        neutralVariant: new TonalPalette(h, 0, paletteOpts),
+        error: errorPalette,
+        warning: warningPalette,
+        success: successPalette,
+        info: infoPalette,
       }
-    }
 
-    case 'fidelity': {
+    case 'fidelity':
       return {
-        primary: new TonalPalette(h, c),
-        secondary: new TonalPalette((h + 15) % 360, c * 0.5),
-        tertiary: new TonalPalette((h + 30) % 360, c * 0.7),
-        neutral: new TonalPalette(h, neutralChroma),
-        neutralVariant: new TonalPalette(h, neutralVariantChroma),
-        error: TonalPalette.fromHex(errorHex),
-        warning: TonalPalette.fromHex(warningHex),
-        success: TonalPalette.fromHex(successHex),
-        info: TonalPalette.fromHex(infoHex),
+        primary: new TonalPalette(h, c, paletteOpts),
+        secondary: new TonalPalette((h + 15) % 360, c * 0.5, paletteOpts),
+        tertiary: new TonalPalette((h + 30) % 360, c * 0.7, paletteOpts),
+        neutral: new TonalPalette(h, neutralChroma, paletteOpts),
+        neutralVariant: new TonalPalette(h, neutralVariantChroma, paletteOpts),
+        error: errorPalette,
+        warning: warningPalette,
+        success: successPalette,
+        info: infoPalette,
       }
-    }
 
     case 'tonalSpot':
-    default: {
+    default:
       return {
-        primary: new TonalPalette(h, Math.max(0.09, Math.min(0.18, c))),
-        secondary: new TonalPalette((h + 15) % 360, Math.max(0.04, c * 0.45)),
-        tertiary: new TonalPalette((h + 60) % 360, Math.max(0.06, c * 0.65)),
-        neutral: new TonalPalette(h, neutralChroma),
-        neutralVariant: new TonalPalette(h, neutralVariantChroma),
-        error: TonalPalette.fromHex(errorHex),
-        warning: TonalPalette.fromHex(warningHex),
-        success: TonalPalette.fromHex(successHex),
-        info: TonalPalette.fromHex(infoHex),
+        primary: new TonalPalette(h, Math.max(0.09, Math.min(0.18, c)), paletteOpts),
+        secondary: new TonalPalette((h + 15) % 360, Math.max(0.04, c * 0.45), paletteOpts),
+        tertiary: new TonalPalette((h + 60) % 360, Math.max(0.06, c * 0.65), paletteOpts),
+        neutral: new TonalPalette(h, neutralChroma, paletteOpts),
+        neutralVariant: new TonalPalette(h, neutralVariantChroma, paletteOpts),
+        error: errorPalette,
+        warning: warningPalette,
+        success: successPalette,
+        info: infoPalette,
       }
-    }
   }
 }

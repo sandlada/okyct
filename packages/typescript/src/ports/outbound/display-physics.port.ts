@@ -1,7 +1,7 @@
 /**
  * [Hexagonal Layer: Outbound Port]
- * 自发光显示面板物理特性、子像素功耗遥测与烧屏/彩边补偿被驱动端契约 (一个口对应一个文件)
- * 约束：仅依赖 domain/models 与同层契约
+ * Emissive display physics, subpixel power telemetry, and burn-in/anti-fringing compensation contract.
+ * Constraint: depends only on domain/models and sibling port contracts.
  */
 
 import {
@@ -37,47 +37,123 @@ export interface EmissivePanelSpec {
   smearRiseTimeMs: number
 }
 
+export const DefaultEmissivePanelSpecs: Record<EmissivePanelType, EmissivePanelSpec> = {
+  'standard-lcd': {
+    id: 'standard-lcd',
+    name: 'Standard IPS / Mini-LED LCD',
+    shortName: 'Standard LCD',
+    badge: 'Global Backlight',
+    subpixelGeometry: 'rgb-stripe',
+    geometryLabel: 'RGB Stripe (Standard Vertical Subpixels)',
+    description:
+      'Relies on a constant backlight modulated by liquid crystals; power draw is largely independent of pixel tone with zero subpixel cutoff or burn-in.',
+    darkSurfaceTones: {
+      lowest: 4,
+      surface: 6,
+      low: 10,
+      container: 12,
+      high: 17,
+      highest: 22,
+      bright: 24,
+    },
+    lightPeakToneCap: 100,
+    smearRiseTimeMs: 4.5,
+  },
+  'oled-true-black': {
+    id: 'oled-true-black',
+    name: 'OLED True-Black (Zero-Power Cutoff)',
+    shortName: 'OLED True-Black',
+    badge: 'T=0 Pixel Cutoff',
+    subpixelGeometry: 'rgb-stripe',
+    geometryLabel: 'RGB OLED (Self-Emissive Pixels)',
+    description:
+      'Anchors base dark surfaces to #000000 (T=0) to fully power down organic emitters for maximum static battery savings, trading off ~18.5 ms turn-on black smearing.',
+    darkSurfaceTones: {
+      lowest: 0,
+      surface: 0,
+      low: 4,
+      container: 8,
+      high: 13,
+      highest: 18,
+      bright: 22,
+    },
+    lightPeakToneCap: 100,
+    smearRiseTimeMs: 18.5,
+  },
+  'amoled-anti-smear': {
+    id: 'amoled-anti-smear',
+    name: 'AMOLED 120Hz Anti-Smear (Pre-Biased)',
+    shortName: 'AMOLED Anti-Smear',
+    badge: 'T=4 Sub-Threshold Bias',
+    subpixelGeometry: 'diamond-pentile',
+    geometryLabel: 'Diamond PenTile (Subpixel-Shared Matrix)',
+    description:
+      'Tuned for 120Hz mobile AMOLED panels: holds lowest dark surfaces above sub-threshold turn-on (T=3..4) to eliminate scroll black smearing and tame PenTile fringing.',
+    darkSurfaceTones: {
+      lowest: 3,
+      surface: 4,
+      low: 8,
+      container: 12,
+      high: 16,
+      highest: 21,
+      bright: 24,
+    },
+    lightPeakToneCap: 98,
+    smearRiseTimeMs: 1.6,
+  },
+  'micro-oled-xr': {
+    id: 'micro-oled-xr',
+    name: 'MicroOLED Silicon XR (Low-Halation)',
+    shortName: 'MicroOLED XR',
+    badge: 'Anti-Halation + Anti-ABL',
+    subpixelGeometry: 'micro-oled-hex',
+    geometryLabel: 'Silicon Tandem Micro-Cavity',
+    description:
+      'Engineered for XR headsets: raises dark velvet floor to T=8 and caps peak highlights at T=92 to suppress Pancake lens internal halation and backplane ABL dimming.',
+    darkSurfaceTones: {
+      lowest: 6,
+      surface: 8,
+      low: 12,
+      container: 16,
+      high: 20,
+      highest: 25,
+      bright: 28,
+    },
+    lightPeakToneCap: 92,
+    smearRiseTimeMs: 0.4,
+  },
+}
+
 export interface ColorEmissiveTelemetry {
   hex: string
   rLinear: number
   gLinear: number
   bLinear: number
-  /** 单像素光谱加权功耗 (以全白 100% 驱动为 1000 mW 基准) */
+  /** Spectral-weighted single-pixel power in mW (100% full white = 1000 mW reference). */
   powerMw: number
-  /** 各子像素功耗分解 (mW) */
+  /** Per-channel subpixel power breakdown (mW). */
   channelPowerMw: { r: number; g: number; b: number }
-  /** 图像平均亮阶贡献 APL [0, 100]% */
+  /** Physical linear luminance APL [0, 100]%. */
   aplPercent: number
-  /** 蓝色子像素老化应力指数 [0, 100] */
+  /** Blue subpixel aging stress index [0, 100]. */
   blueStressIndex: number
-  /** 是否处于完全断电关断态 (True Black #000000) */
+  /** True when emitter is completely powered off (#000000). */
   isPixelOff: boolean
 }
 
 export interface SchemeEmissiveReport {
   profile: EmissivePanelType
   spec: EmissivePanelSpec
-  /** 整屏典型 UI 布局加权预估功耗 (mW) */
   estimatedTotalPowerMw: number
-  /** 相比传统恒定背光 LCD (540mW) 的省电百分比 */
   powerSavingsVsLcdPct: number
-  /** R / G / B 三原色子像素功耗分解 (mW) */
   channelPowerBreakdownMw: { r: number; g: number; b: number }
-  /** 整屏加权平均图像亮阶 APL (%) */
   aplPercent: number
-  /** 硬件 ABL 自动限亮触发风险 */
   ablTriggerRisk: 'Low' | 'Moderate' | 'High'
-  /** 蓝色子像素烧屏老化应力指数 [0, 100] */
   blueSubpixelStressIndex: number
-  /** 滚动黑拖影响应耗时 (ms) */
   smearRiseTimeMs: number
-  /** 黑拖影风险等级 */
   blackSmearRisk: 'None' | 'Minimal' | 'Severe (T=0 Cutoff)'
-  /** PenTile 钻石排列边缘彩边风险 */
   pentileFringingRisk: 'Low' | 'Controlled' | 'Elevated'
-  /** 完全断电零功耗关断像素面积占比 (%) */
   pixelOffRatioPct: number
-  /** 核心对比度守卫复核 (确保面板优化后主要配对仍 100% 达标) */
   minWcagContrastAfterOpt: number
 }
 

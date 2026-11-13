@@ -9,6 +9,8 @@ export {
   type StandardTone,
   type StandardPaletteKey,
   type PaletteVariant,
+  type TonalPaletteOptions,
+  type CreatePalettesOptions,
 } from '../ports/inbound/palette-generation.port.ts'
 
 export {
@@ -24,6 +26,8 @@ export {
   type ThemeMode,
   type EmissivePanelType,
   type EmissiveSchemeOptions,
+  type BuildDynamicSchemeOptions,
+  type ResolveCustomColorsOptions,
 } from '../ports/inbound/scheme-building.port.ts'
 
 export type {

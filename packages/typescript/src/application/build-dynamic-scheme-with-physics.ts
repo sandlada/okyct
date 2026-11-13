@@ -1,75 +1,88 @@
-
-import { getContrastRatio, solveTonesForContrast, hexToOkyct } from '../domain/index.ts'
+import {
+  ContrastMetrics,
+  getApcaContrast,
+  getContrastRatio,
+  hexToOkyct,
+  solveTonesForContrast,
+  type ContrastMetric,
+} from '../domain/index.ts'
 import {
   EmissivePanelTypes,
   SystemColorTokens,
-  type SystemColorToken,
+  ThemeModes,
+  type BuildDynamicSchemeOptions,
   type DynamicSchemeColors,
   type EmissivePanelType,
-  type EmissiveSchemeOptions,
+  type SystemColorToken,
 } from '../ports/inbound/scheme-building.port.ts'
-import type { IDisplayPhysicsPort } from '../ports/outbound/display-physics.port.ts'
-import type { PaletteSet } from './palette-set.ts'
-import { TonalPalette } from './tonal-palette.ts'
+import {
+  DefaultEmissivePanelSpecs,
+  type IDisplayPhysicsPort,
+} from '../ports/outbound/display-physics.port.ts'
 import { SchemeTokenRoleMap, type SchemeRoleKind } from './internal/scheme-token-role-map.ts'
+import type { PaletteSet } from './palette-set.ts'
+import type { TonalPalette } from './tonal-palette.ts'
 
-const FallbackPanelSpecs: Record<
-  EmissivePanelType,
-  {
-    lightPeakToneCap: number
-    darkSurfaceTones: {
-      lowest: number
-      surface: number
-      low: number
-      container: number
-      high: number
-      highest: number
-      bright: number
-    }
-  }
-> = {
-  'standard-lcd': {
-    lightPeakToneCap: 100,
-    darkSurfaceTones: { lowest: 4, surface: 6, low: 10, container: 12, high: 17, highest: 22, bright: 24 },
-  },
-  'oled-true-black': {
-    lightPeakToneCap: 100,
-    darkSurfaceTones: { lowest: 0, surface: 0, low: 5, container: 9, high: 14, highest: 20, bright: 24 },
-  },
-  'amoled-anti-smear': {
-    lightPeakToneCap: 99,
-    darkSurfaceTones: { lowest: 4, surface: 6, low: 10, container: 12, high: 17, highest: 22, bright: 24 },
-  },
-  'micro-oled-xr': {
-    lightPeakToneCap: 92,
-    darkSurfaceTones: { lowest: 6, surface: 8, low: 12, container: 15, high: 20, highest: 25, bright: 28 },
-  },
+interface ContrastPairSpec {
+  fg: SystemColorToken
+  bg: SystemColorToken
+  minRatio: number
+  minApca: number
+}
+
+function meetsContrast(
+  fgHex: string,
+  bgHex: string,
+  minRatio: number,
+  minApca: number,
+  metric: ContrastMetric
+): boolean {
+  if (metric !== 'apca' && getContrastRatio(fgHex, bgHex) < minRatio) return false
+  if (metric !== 'wcag' && Math.abs(getApcaContrast(fgHex, bgHex)) < minApca) return false
+  return true
 }
 
 export function buildDynamicSchemeWithPhysics(
   palettes: PaletteSet,
-  isDark: boolean,
-  contrastLevel = 0.0,
-  emissiveOptions: EmissiveSchemeOptions = {},
+  options: BuildDynamicSchemeOptions = {},
   physicsPort?: Pick<
     IDisplayPhysicsPort,
     'getPanelSpec' | 'applyBlueBurnInGuard' | 'applySubpixelEdgeCompensation'
   >
 ): DynamicSchemeColors {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new Error('Invalid buildDynamicSchemeWithPhysics options: expected an object.')
+  }
+  const mode = options.mode ?? 'dark'
+  if (!ThemeModes.includes(mode)) {
+    throw new Error(`Invalid theme mode: "${String(mode)}". Expected one of: ${ThemeModes.join(', ')}.`)
+  }
+  const contrastLevel = options.contrastLevel ?? 0.0
   if (!Number.isFinite(contrastLevel)) {
     throw new Error(`Invalid contrastLevel: ${contrastLevel}. Expected a finite number in [-1.0, 1.0].`)
   }
-  const c = Math.max(-1.0, Math.min(1.0, contrastLevel))
+  const contrastMetric = options.contrastMetric ?? 'both'
+  if (!ContrastMetrics.includes(contrastMetric)) {
+    throw new Error(
+      `Invalid contrastMetric: "${String(contrastMetric)}". Expected one of: ${ContrastMetrics.join(', ')}.`
+    )
+  }
+
+  const emissiveOptions = options.emissive ?? {}
   const profile: EmissivePanelType = emissiveOptions.profile ?? 'standard-lcd'
   if (!EmissivePanelTypes.includes(profile)) {
-    throw new Error(`Invalid emissive profile: "${String(profile)}". Expected one of: ${EmissivePanelTypes.join(', ')}.`)
+    throw new Error(
+      `Invalid emissive profile: "${String(profile)}". Expected one of: ${EmissivePanelTypes.join(', ')}.`
+    )
   }
   const burnInGuard = emissiveOptions.burnInGuard ?? false
   const antiFringing = emissiveOptions.antiFringing ?? false
 
+  const isDark = mode === 'dark'
+  const c = Math.max(-1.0, Math.min(1.0, contrastLevel))
   const panelSpec = physicsPort
     ? physicsPort.getPanelSpec(profile)
-    : FallbackPanelSpecs[profile]
+    : DefaultEmissivePanelSpecs[profile]
 
   const peakWhiteCap = panelSpec.lightPeakToneCap
   const fgHighlightCap = antiFringing
@@ -77,17 +90,16 @@ export function buildDynamicSchemeWithPhysics(
       ? Math.min(peakWhiteCap, 92)
       : profile === 'amoled-anti-smear'
       ? Math.min(peakWhiteCap, 97)
-      : 100
-    : 100
+      : peakWhiteCap
+    : peakWhiteCap
 
   const adjustTone = (baseTone: number, polarity: 'lighten' | 'darken', delta = 15): number => {
     if (c === 0) return baseTone
     const factor = c > 0 ? c : c * 0.5
     if (polarity === 'lighten') {
       return Math.min(peakWhiteCap, Math.round(baseTone + delta * factor))
-    } else {
-      return Math.max(0, Math.round(baseTone - delta * factor))
     }
+    return Math.max(0, Math.round(baseTone - delta * factor))
   }
 
   const lightSurfaceCap = profile === 'micro-oled-xr' ? 94 : 98
@@ -99,10 +111,10 @@ export function buildDynamicSchemeWithPhysics(
         onPrimary: fgHighlightCap,
         primaryContainer: adjustTone(90, 'lighten', 5),
         onPrimaryContainer: adjustTone(10, 'darken', 6),
-        primaryFixed: 90,
+        primaryFixed: Math.min(peakWhiteCap, 90),
         primaryFixedDim: 80,
         onPrimaryFixed: 10,
-        onPrimaryFixedVariant: 30,
+        onPrimaryFixedVariant: 28,
 
         secondary: adjustTone(40, 'darken', 10),
         onSecondary: fgHighlightCap,
@@ -116,17 +128,17 @@ export function buildDynamicSchemeWithPhysics(
 
         error: adjustTone(40, 'darken', 10),
         onError: fgHighlightCap,
-        errorContainer: 90,
+        errorContainer: Math.min(peakWhiteCap, 90),
         onErrorContainer: 10,
 
         warning: adjustTone(42, 'darken', 10),
         onWarning: fgHighlightCap,
-        warningContainer: 90,
+        warningContainer: Math.min(peakWhiteCap, 90),
         onWarningContainer: 12,
 
         success: adjustTone(38, 'darken', 10),
         onSuccess: fgHighlightCap,
-        successContainer: 90,
+        successContainer: Math.min(peakWhiteCap, 90),
         onSuccessContainer: 10,
 
         info: adjustTone(40, 'darken', 10),
@@ -141,7 +153,7 @@ export function buildDynamicSchemeWithPhysics(
 
         surfaceDim: 87,
         surfaceBright: lightSurfaceCap,
-        surfaceContainerLowest: profile === 'micro-oled-xr' ? 96 : 100,
+        surfaceContainerLowest: profile === 'micro-oled-xr' ? 96 : peakWhiteCap,
         surfaceContainerLow: profile === 'micro-oled-xr' ? 92 : 96,
         surfaceContainer: profile === 'micro-oled-xr' ? 90 : 94,
         surfaceContainerHigh: profile === 'micro-oled-xr' ? 88 : 92,
@@ -163,10 +175,10 @@ export function buildDynamicSchemeWithPhysics(
         onPrimary: adjustTone(20, 'darken', 10),
         primaryContainer: adjustTone(30, 'darken', 6),
         onPrimaryContainer: Math.min(fgHighlightCap, adjustTone(90, 'lighten', 6)),
-        primaryFixed: 90,
+        primaryFixed: Math.min(peakWhiteCap, 90),
         primaryFixedDim: 80,
         onPrimaryFixed: 10,
-        onPrimaryFixedVariant: 30,
+        onPrimaryFixedVariant: 28,
 
         secondary: Math.min(peakWhiteCap, adjustTone(80, 'lighten', 10)),
         onSecondary: adjustTone(20, 'darken', 10),
@@ -224,62 +236,35 @@ export function buildDynamicSchemeWithPhysics(
       }
 
   const targetTextRatio = c >= 0.8 ? 7.0 : c >= 0.35 ? 5.8 : 4.5
+  const targetTextApca = c >= 0.8 ? 75 : c >= 0.35 ? 65 : 60
   const targetOutlineRatio = c >= 0.5 ? 4.5 : 3.0
+  const targetOutlineApca = c >= 0.5 ? 60 : 45
 
-  const enforceAlgebraicContrast = (
-    fgToneKey: SystemColorToken,
-    bgToneKey: SystemColorToken,
-    minRatio: number
-  ) => {
-    const fgT = tones[fgToneKey]
-    const bgT = tones[bgToneKey]
-    if (getContrastRatio(fgT, bgT) >= minRatio) return
-
-    const solved = solveTonesForContrast(bgT, minRatio)
-    if (fgT >= bgT) {
-      if (solved.lightForegroundTone !== null && solved.lightForegroundTone <= fgHighlightCap) {
-        tones[fgToneKey] = solved.lightForegroundTone
-      } else {
-        tones[fgToneKey] = fgHighlightCap
-        if (getContrastRatio(tones[fgToneKey], bgT) < minRatio) {
-          const bgSolved = solveTonesForContrast(tones[fgToneKey], minRatio)
-          if (bgSolved.darkForegroundTone !== null) {
-            tones[bgToneKey] = bgSolved.darkForegroundTone
-          }
-        }
-      }
-    } else {
-      if (solved.darkForegroundTone !== null) {
-        tones[fgToneKey] = solved.darkForegroundTone
-      } else if (solved.lightForegroundTone !== null) {
-        tones[fgToneKey] = Math.min(fgHighlightCap, solved.lightForegroundTone)
-      } else {
-        tones[fgToneKey] = 0
-      }
-    }
-  }
-
-  enforceAlgebraicContrast('onPrimary', 'primary', targetTextRatio)
-  enforceAlgebraicContrast('onPrimaryContainer', 'primaryContainer', targetTextRatio)
-  enforceAlgebraicContrast('onSecondary', 'secondary', targetTextRatio)
-  enforceAlgebraicContrast('onSecondaryContainer', 'secondaryContainer', targetTextRatio)
-  enforceAlgebraicContrast('onTertiary', 'tertiary', targetTextRatio)
-  enforceAlgebraicContrast('onTertiaryContainer', 'tertiaryContainer', targetTextRatio)
-  enforceAlgebraicContrast('onSurface', 'surface', targetTextRatio)
-  enforceAlgebraicContrast('onSurface', 'surfaceContainer', targetTextRatio)
-  enforceAlgebraicContrast('onSurfaceVariant', 'surfaceVariant', targetTextRatio)
-  enforceAlgebraicContrast('onError', 'error', targetTextRatio)
-  enforceAlgebraicContrast('onErrorContainer', 'errorContainer', targetTextRatio)
-  enforceAlgebraicContrast('onWarning', 'warning', targetTextRatio)
-  enforceAlgebraicContrast('onWarningContainer', 'warningContainer', targetTextRatio)
-  enforceAlgebraicContrast('onSuccess', 'success', targetTextRatio)
-  enforceAlgebraicContrast('onSuccessContainer', 'successContainer', targetTextRatio)
-  enforceAlgebraicContrast('onInfo', 'info', targetTextRatio)
-  enforceAlgebraicContrast('onInfoContainer', 'infoContainer', targetTextRatio)
-  enforceAlgebraicContrast('inverseOnSurface', 'inverseSurface', targetTextRatio)
-  enforceAlgebraicContrast('inverseOnPrimary', 'inversePrimary', targetTextRatio)
-  enforceAlgebraicContrast('inverseOnPrimaryContainer', 'inversePrimaryContainer', targetTextRatio)
-  enforceAlgebraicContrast('outline', 'surface', targetOutlineRatio)
+  const pairSpecs: ReadonlyArray<ContrastPairSpec> = [
+    { fg: 'onPrimary', bg: 'primary', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onPrimaryContainer', bg: 'primaryContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onPrimaryFixed', bg: 'primaryFixed', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onPrimaryFixedVariant', bg: 'primaryFixedDim', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSecondary', bg: 'secondary', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSecondaryContainer', bg: 'secondaryContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onTertiary', bg: 'tertiary', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onTertiaryContainer', bg: 'tertiaryContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSurface', bg: 'surface', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSurface', bg: 'surfaceContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSurfaceVariant', bg: 'surfaceVariant', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onError', bg: 'error', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onErrorContainer', bg: 'errorContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onWarning', bg: 'warning', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onWarningContainer', bg: 'warningContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSuccess', bg: 'success', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onSuccessContainer', bg: 'successContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onInfo', bg: 'info', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'onInfoContainer', bg: 'infoContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'inverseOnSurface', bg: 'inverseSurface', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'inverseOnPrimary', bg: 'inversePrimary', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'inverseOnPrimaryContainer', bg: 'inversePrimaryContainer', minRatio: targetTextRatio, minApca: targetTextApca },
+    { fg: 'outline', bg: 'surface', minRatio: targetOutlineRatio, minApca: targetOutlineApca },
+  ]
 
   const resolveRoleHex = (
     palette: TonalPalette,
@@ -302,11 +287,135 @@ export function buildDynamicSchemeWithPhysics(
   const resolvedColors = {} as Record<SystemColorToken, string>
   for (const token of SystemColorTokens) {
     const binding = SchemeTokenRoleMap[token]
-    const hex = resolveRoleHex(palettes[binding.palette], tones[token], binding.kind)
-    resolvedColors[token] = hex
-    if (physicsPort && (burnInGuard || antiFringing) && tones[token] > 0) {
-      tones[token] = Math.round(hexToOkyct(hex).t)
+    resolvedColors[token] = resolveRoleHex(palettes[binding.palette], tones[token], binding.kind)
+  }
+
+  const enforceHexPairClosure = (spec: ContrastPairSpec) => {
+    let fgHex = resolvedColors[spec.fg]
+    let bgHex = resolvedColors[spec.bg]
+    if (meetsContrast(fgHex, bgHex, spec.minRatio, spec.minApca, contrastMetric)) return
+
+    const fgBinding = SchemeTokenRoleMap[spec.fg]
+    const bgBinding = SchemeTokenRoleMap[spec.bg]
+    const fgPalette = palettes[fgBinding.palette]
+    const bgPalette = palettes[bgBinding.palette]
+
+    const fgMeasuredT = hexToOkyct(fgHex).t
+    const bgMeasuredT = hexToOkyct(bgHex).t
+    const solved = solveTonesForContrast(bgMeasuredT, spec.minRatio, {
+      metric: contrastMetric,
+      targetLc: spec.minApca,
+    })
+
+    const preferLightFg = fgMeasuredT >= bgMeasuredT
+    const fgCap = fgBinding.kind === 'foreground' ? fgHighlightCap : peakWhiteCap
+
+    if (preferLightFg) {
+      let candidateT =
+        solved.lightForegroundTone !== null && solved.lightForegroundTone <= fgCap
+          ? solved.lightForegroundTone
+          : fgCap
+
+      let candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
+      let steps = 0
+      while (
+        !meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric) &&
+        candidateT < fgCap &&
+        steps < 24
+      ) {
+        candidateT = Math.min(fgCap, candidateT + 0.5)
+        candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
+        steps++
+      }
+
+      if (meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric)) {
+        tones[spec.fg] = candidateT
+        resolvedColors[spec.fg] = candidateHex
+        return
+      }
+
+      // Apply peak foreground cap and nudge background darker within panel floor if needed
+      tones[spec.fg] = candidateT
+      resolvedColors[spec.fg] = candidateHex
+      fgHex = candidateHex
+
+      const bgFloor = bgBinding.kind === 'surface' && isDark ? darkFloors.surface : 0
+      const bgSolved = solveTonesForContrast(hexToOkyct(fgHex).t, spec.minRatio, {
+        metric: contrastMetric,
+        targetLc: spec.minApca,
+      })
+      let bgT =
+        bgSolved.darkForegroundTone !== null
+          ? Math.max(bgFloor, bgSolved.darkForegroundTone)
+          : bgFloor
+      let nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
+      let bgSteps = 0
+      while (
+        !meetsContrast(fgHex, nextBgHex, spec.minRatio, spec.minApca, contrastMetric) &&
+        bgT > bgFloor &&
+        bgSteps < 24
+      ) {
+        bgT = Math.max(bgFloor, bgT - 0.5)
+        nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
+        bgSteps++
+      }
+      tones[spec.bg] = bgT
+      resolvedColors[spec.bg] = nextBgHex
+    } else {
+      let candidateT = solved.darkForegroundTone !== null ? solved.darkForegroundTone : 0
+      let candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
+      let steps = 0
+      while (
+        !meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric) &&
+        candidateT > 0 &&
+        steps < 24
+      ) {
+        candidateT = Math.max(0, candidateT - 0.5)
+        candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
+        steps++
+      }
+
+      if (meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric)) {
+        tones[spec.fg] = candidateT
+        resolvedColors[spec.fg] = candidateHex
+        return
+      }
+
+      // If dark foreground cannot go lower, flip or nudge light background up
+      const bgSolved = solveTonesForContrast(hexToOkyct(candidateHex).t, spec.minRatio, {
+        metric: contrastMetric,
+        targetLc: spec.minApca,
+      })
+      if (bgSolved.lightForegroundTone !== null && bgSolved.lightForegroundTone <= peakWhiteCap) {
+        let bgT = bgSolved.lightForegroundTone
+        let nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
+        let bgSteps = 0
+        while (
+          !meetsContrast(candidateHex, nextBgHex, spec.minRatio, spec.minApca, contrastMetric) &&
+          bgT < peakWhiteCap &&
+          bgSteps < 24
+        ) {
+          bgT = Math.min(peakWhiteCap, bgT + 0.5)
+          nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
+          bgSteps++
+        }
+        tones[spec.fg] = candidateT
+        resolvedColors[spec.fg] = candidateHex
+        tones[spec.bg] = bgT
+        resolvedColors[spec.bg] = nextBgHex
+      } else {
+        tones[spec.fg] = candidateT
+        resolvedColors[spec.fg] = candidateHex
+      }
     }
+  }
+
+  for (const pair of pairSpecs) {
+    enforceHexPairClosure(pair)
+  }
+
+  for (const token of SystemColorTokens) {
+    tones[token] = parseFloat(hexToOkyct(resolvedColors[token]).t.toFixed(2))
   }
 
   return {

@@ -1,5 +1,10 @@
-
-import { hexToRgb, rgbToOkyct, getContrastRatio, getApcaContrast, solveTonesForContrast } from '../domain/index.ts'
+import {
+  getApcaContrast,
+  getContrastRatio,
+  hexToRgb,
+  rgbToOkyct,
+  solveTonesForContrast,
+} from '../domain/index.ts'
 import type { CompositedResult, StackedContrastReport } from '../ports/inbound/layer-stacking.port.ts'
 
 export const auditStackedContrast = (foregroundHex: string) =>
@@ -18,10 +23,11 @@ export const auditStackedContrast = (foregroundHex: string) =>
     let warningMessage: string | undefined
     let recommendedCompensationTone: number | null = null
 
-    if (!wcagPassAA) {
-      warningMessage = `警告：在 ${composited.totalLayers} 层叠加后，背景 Tone 产生 ΔT=${deltaTone > 0 ? '+' : ''}${deltaTone.toFixed(1)} 偏移，导致对比度跌至 ${wcagRatio.toFixed(2)}:1 (低于 WCAG AA 4.5:1)。`
-      const solved = solveTonesForContrast(bgOkyct.t, 4.5)
-      recommendedCompensationTone = fgOkyct.t > bgOkyct.t ? solved.lightForegroundTone : solved.darkForegroundTone
+    if (!wcagPassAA || apcaLc < 60) {
+      warningMessage = `Warning: after ${composited.totalLayers} composited layers, background Tone shifted by ΔT=${deltaTone > 0 ? '+' : ''}${deltaTone.toFixed(1)}, reducing contrast to WCAG ${wcagRatio.toFixed(2)}:1 / APCA Lc ${apcaLc}.`
+      const solved = solveTonesForContrast(bgOkyct.t, 4.5, { metric: 'both', targetLc: 60 })
+      recommendedCompensationTone =
+        fgOkyct.t > bgOkyct.t ? solved.lightForegroundTone : solved.darkForegroundTone
     }
 
     return {
