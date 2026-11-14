@@ -11,6 +11,7 @@ import { Tabs } from '../../../ui/Tabs.tsx'
 
 const NavItems: readonly { view: StudioView; key: MessageKey }[] = [
   { view: StudioViewIds.Tokens, key: 'studio.tab.tokens' },
+  { view: StudioViewIds.Palettes, key: 'studio.tab.palettes' },
   { view: StudioViewIds.Oled, key: 'studio.tab.oled' },
   { view: StudioViewIds.Composition, key: 'studio.tab.fp' },
   { view: StudioViewIds.Delta, key: 'studio.tab.delta' },

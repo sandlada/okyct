@@ -4,6 +4,7 @@ import { DeltaView } from '../../delta/components/DeltaView.tsx'
 import { TokenExportView } from '../../export/components/TokenExportView.tsx'
 import { PageView } from '../../page/components/PageView.tsx'
 import { OledView } from '../../oled/components/OledView.tsx'
+import { PalettesView } from '../../palettes/components/PalettesView.tsx'
 import { TokensView } from '../../tokens/components/TokensView.tsx'
 import { selectSchemePending } from '../selectors.ts'
 import { setMobileDrawerOpen } from '../slice.ts'
@@ -53,6 +54,7 @@ export default function StudioApp() {
           }`}
         >
           {view === StudioViewIds.Tokens && <TokensView />}
+          {view === StudioViewIds.Palettes && <PalettesView />}
           {view === StudioViewIds.Oled && <OledView />}
           {view === StudioViewIds.Composition && <FpPlaygroundView />}
           {view === StudioViewIds.Delta && <DeltaView />}
