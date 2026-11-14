@@ -1,10 +1,46 @@
 {
   "name": "@sandlada/okyct",
-  "version": "0.1.0",
+  "version": "0.0.1-20261114.a",
   "description": "OKYCT Perceptual Color Space & MD3 Theme Engine for Emissive Displays",
-  "author": "sandlada",
+  "keywords": [
+    "okyct",
+    "color",
+    "color-space",
+    "oklab",
+    "oklch",
+    "perceptual-color",
+    "material-design",
+    "md3",
+    "design-tokens",
+    "theme-engine",
+    "oled",
+    "amoled",
+    "micro-oled",
+    "wcag",
+    "apca",
+    "accessibility",
+    "contrast",
+    "gamut-mapping",
+    "typescript"
+  ],
+  "homepage": "https://github.com/sandlada/okyct#readme",
+  "bugs": {
+    "url": "https://github.com/sandlada/okyct/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandlada/okyct.git",
+    "directory": "packages/typescript"
+  },
+  "author": "Kai Orion, Sandlada",
   "license": "MIT",
   "type": "module",
+  "sideEffects": false,
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",

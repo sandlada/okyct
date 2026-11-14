@@ -1,28 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# OKYCT
 
-# OKYCT & OKYCT Studio
+Website: [okyct.sandlada.com](https://okyct.sandlada.com)
 
-自研 OKYCT 感知色彩模型与自发光动态配色系统，集成自发光显示物理优化（OLED / AMOLED / MicroOLED）、WCAG 2.1 / APCA 双对比度保证，借鉴 MCU 变体与按需定制 MD3 CSS Tokens 规范。
+OKYCT is a perceptual color model and emissive dynamic color system developed by Sandlada. It is designed to address perceptual distortion, computational overhead, and hardware physical limitations of traditional color spaces (sRGB, HSL, CIELAB, and CAM16/HCT) on high-refresh-rate emissive displays and accessible typography.
 
-- **产品名**: OKYCT（多语言生态与项目统称 `okyct`）
-- **核心库**: `@sandlada/okyct` (NPM，目前暂未正式发布；后续规划 Dart、Rust 等实现)
-- **前端工作台**: OKYCT Studio (`packages/site`)
+**OKYCT** is named after its core colorimetric dimensions:
+- **OK**: Based on the **OKLab** perceptually uniform color space (providing a linear polar hue angle $H$)
+- **Y**: Strictly anchored to **CIE 1931 relative luminance $Y$**
+- **C**: **Chroma** (perceptual chroma magnitude $C = \sqrt{a^2 + b^2}$)
+- **T**: **Tone** (visual lightness $T \in [0, 100]$, strictly bijective with CIE $Y$)
 
-View your app in AI Studio: https://ai.studio/apps/ee36e0f8-26d3-48ef-bb70-907a0c76b109
+## Highlights
 
-## Monorepo Architecture
+- **Perceptual Uniformity & Hue Fidelity**: Built on OKLab polar coordinates and CIE 1931 relative luminance, eliminating hue shifts and lightness distortions in the blue-violet region found in traditional color spaces.
+- **Ultra-Fast Pure Computation Engine**: Zero external runtime dependencies; pure TypeScript implementation delivering millisecond-level color space conversions and palette generation.
+- **Zero-Hue-Drift Gamut Mapping**: Supports sRGB and Display P3 wide-gamut mapping while keeping perceptual hue stable when converging at gamut boundaries.
+- **Emissive Display Physics Optimization**: Provides anti-black-smearing, burn-in prevention, and anti-halation modes tailored for OLED, AMOLED, and MicroOLED panels.
+- **Deterministic Accessibility Contrast**: Native support for WCAG 2.1 and APCA perceptual contrast calculation as well as closed-form target contrast inversion to guarantee text readability.
 
-- **`packages/typescript` (`@sandlada/okyct`)**: 核心六边形架构色度学数学模型、求解器、物理优化与设计 Token 导出库。
-- **`packages/site` (`@sandlada/site`)**: 前端 React 实时工作台。
+## Installation
 
-## Quick Start & Contributing
+> Note: `@sandlada/okyct` is currently under active development.
 
-详细的环境准备、构建指令清单（`build`, `dev`, `lint`, `clean` 等）与贡献流程，请参阅 **[CONTRIBUTING.md](./CONTRIBUTING.md)**。
-
-快速体验：
 ```bash
-pnpm install
-pnpm dev
+npm install @sandlada/okyct
+# or
+pnpm add @sandlada/okyct
 ```
+
+## Repository Structure
+
+- [packages/typescript](./packages/typescript/README.md) (`@sandlada/okyct`): Core colorimetric engine and dynamic color library (with Dart and Rust implementations planned).
+- [packages/benchmark](./packages/benchmark/README.md) (`@sandlada/benchmark`): Performance and colorimetric accuracy benchmark suite.
+- [packages/site](./packages/site/README.md) (`@sandlada/site`): Interactive color science workbench **OKYCT Studio**.

@@ -1,6 +1,0 @@
-{
-  "name": "OKYCT Studio",
-  "description": "自研 OKYCT 感知色彩模型与自发光动态配色系统，集成自发光显示物理优化、WCAG/APCA 双对比度保证，借鉴 MCU 变体与按需定制 MD3 CSS Tokens 规范。",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
