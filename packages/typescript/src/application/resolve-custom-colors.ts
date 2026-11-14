@@ -14,6 +14,8 @@ import {
   type ResolvedCustomColor,
 } from '../ports/inbound/scheme-building.port.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
+import { compositeGuardedStateHex } from './internal/composite-guarded-state-hex.ts'
+import { formatStateLayerKey, normalizeStateLayerStates } from './internal/scheme-token-role-map.ts'
 import { TonalPalette } from './tonal-palette.ts'
 
 function meetsTarget(
@@ -88,6 +90,9 @@ export function resolveCustomColors(
   const clampedContrast = Math.max(-1.0, Math.min(1.0, rawContrast))
   const targetRatio = clampedContrast >= 0.8 ? 7.0 : clampedContrast >= 0.35 ? 5.8 : 4.5
   const targetApca = clampedContrast >= 0.8 ? 75 : clampedContrast >= 0.35 ? 65 : 60
+  const requestedStates = normalizeStateLayerStates(options.stateLayers)
+  const blendSpace = options.stateLayersBlendSpace ?? 'okyct'
+  const contrastGuard = options.stateLayersContrastGuard ?? false
 
   return configs.map((cfg) => {
     if (cfg === null || typeof cfg !== 'object' || Array.isArray(cfg)) {
@@ -144,7 +149,7 @@ export function resolveCustomColors(
       contrastMetric
     )
 
-    return {
+    const resolved: ResolvedCustomColor = {
       id,
       name,
       label,
@@ -160,5 +165,42 @@ export function resolveCustomColors(
       apcaLcColor: Math.abs(getApcaContrast(onColorHex, colorHex)),
       apcaLcContainer: Math.abs(getApcaContrast(onContainerHex, containerHex)),
     }
+
+    if (requestedStates.length > 0) {
+      const stateLayers: Record<string, string> = {}
+      for (const state of requestedStates) {
+        stateLayers[formatStateLayerKey('color', state)] = compositeGuardedStateHex(
+          colorHex,
+          onColorHex,
+          state,
+          blendSpace,
+          contrastGuard
+        )
+        stateLayers[formatStateLayerKey('onColor', state)] = compositeGuardedStateHex(
+          onColorHex,
+          colorHex,
+          state,
+          blendSpace,
+          contrastGuard
+        )
+        stateLayers[formatStateLayerKey('colorContainer', state)] = compositeGuardedStateHex(
+          containerHex,
+          onContainerHex,
+          state,
+          blendSpace,
+          contrastGuard
+        )
+        stateLayers[formatStateLayerKey('onColorContainer', state)] = compositeGuardedStateHex(
+          onContainerHex,
+          containerHex,
+          state,
+          blendSpace,
+          contrastGuard
+        )
+      }
+      resolved.stateLayers = stateLayers
+    }
+
+    return resolved
   })
 }

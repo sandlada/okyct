@@ -13,7 +13,7 @@ import {
 
 export { EmissivePanelTypes, type EmissivePanelType, type EmissiveSchemeOptions }
 
-export const SubpixelGeometries = ['rgb-stripe', 'diamond-pentile', 'micro-oled-hex'] as const
+export const SubpixelGeometries = ['rgb-stripe', 'diamond-pentile', 'micro-oled-hex', 'wrgb-stripe'] as const
 export type SubpixelGeometry = (typeof SubpixelGeometries)[number]
 
 export interface EmissivePanelSpec {
@@ -121,6 +121,27 @@ export const DefaultEmissivePanelSpecs: Record<EmissivePanelType, EmissivePanelS
     },
     lightPeakToneCap: 92,
     smearRiseTimeMs: 0.4,
+  },
+  'woled-desktop': {
+    id: 'woled-desktop',
+    name: 'WRGB Tandem OLED (Desktop / TV)',
+    shortName: 'WOLED Desktop',
+    badge: 'WRGB White Subpixel',
+    subpixelGeometry: 'wrgb-stripe',
+    geometryLabel: 'WRGB Stripe (White Subpixel Assisted)',
+    description:
+      'Models desktop/TV WRGB Tandem OLED panels where a dedicated high-efficiency white subpixel carries achromatic luminance, reducing RGB emitter stress on bright surfaces.',
+    darkSurfaceTones: {
+      lowest: 2,
+      surface: 4,
+      low: 8,
+      container: 12,
+      high: 16,
+      highest: 21,
+      bright: 24,
+    },
+    lightPeakToneCap: 98,
+    smearRiseTimeMs: 0.3,
   },
 }
 

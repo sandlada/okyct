@@ -315,15 +315,39 @@ ${tokenCss}
       border: none;
       font-size: 12px;
       font-weight: 600;
+      cursor: pointer;
+      transition: background-color 140ms ease;
     }
     .btn--filled {
       background: var(--md-sys-color-primary);
       color: var(--md-sys-color-on-primary);
     }
+    .btn--filled:hover {
+      background: var(--md-sys-color-primary-hovered);
+    }
+    .btn--filled:focus-visible {
+      background: var(--md-sys-color-primary-focused);
+      outline: 2px solid var(--md-sys-color-primary);
+      outline-offset: 2px;
+    }
+    .btn--filled:active {
+      background: var(--md-sys-color-primary-pressed);
+    }
     .btn--ghost {
-      background: transparent;
+      background: var(--md-sys-color-surface-container-low);
       color: var(--md-sys-color-on-surface-variant);
       border: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .btn--ghost:hover {
+      background: var(--md-sys-color-surface-container-low-hovered);
+    }
+    .btn--ghost:focus-visible {
+      background: var(--md-sys-color-surface-container-low-focused);
+      outline: 2px solid var(--md-sys-color-outline);
+      outline-offset: 2px;
+    }
+    .btn--ghost:active {
+      background: var(--md-sys-color-surface-container-low-pressed);
     }
 
     .feed { list-style: none; }
@@ -434,8 +458,8 @@ ${tokenCss}
                   <span class="chart__bar"></span>
                 </div>
                 <div class="panel__foot">
-                  <button type="button" class="btn btn--filled" disabled>${escapeHtml(copy.btnPrimary)}</button>
-                  <button type="button" class="btn btn--ghost" disabled>${escapeHtml(copy.btnSecondary)}</button>
+                  <button type="button" class="btn btn--filled">${escapeHtml(copy.btnPrimary)}</button>
+                  <button type="button" class="btn btn--ghost">${escapeHtml(copy.btnSecondary)}</button>
                 </div>
               </div>
             </article>

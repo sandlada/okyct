@@ -2,21 +2,27 @@
 import type { ColorLayer, CompositedResult } from '../ports/inbound/layer-stacking.port.ts'
 import { stackLayers } from './stack-layers.ts'
 
-function getStateLayerOpacity(state: 'hover' | 'focus' | 'pressed' | 'dragged'): number {
+type StackStateName = 'hovered' | 'focused' | 'pressed' | 'dragged' | 'hover' | 'focus'
+
+function getStateLayerOpacity(state: StackStateName): number {
   switch (state) {
+    case 'hovered':
     case 'hover':
       return 0.08
+    case 'focused':
     case 'focus':
     case 'pressed':
       return 0.12
     case 'dragged':
       return 0.16
     default:
-      throw new Error(`Invalid state layer: "${String(state)}". Expected one of: hover, focus, pressed, dragged.`)
+      throw new Error(
+        `Invalid state layer: "${String(state)}". Expected one of: hovered, focused, pressed, dragged.`
+      )
   }
 }
 
-export const stackStateLayers = (states: Array<'hover' | 'focus' | 'pressed' | 'dragged'>) => {
+export const stackStateLayers = (states: Array<StackStateName>) => {
   if (!Array.isArray(states)) {
     throw new Error('Invalid state layers list: expected an array of state names.')
   }
@@ -35,6 +41,6 @@ export const stackStateLayers = (states: Array<'hover' | 'focus' | 'pressed' | '
       label: `${state.toUpperCase()} State Layer (${Math.round(opacity * 100)}%)`,
     }))
 
-    return stackLayers({ blendSpace: 'linear-srgb' })(layers)(pair.base)
+    return stackLayers({ blendSpace: 'okyct' })(layers)(pair.base)
   }
 }

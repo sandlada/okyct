@@ -1,9 +1,16 @@
+import type { CSSProperties } from 'react'
 import { Check, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useI18n } from '../../../i18n/index.tsx'
 import { useAppDispatch, useAppSelector } from '../../../app/store.ts'
 import { copyTokenText } from '../actions.ts'
 import { SystemTokenDefinitions, TokenCategories } from '../catalog.ts'
-import { selectCustomRoleGroups, selectTokenCards } from '../selectors.ts'
+import {
+  selectCustomRoleGroups,
+  selectTokenCards,
+  type StateLayerSwatch,
+  type SwatchInteractionColors,
+} from '../selectors.ts'
+import { setShowStateLayers } from '../slice.ts'
 import { SchemeContrastAuditTable } from './SchemeContrastAuditTable.tsx'
 import { TonalPaletteRamps } from './TonalPaletteRamps.tsx'
 
@@ -36,6 +43,7 @@ const EnglishCopy = {
   customRoleText: (label: string) => `${label} on-color`,
   customRoleContainer: (label: string) => `${label} container`,
   customRoleContainerText: (label: string) => `${label} container on-color`,
+  showStateLayers: 'State layers (hovered / focused / pressed / dragged)',
 }
 
 const TraditionalCopy: typeof EnglishCopy = {
@@ -134,6 +142,7 @@ const TraditionalCopy: typeof EnglishCopy = {
   customRoleText: (label: string) => `${label} 文字`,
   customRoleContainer: (label: string) => `${label} 容器`,
   customRoleContainerText: (label: string) => `${label} 容器文字`,
+  showStateLayers: '狀態層預覽（hovered / focused / pressed / dragged）',
 }
 
 const Copy = { en: EnglishCopy, 'zh-Hant': TraditionalCopy } as const
@@ -147,6 +156,7 @@ export function TokensView() {
   const copy = Copy[locale]
   const dispatch = useAppDispatch()
   const toastMessage = useAppSelector((state) => state.tokens.toast)
+  const showStateLayers = useAppSelector((state) => state.tokens.showStateLayers)
   const cards = useAppSelector(selectTokenCards)
   const customGroups = useAppSelector(selectCustomRoleGroups)
 
@@ -163,6 +173,12 @@ export function TokensView() {
 
   return (
     <div className="flex-1 min-h-0 w-full max-w-[2400px] mx-auto p-3 sm:p-6 xl:px-8 2xl:px-10 overflow-y-auto flex flex-col gap-4 sm:gap-6 xl:gap-8 bg-neutral-100 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 pb-24 md:pb-6 relative">
+      <style>{`
+        .okyct-token-swatch { background-color: var(--swatch-rest); transition: background-color 140ms ease; }
+        .okyct-token-swatch:hover { background-color: var(--swatch-hovered, var(--swatch-rest)); }
+        .okyct-token-swatch:focus-visible { background-color: var(--swatch-focused, var(--swatch-rest)); }
+        .okyct-token-swatch:active { background-color: var(--swatch-pressed, var(--swatch-rest)); }
+      `}</style>
       {toastMessage && (
         <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 px-3.5 py-2 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-lg shadow-xl text-xs font-mono flex items-center gap-2">
           <Check className="w-4 h-4 text-emerald-500" />
@@ -171,6 +187,18 @@ export function TokensView() {
       )}
 
       <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-end">
+          <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs font-medium cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showStateLayers}
+              onChange={(e) => dispatch(setShowStateLayers(e.target.checked))}
+              className="w-3.5 h-3.5 accent-neutral-900 dark:accent-neutral-100 cursor-pointer"
+            />
+            <span>{copy.showStateLayers}</span>
+          </label>
+        </div>
+
         {cards.length > 0 && (
           <div className={TokenGridClass}>
             {cards.map((card) => (
@@ -182,6 +210,7 @@ export function TokensView() {
                 <div className="flex h-10 w-full shrink-0">
                   <SwatchHalf
                     hex={card.lightSwatch}
+                    interaction={card.lightInteraction}
                     contrast={card.lightContrast}
                     side="left"
                     showAa={card.showAa}
@@ -191,6 +220,7 @@ export function TokensView() {
                   />
                   <SwatchHalf
                     hex={card.darkSwatch}
+                    interaction={card.darkInteraction}
                     contrast={card.darkContrast}
                     side="right"
                     showAa={card.showAa}
@@ -214,6 +244,13 @@ export function TokensView() {
                     <span className="flex-1 truncate uppercase text-right">{card.darkHex}</span>
                   </div>
                 </div>
+                {card.stateLayers ? (
+                  <StateLayerStrip
+                    token={card.token}
+                    items={card.stateLayers}
+                    onCopy={handleCopy}
+                  />
+                ) : null}
               </div>
             ))}
           </div>
@@ -245,6 +282,7 @@ export function TokensView() {
                         <div className="flex h-10 w-full shrink-0">
                           <SwatchHalf
                             hex={role.lightSwatch}
+                            interaction={role.lightInteraction}
                             contrast={role.lightContrast}
                             side="left"
                             showAa
@@ -254,6 +292,7 @@ export function TokensView() {
                           />
                           <SwatchHalf
                             hex={role.darkSwatch}
+                            interaction={role.darkInteraction}
                             contrast={role.darkContrast}
                             side="right"
                             showAa
@@ -275,6 +314,13 @@ export function TokensView() {
                             <span className="flex-1 truncate uppercase text-right">{role.darkHex}</span>
                           </div>
                         </div>
+                        {role.stateLayers ? (
+                          <StateLayerStrip
+                            token={role.key}
+                            items={role.stateLayers}
+                            onCopy={handleCopy}
+                          />
+                        ) : null}
                       </div>
                     ))}
                   </div>
@@ -299,6 +345,7 @@ export function TokensView() {
 
 function SwatchHalf({
   hex,
+  interaction,
   contrast,
   side,
   showAa = false,
@@ -307,6 +354,7 @@ function SwatchHalf({
   copyTitle,
 }: {
   hex: string
+  interaction?: SwatchInteractionColors
   contrast: number | null
   side: 'left' | 'right'
   showAa?: boolean
@@ -314,15 +362,26 @@ function SwatchHalf({
   onCopy?: () => void
   copyTitle?: string
 }) {
+  const style = {
+    '--swatch-rest': hex,
+    ...(interaction
+      ? {
+          '--swatch-hovered': interaction.hovered,
+          '--swatch-focused': interaction.focused,
+          '--swatch-pressed': interaction.pressed,
+        }
+      : {}),
+  } as CSSProperties
+
   return (
     <button
       type="button"
       onClick={onCopy}
       title={copyTitle}
-      className={`relative flex-1 min-w-0 cursor-pointer transition-opacity hover:opacity-90 active:opacity-80 ${
+      className={`okyct-token-swatch relative flex-1 min-w-0 cursor-pointer outline-none ${
         side === 'left' ? 'border-r border-black/10 dark:border-white/10' : ''
       }`}
-      style={{ backgroundColor: hex }}
+      style={style}
     >
       {showAa && aaColor ? (
         <span
@@ -344,6 +403,43 @@ function SwatchHalf({
         />
       ) : null}
     </button>
+  )
+}
+
+function StateLayerStrip({
+  token,
+  items,
+  onCopy,
+}: {
+  token: string
+  items: readonly StateLayerSwatch[]
+  onCopy: (hex: string, label: string) => void
+}) {
+  return (
+    <div className="grid grid-cols-4 border-t border-neutral-200 dark:border-neutral-800 h-5">
+      {items.map((item) => {
+        const cap = `${item.state.charAt(0).toUpperCase()}${item.state.slice(1)}`
+        const tokenName = `${token}${cap}`
+        return (
+          <div key={item.state} className="flex h-full min-w-0 border-r last:border-r-0 border-black/10 dark:border-white/10">
+            <button
+              type="button"
+              onClick={() => onCopy(item.lightHex, `${tokenName} (light)`)}
+              title={`${tokenName} (light): ${item.lightHex}`}
+              className="flex-1 h-full cursor-pointer hover:opacity-85"
+              style={{ backgroundColor: item.lightSwatch }}
+            />
+            <button
+              type="button"
+              onClick={() => onCopy(item.darkHex, `${tokenName} (dark)`)}
+              title={`${tokenName} (dark): ${item.darkHex}`}
+              className="flex-1 h-full cursor-pointer hover:opacity-85"
+              style={{ backgroundColor: item.darkSwatch }}
+            />
+          </div>
+        )
+      })}
+    </div>
   )
 }
 

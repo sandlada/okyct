@@ -35,7 +35,7 @@ export const SystemTokenDefinitions: TokenMeta[] = [
   { token: 'primaryContainer', label: 'Primary container', category: 'primary', pairedRole: 'onPrimaryContainer' },
   { token: 'onPrimaryContainer', label: 'On primary container', category: 'primary', pairedRole: 'primaryContainer' },
   { token: 'primaryFixed', label: 'Primary fixed', category: 'primary', pairedRole: 'onPrimaryFixed' },
-  { token: 'primaryFixedDim', label: 'Primary fixed dim', category: 'primary', pairedRole: 'onPrimaryFixedVariant' },
+  { token: 'primaryFixedDim', label: 'Primary fixed dim', category: 'primary', pairedRole: 'onPrimaryFixed' },
   { token: 'onPrimaryFixed', label: 'On primary fixed', category: 'primary', pairedRole: 'primaryFixed' },
   { token: 'onPrimaryFixedVariant', label: 'On primary fixed variant', category: 'primary', pairedRole: 'primaryFixedDim' },
 

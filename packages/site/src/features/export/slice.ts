@@ -8,6 +8,7 @@ export interface ExportState {
   format: ExportFormat
   cssSchemeMode: CssSchemeMode
   tailwindFallback: TailwindFallbackMode
+  stateLayers: boolean
   copied: boolean
 }
 
@@ -15,6 +16,7 @@ const InitialExportState: ExportState = {
   format: 'css',
   cssSchemeMode: 'light-dark',
   tailwindFallback: 'light-dark',
+  stateLayers: false,
   copied: false,
 }
 
@@ -31,11 +33,20 @@ const exportSlice = createSlice({
     setTailwindFallback(state, action: PayloadAction<TailwindFallbackMode>) {
       state.tailwindFallback = action.payload
     },
+    setExportStateLayers(state, action: PayloadAction<boolean>) {
+      state.stateLayers = action.payload
+    },
     setExportCopied(state, action: PayloadAction<boolean>) {
       state.copied = action.payload
     },
   },
 })
 
-export const { setExportFormat, setCssSchemeMode, setTailwindFallback, setExportCopied } = exportSlice.actions
+export const {
+  setExportFormat,
+  setCssSchemeMode,
+  setTailwindFallback,
+  setExportStateLayers,
+  setExportCopied,
+} = exportSlice.actions
 export const exportReducer = exportSlice.reducer

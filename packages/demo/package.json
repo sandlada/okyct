@@ -8,7 +8,8 @@
     "start": "astro dev --port 4321 --host",
     "build": "astro build",
     "preview": "astro preview --port 4321 --host",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/**/*.unit-test.ts"
   },
   "dependencies": {
     "@sandlada/okyct": "0.0.1-20261114.b",

@@ -54,7 +54,7 @@ export interface ILayerStackingPort {
   ): (layers: readonly ColorLayer[]) => (baseColor: string) => CompositedResult
 
   stackStateLayers(
-    states: Array<'hover' | 'focus' | 'pressed' | 'dragged'>
+    states: Array<'hovered' | 'focused' | 'pressed' | 'dragged' | 'hover' | 'focus'>
   ): (pair: { base: string; stateColor: string }) => CompositedResult
 
   auditStackedContrast(

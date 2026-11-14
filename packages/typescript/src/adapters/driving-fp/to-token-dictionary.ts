@@ -33,7 +33,8 @@ function customRoleKeys(name: string): readonly [string, string, string, string]
 
 export function toTokenDictionary(
   scheme: DynamicSchemeColors,
-  customColors: readonly ResolvedCustomColor[] = []
+  customColors: readonly ResolvedCustomColor[] = [],
+  options: { includeStateLayers?: boolean } = {}
 ): TokenDictionary {
   if (scheme === null || typeof scheme !== 'object' || Array.isArray(scheme)) {
     throw new Error('Invalid DynamicSchemeColors input: expected an object.')
@@ -42,6 +43,7 @@ export function toTokenDictionary(
     throw new Error('Invalid customColors input: expected an array of ResolvedCustomColor.')
   }
 
+  const includeStateLayers = options.includeStateLayers ?? true
   const dict: TokenDictionary = {}
   for (const key of SystemColorTokens) {
     const value = scheme[key]
@@ -49,6 +51,14 @@ export function toTokenDictionary(
       throw new Error(`Invalid scheme color for token "${key}": expected string, received ${typeof value}.`)
     }
     dict[key] = value
+  }
+
+  if (includeStateLayers && scheme.stateLayers) {
+    for (const [stateKey, stateHex] of Object.entries(scheme.stateLayers)) {
+      if (typeof stateHex === 'string') {
+        dict[stateKey] = stateHex
+      }
+    }
   }
 
   for (const custom of customColors) {
@@ -60,6 +70,25 @@ export function toTokenDictionary(
     dict[onKey] = custom.onColor
     dict[containerKey] = custom.colorContainer
     dict[onContainerKey] = custom.onColorContainer
+
+    if (includeStateLayers && custom.stateLayers) {
+      for (const [roleStateKey, stateHex] of Object.entries(custom.stateLayers)) {
+        if (typeof stateHex !== 'string') continue
+        if (roleStateKey.startsWith('colorContainer')) {
+          const suffix = roleStateKey.slice('colorContainer'.length)
+          dict[`${containerKey}${suffix}`] = stateHex
+        } else if (roleStateKey.startsWith('onColorContainer')) {
+          const suffix = roleStateKey.slice('onColorContainer'.length)
+          dict[`${onContainerKey}${suffix}`] = stateHex
+        } else if (roleStateKey.startsWith('onColor')) {
+          const suffix = roleStateKey.slice('onColor'.length)
+          dict[`${onKey}${suffix}`] = stateHex
+        } else if (roleStateKey.startsWith('color')) {
+          const suffix = roleStateKey.slice('color'.length)
+          dict[`${baseKey}${suffix}`] = stateHex
+        }
+      }
+    }
   }
 
   return dict

@@ -4,6 +4,7 @@ import {
   auditSchemeContrast,
   createPalettesFromSource,
   resolveCustomColors,
+  type AmbientSurround,
   type ContrastAuditItem,
   type CustomColorInput,
   type DynamicSchemeColors,
@@ -11,6 +12,8 @@ import {
   type PaletteSet,
   type PaletteVariant,
   type ResolvedCustomColor,
+  type StateLayerBlendSpace,
+  type StateLayersOption,
   type ThemeMode,
 } from '../application/index.ts'
 import type { SchemeEmissiveReport } from '../ports/outbound/display-physics.port.ts'
@@ -28,11 +31,15 @@ export interface CreateThemeOptions {
   harmonizeSemantics?: boolean
   contrastLevel?: number
   contrastMetric?: ContrastMetric
+  ambient?: AmbientSurround
   gamut?: GamutTarget
   hkCompensation?: boolean
   softKnee?: boolean
   emissive?: EmissiveSchemeOptions
   customColors?: readonly CustomColorInput[] | Record<string, string>
+  stateLayers?: StateLayersOption
+  stateLayersBlendSpace?: StateLayerBlendSpace
+  stateLayersContrastGuard?: boolean
 }
 
 export interface OkyctTheme {
@@ -52,7 +59,7 @@ export interface OkyctTheme {
     readonly dark: ResolvedCustomColor[]
   }
   scheme(mode?: ThemeMode): DynamicSchemeColors
-  tokens(mode?: ThemeMode, options?: { includeCustomColors?: boolean }): TokenDictionary
+  tokens(mode?: ThemeMode, options?: { includeCustomColors?: boolean; includeStateLayers?: boolean }): TokenDictionary
   auditContrast(mode?: ThemeMode): ContrastAuditItem[]
   analyzeEmissive(mode?: ThemeMode): SchemeEmissiveReport
   export(format?: TokenExportFormat, options?: Omit<ExportThemeOptions, 'format'>): string
@@ -118,7 +125,10 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
     profile: opts.emissive?.profile ?? 'standard-lcd',
     burnInGuard: opts.emissive?.burnInGuard ?? false,
     antiFringing: opts.emissive?.antiFringing ?? false,
+    ablGuard: opts.emissive?.ablGuard ?? false,
   }
+
+  const stateLayers: StateLayersOption = opts.stateLayers ?? false
 
   const palettes = createPalettesFromSource(sourceHex, {
     variant,
@@ -131,13 +141,21 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
     mode: 'light',
     contrastLevel,
     contrastMetric,
+    ambient: opts.ambient,
     emissive,
+    stateLayers,
+    stateLayersBlendSpace: opts.stateLayersBlendSpace,
+    stateLayersContrastGuard: opts.stateLayersContrastGuard,
   })
   const darkScheme = buildDynamicScheme(palettes, {
     mode: 'dark',
     contrastLevel,
     contrastMetric,
+    ambient: opts.ambient,
     emissive,
+    stateLayers,
+    stateLayersBlendSpace: opts.stateLayersBlendSpace,
+    stateLayersContrastGuard: opts.stateLayersContrastGuard,
   })
 
   const customConfigs = normalizeCustomColorInputs(opts.customColors)
@@ -147,6 +165,9 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
           mode: 'light',
           contrastLevel,
           contrastMetric,
+          stateLayers,
+          stateLayersBlendSpace: opts.stateLayersBlendSpace,
+          stateLayersContrastGuard: opts.stateLayersContrastGuard,
         })
       : []
   const customDark =
@@ -155,6 +176,9 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
           mode: 'dark',
           contrastLevel,
           contrastMetric,
+          stateLayers,
+          stateLayersBlendSpace: opts.stateLayersBlendSpace,
+          stateLayersContrastGuard: opts.stateLayersContrastGuard,
         })
       : []
 
@@ -179,7 +203,7 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
     },
     tokens(
       mode: ThemeMode = 'dark',
-      tokenOptions: { includeCustomColors?: boolean } = {}
+      tokenOptions: { includeCustomColors?: boolean; includeStateLayers?: boolean } = {}
     ): TokenDictionary {
       const resolvedMode = assertThemeMode(mode)
       const targetScheme = resolvedMode === 'dark' ? darkScheme : lightScheme
@@ -189,7 +213,9 @@ export function createTheme(sourceOrOptions: string | CreateThemeOptions): Okyct
           : resolvedMode === 'dark'
           ? customDark
           : customLight
-      return toTokenDictionary(targetScheme, targetCustom)
+      return toTokenDictionary(targetScheme, targetCustom, {
+        includeStateLayers: tokenOptions.includeStateLayers,
+      })
     },
     auditContrast(mode: ThemeMode = 'dark'): ContrastAuditItem[] {
       return auditSchemeContrast(assertThemeMode(mode) === 'dark' ? darkScheme : lightScheme)

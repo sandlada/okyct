@@ -4,12 +4,15 @@ import {
   getContrastRatio,
   hexToOkyct,
   solveTonesForContrast,
+  toneToY,
   type ContrastMetric,
 } from '../domain/index.ts'
 import {
+  AmbientSurrounds,
   EmissivePanelTypes,
   SystemColorTokens,
   ThemeModes,
+  type AmbientSurround,
   type BuildDynamicSchemeOptions,
   type DynamicSchemeColors,
   type EmissivePanelType,
@@ -19,8 +22,9 @@ import {
   DefaultEmissivePanelSpecs,
   type IDisplayPhysicsPort,
 } from '../ports/outbound/display-physics.port.ts'
-import { SchemeTokenRoleMap, type SchemeRoleKind } from './internal/scheme-token-role-map.ts'
+import { SchemeTokenRoleMap, normalizeStateLayerStates, type SchemeRoleKind } from './internal/scheme-token-role-map.ts'
 import type { PaletteSet } from './palette-set.ts'
+import { resolveSchemeStateLayers } from './resolve-scheme-state-layers.ts'
 import type { TonalPalette } from './tonal-palette.ts'
 
 interface ContrastPairSpec {
@@ -67,6 +71,12 @@ export function buildDynamicSchemeWithPhysics(
       `Invalid contrastMetric: "${String(contrastMetric)}". Expected one of: ${ContrastMetrics.join(', ')}.`
     )
   }
+  const ambient: AmbientSurround = options.ambient ?? 'normal'
+  if (!AmbientSurrounds.includes(ambient)) {
+    throw new Error(
+      `Invalid ambient surround: "${String(ambient)}". Expected one of: ${AmbientSurrounds.join(', ')}.`
+    )
+  }
 
   const emissiveOptions = options.emissive ?? {}
   const profile: EmissivePanelType = emissiveOptions.profile ?? 'standard-lcd'
@@ -77,21 +87,25 @@ export function buildDynamicSchemeWithPhysics(
   }
   const burnInGuard = emissiveOptions.burnInGuard ?? false
   const antiFringing = emissiveOptions.antiFringing ?? false
+  const ablGuard = emissiveOptions.ablGuard ?? false
 
   const isDark = mode === 'dark'
-  const c = Math.max(-1.0, Math.min(1.0, contrastLevel))
+  const baseC = Math.max(-1.0, Math.min(1.0, contrastLevel))
+  const c = ambient === 'bright' ? Math.min(1.0, baseC + 0.35) : baseC
   const panelSpec = physicsPort
     ? physicsPort.getPanelSpec(profile)
     : DefaultEmissivePanelSpecs[profile]
 
-  const peakWhiteCap = panelSpec.lightPeakToneCap
-  const fgHighlightCap = antiFringing
+  const ambientPeakCap = ambient === 'darkroom' ? 90 : 100
+  const peakWhiteCap = Math.min(panelSpec.lightPeakToneCap, ambientPeakCap)
+  const rawFgCap = antiFringing
     ? profile === 'micro-oled-xr'
       ? Math.min(peakWhiteCap, 92)
       : profile === 'amoled-anti-smear'
       ? Math.min(peakWhiteCap, 97)
       : peakWhiteCap
     : peakWhiteCap
+  const fgHighlightCap = ambient === 'darkroom' ? Math.min(rawFgCap, 88) : rawFgCap
 
   const adjustTone = (baseTone: number, polarity: 'lighten' | 'darken', delta = 15): number => {
     if (c === 0) return baseTone
@@ -102,8 +116,20 @@ export function buildDynamicSchemeWithPhysics(
     return Math.max(0, Math.round(baseTone - delta * factor))
   }
 
-  const lightSurfaceCap = profile === 'micro-oled-xr' ? 94 : 98
-  const darkFloors = panelSpec.darkSurfaceTones
+  const lightSurfaceCap = Math.min(
+    ambient === 'darkroom' ? 90 : 98,
+    profile === 'micro-oled-xr' ? 94 : 98
+  )
+  const darkFloorLift = ambient === 'bright' ? 2 : 0
+  const darkFloors = {
+    lowest: panelSpec.darkSurfaceTones.lowest + darkFloorLift,
+    surface: panelSpec.darkSurfaceTones.surface + darkFloorLift,
+    low: panelSpec.darkSurfaceTones.low + darkFloorLift,
+    container: panelSpec.darkSurfaceTones.container + darkFloorLift,
+    high: panelSpec.darkSurfaceTones.high + darkFloorLift,
+    highest: panelSpec.darkSurfaceTones.highest + darkFloorLift,
+    bright: panelSpec.darkSurfaceTones.bright + darkFloorLift,
+  }
 
   const tones: Record<SystemColorToken, number> = !isDark
     ? {
@@ -234,6 +260,35 @@ export function buildDynamicSchemeWithPhysics(
         scrim: 0,
         shadow: 0,
       }
+
+  if (ablGuard && !isDark) {
+    const weightedApl =
+      (toneToY(tones.surface) * 0.42 +
+        toneToY(tones.surfaceContainerLowest) * 0.14 +
+        toneToY(tones.surfaceContainerLow) * 0.12 +
+        toneToY(tones.surfaceContainer) * 0.12 +
+        toneToY(tones.surfaceContainerHigh) * 0.06 +
+        toneToY(tones.primary) * 0.05 +
+        toneToY(tones.primaryContainer) * 0.04 +
+        toneToY(tones.secondaryContainer) * 0.02 +
+        toneToY(tones.onSurface) * 0.02 +
+        toneToY(tones.onSurfaceVariant) * 0.01) *
+      100
+    if (weightedApl > 65) {
+      tones.surface = Math.min(tones.surface, 84)
+      tones.surfaceBright = Math.min(tones.surfaceBright, 86)
+      tones.surfaceContainerLowest = Math.min(tones.surfaceContainerLowest, 86)
+      tones.surfaceContainerLow = Math.min(tones.surfaceContainerLow, 83)
+      tones.surfaceContainer = Math.min(tones.surfaceContainer, 81)
+      tones.surfaceContainerHigh = Math.min(tones.surfaceContainerHigh, 79)
+      tones.surfaceContainerHighest = Math.min(tones.surfaceContainerHighest, 77)
+      tones.surfaceDim = Math.min(tones.surfaceDim, 75)
+      tones.surfaceVariant = Math.min(tones.surfaceVariant, 79)
+      tones.primaryContainer = Math.min(tones.primaryContainer, 82)
+      tones.secondaryContainer = Math.min(tones.secondaryContainer, 82)
+      tones.tertiaryContainer = Math.min(tones.tertiaryContainer, 82)
+    }
+  }
 
   const targetTextRatio = c >= 0.8 ? 7.0 : c >= 0.35 ? 5.8 : 4.5
   const targetTextApca = c >= 0.8 ? 75 : c >= 0.35 ? 65 : 60
@@ -418,8 +473,23 @@ export function buildDynamicSchemeWithPhysics(
     tones[token] = parseFloat(hexToOkyct(resolvedColors[token]).t.toFixed(2))
   }
 
-  return {
+  const baseScheme: DynamicSchemeColors = {
     ...resolvedColors,
     tones,
+  }
+
+  const requestedStates = normalizeStateLayerStates(options.stateLayers)
+  if (requestedStates.length === 0) {
+    return baseScheme
+  }
+
+  const stateLayers = resolveSchemeStateLayers(baseScheme, requestedStates, {
+    blendSpace: options.stateLayersBlendSpace,
+    contrastGuard: options.stateLayersContrastGuard,
+  })
+  return {
+    ...baseScheme,
+    ...stateLayers,
+    stateLayers,
   }
 }

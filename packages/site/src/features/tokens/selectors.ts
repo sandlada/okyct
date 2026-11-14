@@ -3,9 +3,34 @@ import { StandardTones, TonalPalette, type PaletteSet } from '../../color/palett
 import type { RootState } from '../../app/store.ts'
 import { simulateCvd } from '../../color/benchmark.ts'
 import { getContrastRatio, hexToOkyct } from '../../color/math.ts'
-import { auditSchemeContrast, type DynamicSchemeColors, type SystemColorToken } from '../../color/scheme.ts'
+import {
+  StateLayerStates,
+  StatefulSystemColorTokens,
+  auditSchemeContrast,
+  resolveSchemeStateLayers,
+  type DynamicSchemeColors,
+  type SchemeStateLayerTokens,
+  type StateLayerState,
+  type StatefulSystemColorToken,
+  type SystemColorToken,
+} from '../../color/scheme.ts'
+import { stackStateLayers } from '../../color/stacker.ts'
 import { selectCustomDark, selectCustomLight, selectDarkScheme, selectLightScheme, selectPalettes, selectScheme } from '../studio/selectors.ts'
 import { SystemTokenDefinitions, TokensWithoutAaPreview, type TokenMeta } from './catalog.ts'
+
+export interface StateLayerSwatch {
+  state: StateLayerState
+  lightHex: string
+  darkHex: string
+  lightSwatch: string
+  darkSwatch: string
+}
+
+export interface SwatchInteractionColors {
+  hovered: string
+  focused: string
+  pressed: string
+}
 
 export interface TokenCardModel {
   token: SystemColorToken
@@ -14,6 +39,8 @@ export interface TokenCardModel {
   darkHex: string
   lightSwatch: string
   darkSwatch: string
+  lightInteraction?: SwatchInteractionColors
+  darkInteraction?: SwatchInteractionColors
   lightTone: number
   darkTone: number
   lightContrast: number | null
@@ -21,6 +48,7 @@ export interface TokenCardModel {
   showAa: boolean
   lightAa: string
   darkAa: string
+  stateLayers?: StateLayerSwatch[]
 }
 
 export interface CustomRoleModel {
@@ -33,12 +61,15 @@ export interface CustomRoleModel {
   darkHex: string
   lightSwatch: string
   darkSwatch: string
+  lightInteraction: SwatchInteractionColors
+  darkInteraction: SwatchInteractionColors
   lightTone: number
   darkTone: number
   lightContrast: number
   darkContrast: number
   lightAa: string
   darkAa: string
+  stateLayers?: StateLayerSwatch[]
 }
 
 function toneOf(hex: string): number {
@@ -56,7 +87,86 @@ function contrastFor(
   return getContrastRatio(hexToOkyct(scheme[token]).t, hexToOkyct(scheme[paired]).t)
 }
 
-function cardFor(meta: TokenMeta, light: DynamicSchemeColors, dark: DynamicSchemeColors, cvd: RootState['studio']['cvdType']): TokenCardModel {
+const StatefulTokenSet = new Set<SystemColorToken>(StatefulSystemColorTokens)
+
+function buildSystemStateSwatches(
+  token: SystemColorToken,
+  lightStates: SchemeStateLayerTokens,
+  darkStates: SchemeStateLayerTokens,
+  cvd: RootState['studio']['cvdType'],
+): StateLayerSwatch[] | undefined {
+  if (!StatefulTokenSet.has(token)) return undefined
+  const statefulToken = token as StatefulSystemColorToken
+  return StateLayerStates.map((state) => {
+    const cap = `${state.charAt(0).toUpperCase()}${state.slice(1)}` as Capitalize<StateLayerState>
+    const key = `${statefulToken}${cap}` as const
+    const lightHex = lightStates[key] ?? '#000000'
+    const darkHex = darkStates[key] ?? '#000000'
+    return {
+      state,
+      lightHex,
+      darkHex,
+      lightSwatch: simulateCvd(lightHex, cvd),
+      darkSwatch: simulateCvd(darkHex, cvd),
+    }
+  })
+}
+
+function buildCustomStateSwatches(
+  lightBase: string,
+  lightOverlay: string,
+  darkBase: string,
+  darkOverlay: string,
+  cvd: RootState['studio']['cvdType'],
+): StateLayerSwatch[] {
+  return StateLayerStates.map((state) => {
+    const lightHex = stackStateLayers([state])({ base: lightBase, stateColor: lightOverlay }).finalHex
+    const darkHex = stackStateLayers([state])({ base: darkBase, stateColor: darkOverlay }).finalHex
+    return {
+      state,
+      lightHex,
+      darkHex,
+      lightSwatch: simulateCvd(lightHex, cvd),
+      darkSwatch: simulateCvd(darkHex, cvd),
+    }
+  })
+}
+
+function buildSystemInteraction(
+  token: SystemColorToken,
+  states: SchemeStateLayerTokens,
+  cvd: RootState['studio']['cvdType'],
+): SwatchInteractionColors | undefined {
+  if (!StatefulTokenSet.has(token)) return undefined
+  const statefulToken = token as StatefulSystemColorToken
+  return {
+    hovered: simulateCvd(states[`${statefulToken}Hovered`] ?? '#000000', cvd),
+    focused: simulateCvd(states[`${statefulToken}Focused`] ?? '#000000', cvd),
+    pressed: simulateCvd(states[`${statefulToken}Pressed`] ?? '#000000', cvd),
+  }
+}
+
+function buildCustomInteraction(
+  base: string,
+  overlay: string,
+  cvd: RootState['studio']['cvdType'],
+): SwatchInteractionColors {
+  return {
+    hovered: simulateCvd(stackStateLayers(['hovered'])({ base, stateColor: overlay }).finalHex, cvd),
+    focused: simulateCvd(stackStateLayers(['focused'])({ base, stateColor: overlay }).finalHex, cvd),
+    pressed: simulateCvd(stackStateLayers(['pressed'])({ base, stateColor: overlay }).finalHex, cvd),
+  }
+}
+
+function cardFor(
+  meta: TokenMeta,
+  light: DynamicSchemeColors,
+  dark: DynamicSchemeColors,
+  cvd: RootState['studio']['cvdType'],
+  lightStates: SchemeStateLayerTokens,
+  darkStates: SchemeStateLayerTokens,
+  showStateLayers: boolean,
+): TokenCardModel {
   const lightHex = light[meta.token]
   const darkHex = dark[meta.token]
   const paired = meta.pairedRole
@@ -67,6 +177,8 @@ function cardFor(meta: TokenMeta, light: DynamicSchemeColors, dark: DynamicSchem
     darkHex,
     lightSwatch: simulateCvd(lightHex, cvd),
     darkSwatch: simulateCvd(darkHex, cvd),
+    lightInteraction: buildSystemInteraction(meta.token, lightStates, cvd),
+    darkInteraction: buildSystemInteraction(meta.token, darkStates, cvd),
     lightTone: toneOf(lightHex),
     darkTone: toneOf(darkHex),
     lightContrast: contrastFor(light, meta.token, paired),
@@ -74,17 +186,35 @@ function cardFor(meta: TokenMeta, light: DynamicSchemeColors, dark: DynamicSchem
     showAa: !TokensWithoutAaPreview.has(meta.token),
     lightAa: simulateCvd(paired ? light[paired] : light.onSurface, cvd),
     darkAa: simulateCvd(paired ? dark[paired] : dark.onSurface, cvd),
+    stateLayers: showStateLayers ? buildSystemStateSwatches(meta.token, lightStates, darkStates, cvd) : undefined,
   }
 }
 
 export const selectTokenCards = createSelector(
-  [selectLightScheme, selectDarkScheme, (state: RootState) => state.studio.cvdType],
-  (light, dark, cvd) => SystemTokenDefinitions.map((meta) => cardFor(meta, light, dark, cvd)),
+  [
+    selectLightScheme,
+    selectDarkScheme,
+    (state: RootState) => state.studio.cvdType,
+    (state: RootState) => state.tokens.showStateLayers,
+  ],
+  (light, dark, cvd, showStateLayers) => {
+    const statesArg = showStateLayers ? true : (['hovered', 'focused', 'pressed'] as const)
+    const lightStates = resolveSchemeStateLayers(light, statesArg)
+    const darkStates = resolveSchemeStateLayers(dark, statesArg)
+    return SystemTokenDefinitions.map((meta) =>
+      cardFor(meta, light, dark, cvd, lightStates, darkStates, showStateLayers),
+    )
+  },
 )
 
 export const selectCustomRoleGroups = createSelector(
-  [selectCustomLight, selectCustomDark, (state: RootState) => state.studio.cvdType],
-  (lightColors, darkColors, cvd) => {
+  [
+    selectCustomLight,
+    selectCustomDark,
+    (state: RootState) => state.studio.cvdType,
+    (state: RootState) => state.tokens.showStateLayers,
+  ],
+  (lightColors, darkColors, cvd, showStateLayers) => {
     const darkById = new Map(darkColors.map((item) => [item.id, item]))
     return lightColors.map((customLight) => {
       const customDark = darkById.get(customLight.id) ?? customLight
@@ -100,12 +230,17 @@ export const selectCustomRoleGroups = createSelector(
           darkHex: customDark.color,
           lightSwatch: simulateCvd(customLight.color, cvd),
           darkSwatch: simulateCvd(customDark.color, cvd),
+          lightInteraction: buildCustomInteraction(customLight.color, customLight.onColor, cvd),
+          darkInteraction: buildCustomInteraction(customDark.color, customDark.onColor, cvd),
           lightTone: toneOf(customLight.color),
           darkTone: toneOf(customDark.color),
           lightContrast: customLight.wcagRatioColor,
           darkContrast: customDark.wcagRatioColor,
           lightAa: simulateCvd(customLight.onColor, cvd),
           darkAa: simulateCvd(customDark.onColor, cvd),
+          stateLayers: showStateLayers
+            ? buildCustomStateSwatches(customLight.color, customLight.onColor, customDark.color, customDark.onColor, cvd)
+            : undefined,
         },
         {
           key: `on${cap}`,
@@ -117,12 +252,17 @@ export const selectCustomRoleGroups = createSelector(
           darkHex: customDark.onColor,
           lightSwatch: simulateCvd(customLight.onColor, cvd),
           darkSwatch: simulateCvd(customDark.onColor, cvd),
+          lightInteraction: buildCustomInteraction(customLight.onColor, customLight.color, cvd),
+          darkInteraction: buildCustomInteraction(customDark.onColor, customDark.color, cvd),
           lightTone: toneOf(customLight.onColor),
           darkTone: toneOf(customDark.onColor),
           lightContrast: customLight.wcagRatioColor,
           darkContrast: customDark.wcagRatioColor,
           lightAa: simulateCvd(customLight.color, cvd),
           darkAa: simulateCvd(customDark.color, cvd),
+          stateLayers: showStateLayers
+            ? buildCustomStateSwatches(customLight.onColor, customLight.color, customDark.onColor, customDark.color, cvd)
+            : undefined,
         },
         {
           key: `${customLight.name}Container`,
@@ -134,12 +274,23 @@ export const selectCustomRoleGroups = createSelector(
           darkHex: customDark.colorContainer,
           lightSwatch: simulateCvd(customLight.colorContainer, cvd),
           darkSwatch: simulateCvd(customDark.colorContainer, cvd),
+          lightInteraction: buildCustomInteraction(customLight.colorContainer, customLight.onColorContainer, cvd),
+          darkInteraction: buildCustomInteraction(customDark.colorContainer, customDark.onColorContainer, cvd),
           lightTone: toneOf(customLight.colorContainer),
           darkTone: toneOf(customDark.colorContainer),
           lightContrast: customLight.wcagRatioContainer,
           darkContrast: customDark.wcagRatioContainer,
           lightAa: simulateCvd(customLight.onColorContainer, cvd),
           darkAa: simulateCvd(customDark.onColorContainer, cvd),
+          stateLayers: showStateLayers
+            ? buildCustomStateSwatches(
+                customLight.colorContainer,
+                customLight.onColorContainer,
+                customDark.colorContainer,
+                customDark.onColorContainer,
+                cvd,
+              )
+            : undefined,
         },
         {
           key: `on${cap}Container`,
@@ -151,12 +302,23 @@ export const selectCustomRoleGroups = createSelector(
           darkHex: customDark.onColorContainer,
           lightSwatch: simulateCvd(customLight.onColorContainer, cvd),
           darkSwatch: simulateCvd(customDark.onColorContainer, cvd),
+          lightInteraction: buildCustomInteraction(customLight.onColorContainer, customLight.colorContainer, cvd),
+          darkInteraction: buildCustomInteraction(customDark.onColorContainer, customDark.colorContainer, cvd),
           lightTone: toneOf(customLight.onColorContainer),
           darkTone: toneOf(customDark.onColorContainer),
           lightContrast: customLight.wcagRatioContainer,
           darkContrast: customDark.wcagRatioContainer,
           lightAa: simulateCvd(customLight.colorContainer, cvd),
           darkAa: simulateCvd(customDark.colorContainer, cvd),
+          stateLayers: showStateLayers
+            ? buildCustomStateSwatches(
+                customLight.onColorContainer,
+                customLight.colorContainer,
+                customDark.onColorContainer,
+                customDark.colorContainer,
+                cvd,
+              )
+            : undefined,
         },
       ]
       return {

@@ -4,7 +4,11 @@
  * 约束：仅依赖 domain/models 与同层契约
  */
 
-import type { DynamicSchemeColors, ResolvedCustomColor } from '../inbound/scheme-building.port.ts'
+import type {
+  DynamicSchemeColors,
+  ResolvedCustomColor,
+  StateLayersOption,
+} from '../inbound/scheme-building.port.ts'
 import type { PaletteSet, ITonalPalettePort } from '../inbound/palette-generation.port.ts'
 
 export const CssSchemeModes = ['class', 'light-dark'] as const
@@ -20,7 +24,8 @@ export interface ITokenExporterPort<TPalette extends ITonalPalettePort = ITonalP
     palettes?: PaletteSet<TPalette>,
     customColorsLight?: readonly ResolvedCustomColor[],
     customColorsDark?: readonly ResolvedCustomColor[],
-    schemeMode?: CssSchemeMode
+    schemeMode?: CssSchemeMode,
+    stateLayers?: StateLayersOption
   ): string
 
   exportTailwindV4(
@@ -28,20 +33,23 @@ export interface ITokenExporterPort<TPalette extends ITonalPalettePort = ITonalP
     darkScheme: DynamicSchemeColors,
     customColorsLight?: readonly ResolvedCustomColor[],
     customColorsDark?: readonly ResolvedCustomColor[],
-    fallback?: TailwindFallbackMode
+    fallback?: TailwindFallbackMode,
+    stateLayers?: StateLayersOption
   ): string
 
   exportW3cDesignTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
     customColorsLight?: readonly ResolvedCustomColor[],
-    customColorsDark?: readonly ResolvedCustomColor[]
+    customColorsDark?: readonly ResolvedCustomColor[],
+    stateLayers?: StateLayersOption
   ): string
 
   exportTypeScriptTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
     customColorsLight?: readonly ResolvedCustomColor[],
-    customColorsDark?: readonly ResolvedCustomColor[]
+    customColorsDark?: readonly ResolvedCustomColor[],
+    stateLayers?: StateLayersOption
   ): string
 }

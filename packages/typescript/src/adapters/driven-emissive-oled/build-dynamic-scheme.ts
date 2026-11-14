@@ -3,11 +3,13 @@ import {
   ThemeModes,
   buildDynamicSchemeWithPhysics,
   createPalettesFromSource,
+  type AmbientSurround,
   type PaletteSet,
   type PaletteVariant,
+  type StateLayerBlendSpace,
   type ThemeMode,
 } from '../../application/index.ts'
-import type { DynamicSchemeColors } from '../../ports/inbound/scheme-building.port.ts'
+import type { DynamicSchemeColors, StateLayersOption } from '../../ports/inbound/scheme-building.port.ts'
 import type { EmissiveSchemeOptions } from '../../ports/outbound/display-physics.port.ts'
 import { OledDisplayPhysicsSingleton } from './internal/oled-display-physics-adapter.ts'
 
@@ -17,10 +19,14 @@ export interface BuildSchemeOptions {
   harmonizeSemantics?: boolean
   contrastLevel?: number
   contrastMetric?: ContrastMetric
+  ambient?: AmbientSurround
   emissive?: EmissiveSchemeOptions
   gamut?: GamutTarget
   hkCompensation?: boolean
   softKnee?: boolean
+  stateLayers?: StateLayersOption
+  stateLayersBlendSpace?: StateLayerBlendSpace
+  stateLayersContrastGuard?: boolean
 }
 
 export function buildDynamicScheme(
@@ -53,7 +59,11 @@ export function buildDynamicScheme(
       mode,
       contrastLevel: options.contrastLevel,
       contrastMetric: options.contrastMetric,
+      ambient: options.ambient,
       emissive: options.emissive,
+      stateLayers: options.stateLayers,
+      stateLayersBlendSpace: options.stateLayersBlendSpace,
+      stateLayersContrastGuard: options.stateLayersContrastGuard,
     },
     OledDisplayPhysicsSingleton
   )

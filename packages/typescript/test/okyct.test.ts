@@ -2,7 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   TonalPalette,
+  analyzeEmissiveSchemeMetrics,
   auditSchemeContrast,
+  auditSchemeCvd,
   buildDynamicScheme,
   computeColorEmissiveTelemetry,
   createPalettesFromSource,
@@ -16,17 +18,22 @@ import {
   isInGamut,
   okyctToDisplayP3Css,
   okyctToHex,
+  okyctToOklchCss,
   okyctToRgb,
   resolveCustomColors,
   rgbToOkyct,
   runColorimetricInvariantSuite,
   shortestHueDelta,
+  simulateCvd,
   solveTonesForApca,
   solveTonesForContrast,
   stackLayers,
+  stackStateLayers,
   verifyHexagonalArchitectureBoundaries,
   EmissivePanelTypes,
   StandardTones,
+  StateLayerStates,
+  StatefulSystemColorTokens,
   ThemeModes,
 } from '../src/index.ts'
 import { applyBlueBurnInGuard } from '../src/adapters/driven-emissive-oled/index.ts'
@@ -246,4 +253,251 @@ test('solveTonesForApca and solveTonesForContrast satisfy target bounds across [
       assert.ok(Math.abs(getApcaContrast(both.lightForegroundTone, bg)) >= 60)
     }
   }
+})
+
+test('stateLayers are disabled by default and generated on demand for background tokens only', () => {
+  const defaultScheme = buildDynamicScheme('#2563EB', { mode: 'dark' })
+  assert.equal(defaultScheme.stateLayers, undefined)
+  assert.equal(defaultScheme.primaryHovered, undefined)
+
+  const defaultTheme = createTheme({
+    sourceHex: '#2563EB',
+    customColors: [{ name: 'brandAccent', sourceHex: '#10B981' }],
+  })
+  assert.equal(defaultTheme.schemes.dark.stateLayers, undefined)
+  assert.equal(defaultTheme.customColors.dark[0].stateLayers, undefined)
+  assert.equal(defaultTheme.tokens('dark').primaryHovered, undefined)
+  assert.equal(defaultTheme.export('css').includes('--md-sys-color-primary-hovered'), false)
+  assert.equal(defaultTheme.export('tailwind').includes('--color-primary-hovered'), false)
+
+  const fullTheme = createTheme({
+    sourceHex: '#2563EB',
+    stateLayers: true,
+    customColors: [{ name: 'brandAccent', sourceHex: '#10B981' }],
+  })
+  const dark = fullTheme.schemes.dark
+  assert.ok(dark.stateLayers)
+  assert.equal(
+    Object.keys(dark.stateLayers).length,
+    StatefulSystemColorTokens.length * StateLayerStates.length
+  )
+
+  const expectedPrimaryHovered = stackStateLayers(['hovered'])({
+    base: dark.primary,
+    stateColor: dark.onPrimary,
+  }).finalHex
+  assert.equal(dark.primaryHovered, expectedPrimaryHovered)
+  assert.equal(dark.stateLayers.primaryHovered, expectedPrimaryHovered)
+
+  const expectedOnPrimaryHovered = stackStateLayers(['hovered'])({
+    base: dark.onPrimary,
+    stateColor: dark.primary,
+  }).finalHex
+  assert.equal(dark.onPrimaryHovered, expectedOnPrimaryHovered)
+  assert.equal(dark.stateLayers.onPrimaryHovered, expectedOnPrimaryHovered)
+
+  const expectedFixedDimHovered = stackStateLayers(['hovered'])({
+    base: dark.primaryFixedDim,
+    stateColor: dark.onPrimaryFixed,
+  }).finalHex
+  assert.equal(dark.primaryFixedDimHovered, expectedFixedDimHovered)
+
+  assert.equal((dark as Record<string, unknown>).outlineHovered, undefined)
+  assert.equal((dark as Record<string, unknown>).scrimHovered, undefined)
+
+  const custom = fullTheme.customColors.dark[0]
+  assert.ok(custom.stateLayers)
+  assert.equal(Object.keys(custom.stateLayers).length, 16)
+  assert.equal(
+    custom.stateLayers.colorHovered,
+    stackStateLayers(['hovered'])({ base: custom.color, stateColor: custom.onColor }).finalHex
+  )
+  assert.equal(
+    custom.stateLayers.onColorHovered,
+    stackStateLayers(['hovered'])({ base: custom.onColor, stateColor: custom.color }).finalHex
+  )
+  assert.equal(
+    custom.stateLayers.colorContainerPressed,
+    stackStateLayers(['pressed'])({
+      base: custom.colorContainer,
+      stateColor: custom.onColorContainer,
+    }).finalHex
+  )
+  assert.equal(
+    custom.stateLayers.onColorContainerPressed,
+    stackStateLayers(['pressed'])({
+      base: custom.onColorContainer,
+      stateColor: custom.colorContainer,
+    }).finalHex
+  )
+
+  const tokensDict = fullTheme.tokens('dark')
+  assert.equal(tokensDict.primaryHovered, expectedPrimaryHovered)
+  assert.equal(tokensDict.onPrimaryHovered, expectedOnPrimaryHovered)
+  assert.equal(tokensDict.brandAccentHovered, custom.stateLayers.colorHovered)
+  assert.equal(tokensDict.onBrandAccentHovered, custom.stateLayers.onColorHovered)
+  assert.equal(tokensDict.brandAccentContainerPressed, custom.stateLayers.colorContainerPressed)
+  assert.equal(tokensDict.onBrandAccentContainerPressed, custom.stateLayers.onColorContainerPressed)
+
+  const subsetScheme = buildDynamicScheme('#2563EB', {
+    mode: 'light',
+    stateLayers: ['hovered', 'pressed'],
+  })
+  assert.ok(subsetScheme.primaryHovered)
+  assert.ok(subsetScheme.primaryPressed)
+  assert.equal(subsetScheme.primaryFocused, undefined)
+  assert.equal(subsetScheme.primaryDragged, undefined)
+
+  const cssOut = defaultTheme.export('css', { stateLayers: ['hovered'] })
+  assert.ok(cssOut.includes('--md-sys-color-primary-hovered:'))
+  assert.ok(cssOut.includes('--md-custom-color-brand-accent-hovered:'))
+  assert.ok(cssOut.includes('--md-custom-color-brand-accent-container-hovered:'))
+  assert.equal(cssOut.includes('--md-sys-color-primary-focused:'), false)
+
+  const twOut = defaultTheme.export('tailwind', { stateLayers: ['hovered'] })
+  assert.ok(twOut.includes('--color-primary-hovered: var(--md-sys-color-primary-hovered,'))
+  assert.ok(twOut.includes('--color-brand-accent-hovered: var(--md-custom-color-brand-accent-hovered,'))
+
+  const w3cOut = JSON.parse(defaultTheme.export('w3c', { stateLayers: ['hovered'] }))
+  assert.ok(w3cOut.color.dark.primaryHovered.$value)
+  assert.ok(w3cOut.color.dark.brandAccent.colorHovered.$value)
+
+  const tsOut = defaultTheme.export('ts', { stateLayers: ['hovered'] })
+  assert.ok(tsOut.includes('"primaryHovered":'))
+  assert.ok(tsOut.includes('"colorHovered":'))
+})
+
+test('ADR-001/002/003/005/006: oklch CSS, ABL guard, WOLED, linear CVD, ambient surround, and guarded state layers', () => {
+  // ADR-001 Option C: oklch() floating-point output
+  const oklchCss = okyctToOklchCss({ h: 261.6, c: 0.14, t: 50 })
+  assert.match(oklchCss, /^oklch\(\d+\.\d+% 0\.1400 261\.60\)$/)
+
+  // ADR-002 Option A: ablGuard caps light-mode APL <= 65% while preserving WCAG AA
+  const lightStandard = buildDynamicScheme('#2563EB', {
+    mode: 'light',
+    emissive: { profile: 'oled-true-black', ablGuard: false },
+  })
+  const lightAblGuarded = buildDynamicScheme('#2563EB', {
+    mode: 'light',
+    emissive: { profile: 'oled-true-black', ablGuard: true },
+  })
+  const stdMetrics = analyzeEmissiveSchemeMetrics(lightStandard, 'oled-true-black')
+  const ablMetrics = analyzeEmissiveSchemeMetrics(lightAblGuarded, 'oled-true-black')
+  assert.ok(stdMetrics.aplPercent > 65)
+  assert.ok(ablMetrics.aplPercent <= 65, `Expected APL <= 65, got ${ablMetrics.aplPercent}`)
+  assert.ok(ablMetrics.estimatedTotalPowerMw < stdMetrics.estimatedTotalPowerMw)
+  assert.ok(auditSchemeContrast(lightAblGuarded).every((i) => i.wcagPassAA && i.apcaPass))
+
+  // ADR-002 Option B: woled-desktop models WRGB white-subpixel power savings
+  const lightWoled = buildDynamicScheme('#2563EB', {
+    mode: 'light',
+    emissive: { profile: 'woled-desktop' },
+  })
+  const woledMetrics = analyzeEmissiveSchemeMetrics(lightWoled, 'woled-desktop')
+  assert.ok(woledMetrics.estimatedTotalPowerMw < stdMetrics.estimatedTotalPowerMw)
+  assert.ok(auditSchemeContrast(lightWoled).every((i) => i.wcagPassAA && i.apcaPass))
+
+  // ADR-003 Option A & B: linear-light CVD simulation & semantic separability audit
+  assert.equal(simulateCvd('#2563EB', 'none'), '#2563EB')
+  assert.equal(simulateCvd('#2563EB', 'deuteranopia', 0), '#2563EB')
+  const achrom = simulateCvd('#FF0000', 'achromatopsia')
+  assert.ok(Math.abs(hexToOkyct(achrom).t - hexToOkyct('#FF0000').t) < 0.6)
+  const cvdAudit = auditSchemeCvd(lightStandard)
+  assert.equal(cvdAudit.length, 18)
+  const strictAudit = auditSchemeCvd(lightStandard, { minDeltaE: 0.5, minDeltaTone: 50 })
+  assert.ok(strictAudit.some((i) => !i.separable))
+
+  // ADR-005 Option C: ambient surround adaptation ('bright' & 'darkroom')
+  const brightDark = buildDynamicScheme('#2563EB', { mode: 'dark', ambient: 'bright' })
+  const normalDark = buildDynamicScheme('#2563EB', { mode: 'dark', ambient: 'normal' })
+  const darkroomLight = buildDynamicScheme('#2563EB', { mode: 'light', ambient: 'darkroom' })
+  assert.ok(brightDark.tones.surface > normalDark.tones.surface)
+  assert.ok(darkroomLight.tones.surface <= 90.3)
+  assert.ok(auditSchemeContrast(brightDark).every((i) => i.wcagPassAA && i.apcaPass))
+  assert.ok(auditSchemeContrast(darkroomLight).every((i) => i.wcagPassAA && i.apcaPass))
+
+  // ADR-006 Option B & C: stateLayersBlendSpace & stateLayersContrastGuard
+  const gammaLayers = buildDynamicScheme('#2563EB', {
+    mode: 'dark',
+    stateLayers: ['dragged'],
+    stateLayersBlendSpace: 'gamma-srgb',
+  })
+  const okyctLayers = buildDynamicScheme('#2563EB', {
+    mode: 'dark',
+    stateLayers: ['dragged'],
+    stateLayersBlendSpace: 'okyct',
+  })
+  assert.notEqual(gammaLayers.primaryDragged, okyctLayers.primaryDragged)
+
+  const guarded = buildDynamicScheme('#2563EB', {
+    mode: 'light',
+    contrastLevel: -0.5,
+    stateLayers: ['pressed', 'dragged'],
+    stateLayersContrastGuard: true,
+  })
+  assert.ok(getContrastRatio(guarded.primaryPressed!, guarded.onPrimary) >= 4.5)
+  assert.ok(getContrastRatio(guarded.primaryDragged!, guarded.onPrimary) >= 4.5)
+  assert.ok(getContrastRatio(guarded.surfaceDragged!, guarded.onSurface) >= 4.5)
+
+  // Custom colors stateLayersBlendSpace & stateLayersContrastGuard via createTheme + export
+  const customGuardedTheme = createTheme({
+    sourceHex: '#2563EB',
+    contrastLevel: -0.5,
+    customColors: [{ name: 'brand', sourceHex: '#F59E0B' }],
+    stateLayers: ['pressed', 'dragged'],
+    stateLayersBlendSpace: 'gamma-srgb',
+    stateLayersContrastGuard: true,
+  })
+  const customOkyctTheme = createTheme({
+    sourceHex: '#2563EB',
+    contrastLevel: -0.5,
+    customColors: [{ name: 'brand', sourceHex: '#F59E0B' }],
+    stateLayers: ['pressed', 'dragged'],
+    stateLayersBlendSpace: 'okyct',
+    stateLayersContrastGuard: false,
+  })
+  const customLightGuarded = customGuardedTheme.customColors.light[0]!
+  const customLightUnguarded = customOkyctTheme.customColors.light[0]!
+  assert.notEqual(
+    customLightGuarded.stateLayers?.colorDragged,
+    customLightUnguarded.stateLayers?.colorDragged
+  )
+  assert.ok(
+    getContrastRatio(customLightGuarded.stateLayers!.colorDragged!, customLightGuarded.onColor) >= 4.5
+  )
+  assert.ok(
+    getContrastRatio(customLightGuarded.stateLayers!.onColorDragged!, customLightGuarded.color) >= 4.5
+  )
+  assert.ok(
+    getContrastRatio(
+      customLightGuarded.stateLayers!.colorContainerDragged!,
+      customLightGuarded.onColorContainer
+    ) >= 4.5
+  )
+  assert.ok(
+    getContrastRatio(
+      customLightGuarded.stateLayers!.onColorContainerDragged!,
+      customLightGuarded.colorContainer
+    ) >= 4.5
+  )
+
+  const exportedCss = customGuardedTheme.export('css', { stateLayers: ['dragged'] })
+  assert.ok(
+    exportedCss.includes(
+      `--md-sys-color-primary-dragged: light-dark(${customGuardedTheme.schemes.light.primaryDragged}, ${customGuardedTheme.schemes.dark.primaryDragged});`
+    )
+  )
+  assert.ok(
+    exportedCss.includes(
+      `--md-custom-color-brand-dragged: light-dark(${customLightGuarded.stateLayers!.colorDragged}, ${customGuardedTheme.customColors.dark[0]!.stateLayers!.colorDragged});`
+    )
+  )
+
+  // Input validation edge cases
+  assert.throws(() => okyctToOklchCss({ h: 200, c: -0.1, t: 50 }))
+  assert.throws(() => okyctToOklchCss({ h: 200, c: 0.1, t: 120 }))
+  assert.throws(() => simulateCvd('not-a-hex', 'none'))
+  assert.throws(() => simulateCvd('not-a-hex', 'deuteranopia', 0))
+  assert.throws(() => auditSchemeCvd(lightStandard, { cvdTypes: ['none' as never] }))
+  assert.throws(() => auditSchemeCvd(lightStandard, { minDeltaE: -0.1 }))
 })

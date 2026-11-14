@@ -2,6 +2,7 @@ import type {
   CssSchemeMode,
   DynamicSchemeColors,
   ResolvedCustomColor,
+  StateLayersOption,
   TailwindFallbackMode,
 } from '../../ports/index.ts'
 import {
@@ -33,6 +34,7 @@ export interface ExportThemeOptions {
   format?: TokenExportFormat
   cssSchemeMode?: CssSchemeMode
   tailwindFallback?: TailwindFallbackMode
+  stateLayers?: StateLayersOption
 }
 
 function isOkyctTheme(input: ExportThemeInput | OkyctTheme): input is OkyctTheme {
@@ -80,7 +82,8 @@ export function exportTheme(
         palettes,
         customLight,
         customDark,
-        options.cssSchemeMode ?? 'light-dark'
+        options.cssSchemeMode ?? 'light-dark',
+        options.stateLayers
       )
     case 'tailwind':
       return exportTailwindV4(
@@ -88,21 +91,24 @@ export function exportTheme(
         darkScheme,
         customLight,
         customDark,
-        options.tailwindFallback ?? 'light-dark'
+        options.tailwindFallback ?? 'light-dark',
+        options.stateLayers
       )
     case 'w3c':
       return exportW3cDesignTokens(
         lightScheme,
         darkScheme,
         customLight,
-        customDark
+        customDark,
+        options.stateLayers
       )
     case 'ts':
       return exportTypeScriptTokens(
         lightScheme,
         darkScheme,
         customLight,
-        customDark
+        customDark,
+        options.stateLayers
       )
     default: {
       const unknownFormat: never = format

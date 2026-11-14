@@ -31,6 +31,7 @@ export const selectExportCode = createSelector(
         format: ui.format,
         cssSchemeMode: ui.cssSchemeMode,
         tailwindFallback: ui.tailwindFallback,
+        stateLayers: ui.stateLayers,
       }
     ),
 )

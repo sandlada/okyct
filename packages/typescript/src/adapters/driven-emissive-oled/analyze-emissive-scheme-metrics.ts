@@ -66,12 +66,23 @@ export function analyzeEmissiveSchemeMetrics(
   let weightedBlueStress = 0
   let pixelOffArea = 0
 
+  const isWrgb = profile === 'woled-desktop'
   for (const item of UiAreaWeights) {
     const hex = scheme[item.role] as string
     const t = computeColorEmissiveTelemetry(hex)
-    weightedR += t.channelPowerMw.r * item.weight
-    weightedG += t.channelPowerMw.g * item.weight
-    weightedB += t.channelPowerMw.b * item.weight
+    if (isWrgb) {
+      // WRGB Tandem OLED: white subpixel carries the common min(R,G,B) luminance at ~0.58x power
+      const wShare = Math.min(t.rLinear, t.gLinear, t.bLinear)
+      const rgbMax = Math.max(t.rLinear, t.gLinear, t.bLinear)
+      const wrgbFactor = rgbMax > 1e-6 ? 1 - 0.42 * (wShare / rgbMax) : 1
+      weightedR += t.channelPowerMw.r * wrgbFactor * item.weight
+      weightedG += t.channelPowerMw.g * wrgbFactor * item.weight
+      weightedB += t.channelPowerMw.b * wrgbFactor * item.weight
+    } else {
+      weightedR += t.channelPowerMw.r * item.weight
+      weightedG += t.channelPowerMw.g * item.weight
+      weightedB += t.channelPowerMw.b * item.weight
+    }
     weightedApl += t.aplPercent * item.weight
     weightedBlueStress += t.blueStressIndex * item.weight
     if (t.isPixelOff) {

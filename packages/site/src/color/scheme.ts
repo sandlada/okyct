@@ -5,7 +5,14 @@
 
 export {
   SystemColorTokens,
+  StateLayerStates,
+  StatefulSystemColorTokens,
   type SystemColorToken,
+  type StateLayerState,
+  type StateLayersOption,
+  type StatefulSystemColorToken,
+  type SystemStateLayerToken,
+  type SchemeStateLayerTokens,
   type DynamicSchemeColors,
   type CustomColorConfig,
   type ResolvedCustomColor,
@@ -13,6 +20,7 @@ export {
   type ThemeMode,
   type EmissiveSchemeOptions,
   resolveCustomColors,
+  resolveSchemeStateLayers,
   auditSchemeContrast,
 } from '@sandlada/okyct/application'
 

@@ -4,7 +4,7 @@ import { useI18n } from '../../../i18n/index.tsx'
 import { useAppDispatch, useAppSelector } from '../../../app/store.ts'
 import { copyExportCode } from '../actions.ts'
 import { selectExportCode } from '../selectors.ts'
-import { setCssSchemeMode, setExportFormat, setTailwindFallback } from '../slice.ts'
+import { setCssSchemeMode, setExportFormat, setExportStateLayers, setTailwindFallback } from '../slice.ts'
 import { Tabs } from '../../../ui/Tabs.tsx'
 
 const EnglishCopy = {
@@ -15,6 +15,7 @@ const EnglishCopy = {
   cssLightDark: 'light-dark()',
   twNoFallback: 'No fallback',
   twFallback: 'With fallback',
+  includeStateLayers: 'State layers',
 }
 
 const TraditionalCopy: typeof EnglishCopy = {
@@ -25,6 +26,7 @@ const TraditionalCopy: typeof EnglishCopy = {
   cssLightDark: 'light-dark()',
   twNoFallback: '無 fallback',
   twFallback: '有 fallback',
+  includeStateLayers: '狀態層 Tokens',
 }
 
 const CopyByLocale = { en: EnglishCopy, 'zh-Hant': TraditionalCopy } as const
@@ -36,6 +38,7 @@ export function TokenExportView() {
   const activeFormat = useAppSelector((state) => state.export.format)
   const cssSchemeMode = useAppSelector((state) => state.export.cssSchemeMode)
   const tailwindFallback = useAppSelector((state) => state.export.tailwindFallback)
+  const stateLayers = useAppSelector((state) => state.export.stateLayers)
   const copiedCode = useAppSelector((state) => state.export.copied)
   const exportCode = useAppSelector(selectExportCode)
 
@@ -80,33 +83,45 @@ export function TokenExportView() {
           </button>
         </div>
 
-        {activeFormat === 'css' && (
-          <Tabs
-            label={copy.cssClass}
-            appearance="pill"
-            size="sm"
-            value={cssSchemeMode}
-            onChange={(id) => dispatch(setCssSchemeMode(id))}
-            options={[
-              { id: 'class', label: copy.cssClass },
-              { id: 'light-dark', label: copy.cssLightDark },
-            ]}
-          />
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {activeFormat === 'css' && (
+            <Tabs
+              label={copy.cssClass}
+              appearance="pill"
+              size="sm"
+              value={cssSchemeMode}
+              onChange={(id) => dispatch(setCssSchemeMode(id))}
+              options={[
+                { id: 'class', label: copy.cssClass },
+                { id: 'light-dark', label: copy.cssLightDark },
+              ]}
+            />
+          )}
 
-        {activeFormat === 'tailwind' && (
-          <Tabs
-            label={copy.twNoFallback}
-            appearance="pill"
-            size="sm"
-            value={tailwindFallback}
-            onChange={(id) => dispatch(setTailwindFallback(id))}
-            options={[
-              { id: 'none', label: copy.twNoFallback },
-              { id: 'light-dark', label: copy.twFallback },
-            ]}
-          />
-        )}
+          {activeFormat === 'tailwind' && (
+            <Tabs
+              label={copy.twNoFallback}
+              appearance="pill"
+              size="sm"
+              value={tailwindFallback}
+              onChange={(id) => dispatch(setTailwindFallback(id))}
+              options={[
+                { id: 'none', label: copy.twNoFallback },
+                { id: 'light-dark', label: copy.twFallback },
+              ]}
+            />
+          )}
+
+          <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 text-xs font-medium cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={stateLayers}
+              onChange={(e) => dispatch(setExportStateLayers(e.target.checked))}
+              className="w-3.5 h-3.5 accent-neutral-900 dark:accent-neutral-100 cursor-pointer"
+            />
+            <span>{copy.includeStateLayers}</span>
+          </label>
+        </div>
 
         {/* 代码显示区 */}
         <div className="relative rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-950 text-neutral-100 p-4 font-mono text-xs max-h-96 overflow-y-auto">

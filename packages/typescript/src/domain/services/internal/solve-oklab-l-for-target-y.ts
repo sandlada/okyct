@@ -1,6 +1,6 @@
 /**
  * [Domain Service — module internal]
- * Single-variable Newton-Raphson solver for OKLab L given target CIE Y and fixed (a, b).
+ * Single-variable Halley 3rd-order solver for OKLab L given target CIE Y and fixed (a, b).
  */
 
 export function solveOklabLForTargetY(
@@ -24,13 +24,19 @@ export function solveOklabLForTargetY(
     const s3 = s_ * s_ * s_
 
     const currentY = -0.0405801784 * l3 + 1.1122568696 * m3 - 0.0716766787 * s3
-    const diff = currentY - targetY
-    if (Math.abs(diff) < 1e-12) break
+    const f = currentY - targetY
+    if (Math.abs(f) < 1e-12) break
 
-    const dY_dL = -0.1217405352 * l_ * l_ + 3.3367706088 * m_ * m_ - 0.2150300361 * s_ * s_
+    const d1 = -0.1217405352 * l_ * l_ + 3.3367706088 * m_ * m_ - 0.2150300361 * s_ * s_
+    if (Math.abs(d1) < 1e-12) break
 
-    if (Math.abs(dY_dL) < 1e-12) break
-    L = L - diff / dY_dL
+    const d2 = -0.2434810704 * l_ + 6.6735412176 * m_ - 0.4300600722 * s_
+    const denom = 2 * d1 * d1 - f * d2
+    if (Math.abs(denom) < 1e-15) {
+      L = L - f / d1
+    } else {
+      L = L - (2 * f * d1) / denom
+    }
     L = Math.max(0, Math.min(1.0, L))
   }
 
