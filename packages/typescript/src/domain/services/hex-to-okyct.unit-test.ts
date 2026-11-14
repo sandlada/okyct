@@ -13,8 +13,18 @@ describe('hexToOkyct', () => {
 
   it('maps chromatic and achromatic seeds into expected OKYCT regions', () => {
     const black = hexToOkyct('#000000')
-    assert.equal(black.t, 0)
+    assert.equal(black.h, 0)
     assert.equal(black.c, 0)
+    assert.equal(black.t, 0)
+
+    const gray = hexToOkyct('#808080')
+    assert.equal(gray.h, 0)
+    assert.equal(gray.c, 0)
+
+    const white = hexToOkyct('#FFFFFF')
+    assert.equal(white.h, 0)
+    assert.equal(white.c, 0)
+    assert.equal(white.t, 100)
 
     const yellow = hexToOkyct('#FFD600')
     assert.ok(yellow.t > 80)

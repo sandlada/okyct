@@ -42,7 +42,8 @@ function signedHueDiff(actualHue: number, targetHue: number): number {
 }
 
 export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): GamutCusp {
-  const h = ((hue % 360) + 360) % 360
+  let h = hue % 360
+  if (h < 0) h += 360
   const vertexHues = gamut === 'display-p3' ? P3VertexHues : SrgbVertexHues
 
   let edgeIdx = 5
@@ -59,7 +60,15 @@ export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): 
   let lo = 0
   let hi = 1
   let fLo = signedHueDiff(vertexHues[edgeIdx], h)
+  if (Math.abs(fLo) < 1e-7) {
+    const pt = evalEdgePoint(v0, gamut)
+    return { tone: pt.tone, chroma: pt.chroma }
+  }
   let fHi = signedHueDiff(vertexHues[(edgeIdx + 1) % 6], h)
+  if (Math.abs(fHi) < 1e-7) {
+    const pt = evalEdgePoint(v1, gamut)
+    return { tone: pt.tone, chroma: pt.chroma }
+  }
   let side = 0
   let bestT = 50
   let bestC = 0

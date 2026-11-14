@@ -9,6 +9,15 @@ describe('evalLinearGamutMargin', () => {
     const neutral = evalLinearGamutMargin(y50, 0, 0, 'srgb')
     assert.ok(neutral.margin > 0.15)
     assert.ok(neutral.L > 0 && neutral.L < 1)
+    assert.equal(neutral.linear.r, y50)
+    assert.equal(neutral.linear.g, y50)
+    assert.equal(neutral.linear.b, y50)
+    assert.equal(neutral.L, Math.cbrt(y50))
+
+    const whiteP3 = evalLinearGamutMargin(1, 0, 0, 'display-p3')
+    assert.deepEqual(whiteP3, { margin: 0, L: 1, linear: { r: 1, g: 1, b: 1 } })
+    const blackSrgb = evalLinearGamutMargin(0, 0, 0, 'srgb')
+    assert.deepEqual(blackSrgb, { margin: 0, L: 0, linear: { r: 0, g: 0, b: 0 } })
 
     const outsideSrgb = evalLinearGamutMargin(y50, -0.4, 0.4, 'srgb')
     assert.ok(outsideSrgb.margin < 0)

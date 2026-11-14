@@ -4,18 +4,21 @@ import { rgbToOkyct } from './rgb-to-okyct.ts'
 import type { RGB } from '../models/index.ts'
 
 describe('rgbToOkyct', () => {
-  it('converts neutral grays with near-zero chroma and monotonic Tone', () => {
+  it('converts neutral grays with exact zero chroma/hue and monotonic Tone', () => {
     const black = rgbToOkyct({ r: 0, g: 0, b: 0 })
-    assert.equal(black.t, 0)
+    assert.equal(black.h, 0)
     assert.equal(black.c, 0)
+    assert.equal(black.t, 0)
 
     const midGray = rgbToOkyct({ r: 0.5, g: 0.5, b: 0.5 })
-    assert.ok(midGray.c < 1e-4)
+    assert.equal(midGray.h, 0)
+    assert.equal(midGray.c, 0)
     assert.ok(midGray.t > 50 && midGray.t < 56)
 
     const white = rgbToOkyct({ r: 1, g: 1, b: 1 })
-    assert.ok(white.c < 1e-4)
-    assert.ok(Math.abs(white.t - 100) < 1e-4)
+    assert.equal(white.h, 0)
+    assert.equal(white.c, 0)
+    assert.equal(white.t, 100)
   })
 
   it('normalizes hue into [0, 360) for positive and negative OKLab b coordinates', () => {

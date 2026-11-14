@@ -15,6 +15,13 @@ export function rgbToOkyct(rgb: RGB): OKYCT {
   ) {
     throw new Error('Invalid RGB input: expected an object with finite numeric r, g, and b fields.')
   }
+  if (rgb.r === rgb.g && rgb.g === rgb.b) {
+    return {
+      h: 0,
+      c: 0,
+      t: yToTone(srgbToLinear(rgb.r)),
+    }
+  }
   const linear = {
     r: srgbToLinear(rgb.r),
     g: srgbToLinear(rgb.g),
@@ -23,11 +30,14 @@ export function rgbToOkyct(rgb: RGB): OKYCT {
   const xyz = linearRgbToXyz(linear)
   const oklab = xyzToOklab(xyz)
 
-  let h = (Math.atan2(oklab.b, oklab.a) * 180) / Math.PI
-  if (h < 0) h += 360
-
   const c = Math.hypot(oklab.a, oklab.b)
   const t = yToTone(xyz.y)
+  if (c < 1e-7) {
+    return { h: 0, c: 0, t }
+  }
+
+  let h = (Math.atan2(oklab.b, oklab.a) * 180) / Math.PI
+  if (h < 0) h += 360
 
   return { h, c, t }
 }

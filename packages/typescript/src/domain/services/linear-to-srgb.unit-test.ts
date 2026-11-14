@@ -4,9 +4,9 @@ import { linearToSrgb } from './linear-to-srgb.ts'
 import { srgbToLinear } from './srgb-to-linear.ts'
 
 describe('linearToSrgb', () => {
-  it('maps boundary values 0 and 1 accurately', () => {
+  it('maps boundary values 0 and 1 strictly to 0 and 1', () => {
     assert.equal(linearToSrgb(0), 0)
-    assert.ok(Math.abs(linearToSrgb(1) - 1) < 1e-12)
+    assert.equal(linearToSrgb(1), 1)
   })
 
   it('evaluates linear segment (<= 0.0031308) and gamma segment continuously', () => {

@@ -6,18 +6,27 @@ import { solveTonesForContrast } from './solve-tones-for-contrast.ts'
 import type { ContrastMetric } from '../models/index.ts'
 
 describe('solveTonesForContrast', () => {
-  it('solves WCAG 2.1 threshold tones across AA Large, AA, AAA, and boundary ratios', () => {
-    for (const bgTone of [5, 25, 50, 75, 95]) {
-      for (const ratio of [3.0, 4.5, 7.0]) {
+  it('solves WCAG 2.1 threshold tones with soundness and completeness across AA Large, AA, AAA, and 21:1 bounds', () => {
+    for (let bgTone = 0; bgTone <= 100; bgTone += 5) {
+      for (const ratio of [3.0, 4.5, 7.0, 21.0]) {
         const sol = solveTonesForContrast(bgTone, ratio)
+        const darkAchievable = getContrastRatio(0, bgTone) >= ratio
+        const lightAchievable = getContrastRatio(100, bgTone) >= ratio
+
+        assert.equal(sol.darkForegroundTone !== null, darkAchievable)
+        assert.equal(sol.lightForegroundTone !== null, lightAchievable)
+
         if (sol.darkForegroundTone !== null) {
-          assert.ok(getContrastRatio(sol.darkForegroundTone, bgTone) >= ratio - 0.01)
+          assert.ok(getContrastRatio(sol.darkForegroundTone, bgTone) >= ratio)
         }
         if (sol.lightForegroundTone !== null) {
-          assert.ok(getContrastRatio(sol.lightForegroundTone, bgTone) >= ratio - 0.01)
+          assert.ok(getContrastRatio(sol.lightForegroundTone, bgTone) >= ratio)
         }
       }
     }
+
+    assert.deepEqual(solveTonesForContrast(0, 21), { darkForegroundTone: null, lightForegroundTone: 100 })
+    assert.deepEqual(solveTonesForContrast(100, 21), { darkForegroundTone: 0, lightForegroundTone: null })
 
     const unreachable = solveTonesForContrast(50, 21)
     assert.deepEqual(unreachable, { darkForegroundTone: null, lightForegroundTone: null })

@@ -47,32 +47,32 @@ export function solveTonesForApca(
 
   let darkTone: number | null = null
   const darkTerm = Math.pow(bgYSoft, 0.56) - sapcRequired / ApcaScale
+  let darkCandidate = 0
   if (darkTerm >= 0) {
     const txtYSoft = Math.pow(darkTerm, 1 / 0.57)
     const rawY = invertSoftClampY(txtYSoft)
-    let candidate = Math.max(0, Math.floor(yToTone(rawY) - ApcaToneMargin))
-    while (candidate > 0 && Math.abs(getApcaContrast(candidate, bgTone)) < targetLc) {
-      candidate--
+    darkCandidate = Math.max(0, Math.floor(yToTone(rawY) - ApcaToneMargin))
+    while (darkCandidate > 0 && Math.abs(getApcaContrast(darkCandidate, bgTone)) < targetLc) {
+      darkCandidate--
     }
-    if (Math.abs(getApcaContrast(candidate, bgTone)) >= targetLc) {
-      darkTone = candidate
-    }
+  }
+  if (Math.abs(getApcaContrast(darkCandidate, bgTone)) >= targetLc) {
+    darkTone = darkCandidate
   }
 
   let lightTone: number | null = null
   const lightTerm = Math.pow(bgYSoft, 0.65) + sapcRequired / ApcaScale
+  let lightCandidate = 100
   if (lightTerm <= 1.0) {
-    const txtYSoft = Math.pow(lightTerm, 1 / 0.62)
-    if (txtYSoft <= 1.0) {
-      const rawY = invertSoftClampY(txtYSoft)
-      let candidate = Math.min(100, Math.ceil(yToTone(rawY) + ApcaToneMargin))
-      while (candidate < 100 && Math.abs(getApcaContrast(candidate, bgTone)) < targetLc) {
-        candidate++
-      }
-      if (Math.abs(getApcaContrast(candidate, bgTone)) >= targetLc) {
-        lightTone = candidate
-      }
+    const txtYSoft = Math.min(1.0, Math.pow(Math.max(0, lightTerm), 1 / 0.62))
+    const rawY = invertSoftClampY(txtYSoft)
+    lightCandidate = Math.min(100, Math.ceil(yToTone(rawY) + ApcaToneMargin))
+    while (lightCandidate < 100 && Math.abs(getApcaContrast(lightCandidate, bgTone)) < targetLc) {
+      lightCandidate++
     }
+  }
+  if (Math.abs(getApcaContrast(lightCandidate, bgTone)) >= targetLc) {
+    lightTone = lightCandidate
   }
 
   return {

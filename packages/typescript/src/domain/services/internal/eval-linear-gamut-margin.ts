@@ -17,6 +17,14 @@ export function evalLinearGamutMargin(
   gamut: GamutTarget,
   initialL?: number
 ): LinearGamutEvaluation {
+  if (a === 0 && b === 0) {
+    const yClamped = Math.max(0, Math.min(1, targetY))
+    return {
+      margin: Math.min(yClamped, 1 - yClamped),
+      L: Math.cbrt(yClamped),
+      linear: { r: yClamped, g: yClamped, b: yClamped }
+    }
+  }
   const L = solveOklabLForTargetY(targetY, a, b, initialL)
   const xyz = oklabToXyz({ L, a, b })
   const linear = gamut === 'display-p3' ? xyzToLinearP3(xyz) : xyzToLinearRgb(xyz)

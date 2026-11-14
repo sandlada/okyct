@@ -21,6 +21,29 @@ describe('solveTonesForApca', () => {
     assert.ok(Math.abs(getApcaContrast(solDarkBg.lightForegroundTone, 10)) >= 60)
   })
 
+  it('satisfies APCA boundary achievability and soundness/completeness across [0, 100]', () => {
+    assert.deepEqual(solveTonesForApca(0, 108), { darkForegroundTone: null, lightForegroundTone: 100 })
+    assert.deepEqual(solveTonesForApca(100, 106), { darkForegroundTone: 0, lightForegroundTone: null })
+
+    for (let bgTone = 0; bgTone <= 100; bgTone += 5) {
+      for (const targetLc of [45, 60, 75, 90]) {
+        const sol = solveTonesForApca(bgTone, targetLc)
+        const darkAchievable = Math.abs(getApcaContrast(0, bgTone)) >= targetLc
+        const lightAchievable = Math.abs(getApcaContrast(100, bgTone)) >= targetLc
+
+        assert.equal(sol.darkForegroundTone !== null, darkAchievable)
+        assert.equal(sol.lightForegroundTone !== null, lightAchievable)
+
+        if (sol.darkForegroundTone !== null) {
+          assert.ok(Math.abs(getApcaContrast(sol.darkForegroundTone, bgTone)) >= targetLc)
+        }
+        if (sol.lightForegroundTone !== null) {
+          assert.ok(Math.abs(getApcaContrast(sol.lightForegroundTone, bgTone)) >= targetLc)
+        }
+      }
+    }
+  })
+
   it('supports dual-sided solutions on mid backgrounds and soft black clamp inversion', () => {
     const midLowLc = solveTonesForApca(55, 15)
     assert.ok(midLowLc.darkForegroundTone !== null)
