@@ -30,6 +30,8 @@ export function LocaleSwitcher({ compact = false }: { readonly compact?: boolean
               key={candidate}
               to={pathForLocale(pathname, candidate)}
               hrefLang={candidate}
+              lang={candidate}
+              aria-label={LocaleLabels[candidate]}
               aria-current={isActive ? 'true' : undefined}
               title={LocaleLabels[candidate]}
               className={`rounded-full px-2 py-1 text-[11px] font-semibold leading-none transition-colors ${
@@ -59,6 +61,7 @@ export function LocaleSwitcher({ compact = false }: { readonly compact?: boolean
             key={candidate}
             to={pathForLocale(pathname, candidate)}
             hrefLang={candidate}
+            lang={candidate}
             aria-current={isActive ? 'true' : undefined}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
               isActive

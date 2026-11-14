@@ -5,7 +5,7 @@
 
 import { EnglishMessages, type MessageKey } from '../i18n/messages/en.ts'
 import { TraditionalChineseMessages } from '../i18n/messages/zh-Hant.ts'
-import { HtmlLang, OpenGraphLocales, type Locale } from '../i18n/locales.ts'
+import { HtmlLang, OpenGraphLocales, SupportedLocales, type Locale } from '../i18n/locales.ts'
 import { landingPath, studioPath, withLocale, type AppRoute } from '../router/routes.ts'
 import { absoluteUrl, SiteName, SiteOwner, SiteUrl } from './site.ts'
 
@@ -21,8 +21,31 @@ export interface SeoDescriptor {
   readonly robots: string
   readonly lang: string
   readonly ogLocale: string
+  readonly ogAlternateLocales: readonly string[]
   readonly alternates: readonly SeoAlternate[]
   readonly jsonLd: string | null
+}
+
+const FeatureListByLocale: Record<Locale, readonly string[]> = {
+  en: [
+    'OKLab polar hue with CIE 1931 Y tone',
+    'Single-variable Newton tone solver',
+    'Cusp-anchored gamut mapping with zero hue drift',
+    'O(1) WCAG 2.1 and APCA contrast inversion',
+    'OLED, AMOLED and MicroOLED hardware profiles',
+  ],
+  'zh-Hant': [
+    'OKLab 極座標色相與 CIE 1931 Y 錨定明度',
+    '單變數牛頓切線快速求解器',
+    '尖峰錨定色域映射，保證色相零漂移',
+    'O(1) WCAG 2.1 與 APCA 對比度閉式反解',
+    'OLED、AMOLED 與 MicroOLED 自發光硬體物理模式',
+  ],
+}
+
+const SubCategoryByLocale: Record<Locale, string> = {
+  en: 'Perceptual color engine',
+  'zh-Hant': '感知色彩引擎',
 }
 
 function message(locale: Locale, key: MessageKey): string {
@@ -33,7 +56,12 @@ function message(locale: Locale, key: MessageKey): string {
   return catalogue[locale][key]
 }
 
-function buildSoftwareApplicationJsonLd(locale: Locale): string {
+function buildSoftwareApplicationJsonLd(locale: Locale, canonical: string): string {
+  const title = message(locale, 'seo.title')
+  const description = message(locale, 'seo.description')
+  const lang = HtmlLang[locale]
+  const ogImage = absoluteUrl('/og-cover.svg')
+
   const graph = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -42,7 +70,7 @@ function buildSoftwareApplicationJsonLd(locale: Locale): string {
         '@id': `${SiteUrl}/#website`,
         url: `${SiteUrl}/`,
         name: SiteName,
-        description: message(locale, 'seo.description'),
+        description: message('en', 'seo.description'),
         inLanguage: [HtmlLang.en, HtmlLang['zh-Hant']],
         publisher: {
           '@type': 'Organization',
@@ -51,14 +79,30 @@ function buildSoftwareApplicationJsonLd(locale: Locale): string {
         },
       },
       {
+        '@type': 'WebPage',
+        '@id': `${canonical}#webpage`,
+        url: canonical,
+        name: title,
+        description,
+        inLanguage: lang,
+        isPartOf: {
+          '@id': `${SiteUrl}/#website`,
+        },
+        about: {
+          '@id': `${SiteUrl}/#software`,
+        },
+      },
+      {
         '@type': 'SoftwareApplication',
         '@id': `${SiteUrl}/#software`,
         name: SiteName,
         applicationCategory: 'DeveloperApplication',
-        applicationSubCategory: 'Color engine',
+        applicationSubCategory: SubCategoryByLocale[locale],
         operatingSystem: 'Web, Node.js',
-        url: `${SiteUrl}/`,
-        description: message(locale, 'seo.description'),
+        url: canonical,
+        image: ogImage,
+        inLanguage: lang,
+        description,
         programmingLanguage: ['TypeScript', 'Dart', 'Rust'],
         license: 'https://opensource.org/licenses/MIT',
         isAccessibleForFree: true,
@@ -67,13 +111,7 @@ function buildSoftwareApplicationJsonLd(locale: Locale): string {
           price: '0',
           priceCurrency: 'USD',
         },
-        featureList: [
-          'OKLab polar hue with CIE 1931 Y tone',
-          'Single-variable Newton tone solver',
-          'Cusp-anchored gamut mapping with zero hue drift',
-          'O(1) WCAG 2.1 and APCA contrast inversion',
-          'OLED, AMOLED and MicroOLED hardware profiles',
-        ],
+        featureList: [...FeatureListByLocale[locale]],
         publisher: {
           '@type': 'Organization',
           name: SiteOwner,
@@ -98,6 +136,9 @@ function landingAlternates(): SeoAlternate[] {
 export function buildSeo(route: AppRoute): SeoDescriptor {
   const locale = route.locale
   const ogLocale = OpenGraphLocales[locale]
+  const ogAlternateLocales = SupportedLocales.filter((item) => item !== locale).map(
+    (item) => OpenGraphLocales[item],
+  )
   const lang = HtmlLang[locale]
 
   if (route.kind === 'studio') {
@@ -111,6 +152,7 @@ export function buildSeo(route: AppRoute): SeoDescriptor {
       robots: 'noindex, follow',
       lang,
       ogLocale,
+      ogAlternateLocales,
       alternates: [
         { hreflang: HtmlLang.en, href: absoluteUrl(enPath) },
         { hreflang: HtmlLang['zh-Hant'], href: absoluteUrl(zhPath) },
@@ -128,20 +170,23 @@ export function buildSeo(route: AppRoute): SeoDescriptor {
       robots: 'noindex, follow',
       lang,
       ogLocale,
+      ogAlternateLocales,
       alternates: landingAlternates(),
       jsonLd: null,
     }
   }
 
+  const canonical = absoluteUrl(landingPath(locale))
   return {
     title: message(locale, 'seo.title'),
     description: message(locale, 'seo.description'),
-    canonical: absoluteUrl(landingPath(locale)),
+    canonical,
     robots: 'index, follow, max-image-preview:large, max-snippet:-1',
     lang,
     ogLocale,
+    ogAlternateLocales,
     alternates: landingAlternates(),
-    jsonLd: buildSoftwareApplicationJsonLd(locale),
+    jsonLd: buildSoftwareApplicationJsonLd(locale, canonical),
   }
 }
 

@@ -41,13 +41,19 @@ export function renderHeadTags(seo: SeoDescriptor): string {
   tags.push(meta('og:description', seo.description, true))
   tags.push(meta('og:url', seo.canonical, true))
   tags.push(meta('og:locale', seo.ogLocale, true))
+  for (const alternateLocale of seo.ogAlternateLocales) {
+    tags.push(meta('og:locale:alternate', alternateLocale, true))
+  }
   tags.push(meta('og:image', absoluteUrl('/og-cover.svg'), true))
+  tags.push(meta('og:image:width', '1200', true))
+  tags.push(meta('og:image:height', '630', true))
   tags.push(meta('og:image:alt', seo.title, true))
 
   tags.push(meta('twitter:card', 'summary_large_image'))
   tags.push(meta('twitter:title', seo.title))
   tags.push(meta('twitter:description', seo.description))
   tags.push(meta('twitter:image', absoluteUrl('/og-cover.svg')))
+  tags.push(meta('twitter:image:alt', seo.title))
 
   if (seo.jsonLd !== null) {
     tags.push(`<script type="application/ld+json" ${SeoAttribute}>${seo.jsonLd.replaceAll('<', '\\u003c')}</script>`)

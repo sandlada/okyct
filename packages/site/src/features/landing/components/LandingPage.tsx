@@ -6,7 +6,7 @@
  * 页面结构本身以可预渲染的语义化 HTML 呈现，服务于 SEO 与无障碍阅读。
  */
 
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { ArrowRight, Github, Sparkles } from 'lucide-react'
 import { useI18n } from '../../../i18n/index.tsx'
 import { Link } from '../../../router/index.tsx'
@@ -44,6 +44,11 @@ export function LandingPage() {
   const dispatch = useAppDispatch()
   const screen = useAppSelector(selectLandingScreen)
   const { seedHex, isDark, palette, terrainRoles, panels, benchmarkMatrix, brandColors, gradient } = screen
+  const [isClientReady, setIsClientReady] = useState(false)
+
+  useEffect(() => {
+    setIsClientReady(true)
+  }, [])
 
   return (
     <div id="top" className="relative min-h-screen bg-white text-neutral-900 selection:bg-neutral-900 selection:text-white dark:bg-neutral-950 dark:text-neutral-50 dark:selection:bg-neutral-100 dark:selection:text-neutral-950">
@@ -55,13 +60,15 @@ export function LandingPage() {
         {/* ---------------------------------------------------------------- */}
         <section className="relative isolate flex min-h-[calc(100dvh-4rem)] items-center overflow-hidden border-b border-neutral-900/5 dark:border-white/5">
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[1180px] sm:h-[1280px]">
-            <Suspense fallback={null}>
-              <ParticleTerrain
-                key={`${seedHex}-${isDark ? 'dark' : 'light'}`}
-                roleRamps={terrainRoles}
-                isDark={isDark}
-              />
-            </Suspense>
+            {isClientReady && (
+              <Suspense fallback={null}>
+                <ParticleTerrain
+                  key={`${seedHex}-${isDark ? 'dark' : 'light'}`}
+                  roleRamps={terrainRoles}
+                  isDark={isDark}
+                />
+              </Suspense>
+            )}
             <div
               className="absolute inset-0"
               style={{
