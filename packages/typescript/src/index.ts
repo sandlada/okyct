@@ -80,6 +80,8 @@ export {
   isInSrgbGamut,
   getContrastRatio,
   getApcaContrast,
+  getDeltaEOklab,
+  getDeltaE2000,
   solveTonesForContrast,
   solveTonesForApca,
   runColorimetricInvariantSuite,

@@ -2,6 +2,7 @@ import { combineReducers, configureStore, createListenerMiddleware } from '@redu
 import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux'
 import { benchmarkReducer } from '../features/benchmark/slice.ts'
 import { followSchemeColors, compositionReducer } from '../features/composition/slice.ts'
+import { deltaReducer } from '../features/delta/slice.ts'
 import { exportReducer } from '../features/export/slice.ts'
 import { landingReducer } from '../features/landing/slice.ts'
 import { oledReducer } from '../features/oled/slice.ts'
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   composition: compositionReducer,
   export: exportReducer,
   oled: oledReducer,
+  delta: deltaReducer,
   benchmark: benchmarkReducer,
 })
 

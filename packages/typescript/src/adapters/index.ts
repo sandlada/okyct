@@ -4,6 +4,7 @@
 
 export {
   EmissivePanelSpecs,
+  applyEmissiveProfileToTokenHex,
   computeColorEmissiveTelemetry,
   analyzeEmissiveSchemeMetrics,
   buildDynamicScheme,
