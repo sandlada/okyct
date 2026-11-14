@@ -25,9 +25,11 @@ export function compressToGamutCusp(
   let lo = 0
   let hi = 1
   let lastL: number | undefined
-  let bestLinear: RGB = { r: toneToY(tAnchor), g: toneToY(tAnchor), b: toneToY(tAnchor) }
+  const yAnchor = toneToY(tAnchor)
+  let bestLinear: RGB = { r: yAnchor, g: yAnchor, b: yAnchor }
 
   for (let i = 0; i < 16; i++) {
+    if (hi - lo < 1e-5) break
     const mid = (lo + hi) * 0.5
     const tMid = tAnchor + mid * (t - tAnchor)
     const cMid = mid * c

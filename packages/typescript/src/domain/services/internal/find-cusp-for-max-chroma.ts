@@ -9,6 +9,14 @@ import { linearP3ToXyz } from './linear-p3-to-xyz.ts'
 import { linearRgbToXyz } from './linear-rgb-to-xyz.ts'
 import { xyzToOklab } from './xyz-to-oklab.ts'
 
+interface VertexCusp {
+  hue: number
+  chroma: number
+  tone: number
+}
+
+const RadToDeg = 180 / Math.PI
+
 const ChromaticVertices: ReadonlyArray<RGB> = [
   { r: 1, g: 0, b: 0 },
   { r: 1, g: 1, b: 0 },
@@ -18,10 +26,10 @@ const ChromaticVertices: ReadonlyArray<RGB> = [
   { r: 1, g: 0, b: 1 },
 ]
 
-function evalEdgePoint(rgb: RGB, gamut: GamutTarget) {
+function evalVertex(rgb: RGB, gamut: GamutTarget): VertexCusp {
   const xyz = gamut === 'display-p3' ? linearP3ToXyz(rgb) : linearRgbToXyz(rgb)
   const lab = xyzToOklab(xyz)
-  let h = (Math.atan2(lab.b, lab.a) * 180) / Math.PI
+  let h = Math.atan2(lab.b, lab.a) * RadToDeg
   if (h < 0) h += 360
   return {
     hue: h,
@@ -30,12 +38,12 @@ function evalEdgePoint(rgb: RGB, gamut: GamutTarget) {
   }
 }
 
-function buildVertexHues(gamut: GamutTarget): readonly number[] {
-  return ChromaticVertices.map((v) => evalEdgePoint(v, gamut).hue)
+function buildVertexTable(gamut: GamutTarget): readonly VertexCusp[] {
+  return ChromaticVertices.map((v) => evalVertex(v, gamut))
 }
 
-const SrgbVertexHues = buildVertexHues('srgb')
-const P3VertexHues = buildVertexHues('display-p3')
+const SrgbVertices = buildVertexTable('srgb')
+const P3Vertices = buildVertexTable('display-p3')
 
 function signedHueDiff(actualHue: number, targetHue: number): number {
   return ((actualHue - targetHue + 540) % 360) - 180
@@ -44,52 +52,75 @@ function signedHueDiff(actualHue: number, targetHue: number): number {
 export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): GamutCusp {
   let h = hue % 360
   if (h < 0) h += 360
-  const vertexHues = gamut === 'display-p3' ? P3VertexHues : SrgbVertexHues
+  const isP3 = gamut === 'display-p3'
+  const vertices = isP3 ? P3Vertices : SrgbVertices
 
   let edgeIdx = 5
   for (let i = 0; i < 5; i++) {
-    if (h >= vertexHues[i] && h < vertexHues[i + 1]) {
+    if (h >= vertices[i].hue && h < vertices[i + 1].hue) {
       edgeIdx = i
       break
     }
   }
 
+  const v0Vert = vertices[edgeIdx]
+  let fLo = signedHueDiff(v0Vert.hue, h)
+  if (Math.abs(fLo) < 1e-7) {
+    return { tone: v0Vert.tone, chroma: v0Vert.chroma }
+  }
+  const v1Vert = vertices[(edgeIdx + 1) % 6]
+  let fHi = signedHueDiff(v1Vert.hue, h)
+  if (Math.abs(fHi) < 1e-7) {
+    return { tone: v1Vert.tone, chroma: v1Vert.chroma }
+  }
+
   const v0 = ChromaticVertices[edgeIdx]
   const v1 = ChromaticVertices[(edgeIdx + 1) % 6]
+  const dr = v1.r - v0.r
+  const dg = v1.g - v0.g
+  const db = v1.b - v0.b
 
   let lo = 0
   let hi = 1
-  let fLo = signedHueDiff(vertexHues[edgeIdx], h)
-  if (Math.abs(fLo) < 1e-7) {
-    const pt = evalEdgePoint(v0, gamut)
-    return { tone: pt.tone, chroma: pt.chroma }
-  }
-  let fHi = signedHueDiff(vertexHues[(edgeIdx + 1) % 6], h)
-  if (Math.abs(fHi) < 1e-7) {
-    const pt = evalEdgePoint(v1, gamut)
-    return { tone: pt.tone, chroma: pt.chroma }
-  }
   let side = 0
-  let bestT = 50
-  let bestC = 0
+  let bestY = 0
+  let bestA = 0
+  let bestB = 0
 
   for (let i = 0; i < 16; i++) {
     const denom = fHi - fLo
     let u = Math.abs(denom) > 1e-12 ? (lo * fHi - hi * fLo) / denom : (lo + hi) * 0.5
     if (!(u > lo && u < hi)) u = (lo + hi) * 0.5
 
-    const sample = evalEdgePoint(
-      {
-        r: v0.r + (v1.r - v0.r) * u,
-        g: v0.g + (v1.g - v0.g) * u,
-        b: v0.b + (v1.b - v0.b) * u,
-      },
-      gamut
-    )
-    bestT = sample.tone
-    bestC = sample.chroma
+    const r = v0.r + dr * u
+    const g = v0.g + dg * u
+    const b = v0.b + db * u
 
-    const err = signedHueDiff(sample.hue, h)
+    let x: number
+    let y: number
+    let z: number
+    if (isP3) {
+      x = 0.4865710 * r + 0.2656677 * g + 0.1982173 * b
+      y = 0.2289746 * r + 0.6917385 * g + 0.0792869 * b
+      z = 0.0451134 * g + 1.0439444 * b
+    } else {
+      x = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b
+      y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b
+      z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b
+    }
+
+    const l_ = Math.cbrt(0.8189330101 * x + 0.3618667424 * y - 0.1288597137 * z)
+    const m_ = Math.cbrt(0.0329845436 * x + 0.9293118715 * y + 0.0361456387 * z)
+    const s_ = Math.cbrt(0.0482003018 * x + 0.2643662691 * y + 0.6338517070 * z)
+
+    bestA = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
+    bestB = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+    bestY = y
+
+    let sampleHue = Math.atan2(bestB, bestA) * RadToDeg
+    if (sampleHue < 0) sampleHue += 360
+
+    const err = signedHueDiff(sampleHue, h)
     if (Math.abs(err) < 1e-4 || hi - lo < 1e-6) break
 
     if (err <= 0) {
@@ -105,5 +136,8 @@ export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): 
     }
   }
 
-  return { tone: bestT, chroma: bestC }
+  return {
+    tone: yToTone(bestY),
+    chroma: Math.hypot(bestA, bestB),
+  }
 }

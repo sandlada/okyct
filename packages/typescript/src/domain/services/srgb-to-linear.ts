@@ -3,5 +3,6 @@ export function srgbToLinear(c: number): number {
   if (!Number.isFinite(c)) {
     throw new Error(`Invalid sRGB channel value: ${c}. Expected a finite number.`)
   }
+  if (c === 1) return 1
   return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
 }

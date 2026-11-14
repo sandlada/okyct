@@ -5,10 +5,11 @@ export function toneToY(tone: number): number {
   if (!Number.isFinite(tone)) {
     throw new Error(`Invalid tone value: ${tone}. Expected a finite number in [0, 100].`)
   }
-  const t = Math.max(0, Math.min(100, tone))
-  if (t <= 8.0) {
-    return t / CieKappa
+  if (tone <= 0) return 0
+  if (tone >= 100) return 1
+  if (tone <= 8.0) {
+    return tone / CieKappa
   }
-  const yRoot = (t + 16.0) / 116.0
+  const yRoot = (tone + 16.0) / 116.0
   return yRoot * yRoot * yRoot
 }

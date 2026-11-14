@@ -5,10 +5,9 @@
  */
 
 import { CvdTypes, type CvdType } from '../models/cvd-type.model.ts'
-import { hexToRgb } from './hex-to-rgb.ts'
+import { parseHexToRgb24, SrgbByteToLinearLut } from './internal/srgb-lut.ts'
 import { linearToSrgb } from './linear-to-srgb.ts'
 import { rgbToHex } from './rgb-to-hex.ts'
-import { srgbToLinear } from './srgb-to-linear.ts'
 
 type Matrix3x3 = readonly [
   readonly [number, number, number],
@@ -47,13 +46,13 @@ export function simulateCvd(hex: string, type: CvdType, severity = 1.0): string 
     throw new Error(`Invalid CVD severity: ${severity}. Expected a finite number in [0, 1].`)
   }
 
-  const rgb = hexToRgb(hex)
+  const rgb24 = parseHexToRgb24(hex)
   const s = Math.max(0, Math.min(1, severity))
   if (type === 'none' || s === 0) return hex
 
-  const rl = srgbToLinear(rgb.r)
-  const gl = srgbToLinear(rgb.g)
-  const bl = srgbToLinear(rgb.b)
+  const rl = SrgbByteToLinearLut[(rgb24 >> 16) & 255]
+  const gl = SrgbByteToLinearLut[(rgb24 >> 8) & 255]
+  const bl = SrgbByteToLinearLut[rgb24 & 255]
 
   const m = CvdLinearMatrices[type]
   const rProj = m[0][0] * rl + m[0][1] * gl + m[0][2] * bl

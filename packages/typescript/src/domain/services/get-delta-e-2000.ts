@@ -1,21 +1,25 @@
-import { hexToRgb } from './hex-to-rgb.ts'
-import { linearRgbToXyz } from './internal/linear-rgb-to-xyz.ts'
+import { parseHexToRgb24, SrgbByteToLinearLut } from './internal/srgb-lut.ts'
 import { xyzToCielab } from './internal/xyz-to-cielab.ts'
-import { srgbToLinear } from './srgb-to-linear.ts'
 
 const DegToRad = Math.PI / 180
 const RadToDeg = 180 / Math.PI
 const TwentyFivePow7 = 6103515625
 
-function hexToCielab(hex: string) {
-  const rgb = hexToRgb(hex)
-  return xyzToCielab(
-    linearRgbToXyz({
-      r: srgbToLinear(rgb.r),
-      g: srgbToLinear(rgb.g),
-      b: srgbToLinear(rgb.b),
-    }),
-  )
+function pow7(x: number): number {
+  const x2 = x * x
+  const x4 = x2 * x2
+  return x4 * x2 * x
+}
+
+function rgb24ToCielab(rgb24: number) {
+  const rl = SrgbByteToLinearLut[(rgb24 >> 16) & 255]
+  const gl = SrgbByteToLinearLut[(rgb24 >> 8) & 255]
+  const bl = SrgbByteToLinearLut[rgb24 & 255]
+  return xyzToCielab({
+    x: 0.4124564 * rl + 0.3575761 * gl + 0.1804375 * bl,
+    y: 0.2126729 * rl + 0.7151522 * gl + 0.0721750 * bl,
+    z: 0.0193339 * rl + 0.1191920 * gl + 0.9503041 * bl,
+  })
 }
 
 function hueAngleDeg(b: number, aPrime: number): number {
@@ -28,13 +32,17 @@ function hueAngleDeg(b: number, aPrime: number): number {
  * Computes CIEDE2000 (ΔE_2000) perceptual color difference with kL = kC = kH = 1.
  */
 export function getDeltaE2000(hexA: string, hexB: string): number {
-  const lab1 = hexToCielab(hexA)
-  const lab2 = hexToCielab(hexB)
+  const rgb24A = parseHexToRgb24(hexA)
+  const rgb24B = parseHexToRgb24(hexB)
+  if (rgb24A === rgb24B) return 0
+
+  const lab1 = rgb24ToCielab(rgb24A)
+  const lab2 = rgb24ToCielab(rgb24B)
 
   const c1 = Math.hypot(lab1.a, lab1.b)
   const c2 = Math.hypot(lab2.a, lab2.b)
   const cBar = (c1 + c2) * 0.5
-  const cBar7 = Math.pow(cBar, 7)
+  const cBar7 = pow7(cBar)
   const g = 0.5 * (1 - Math.sqrt(cBar7 / (cBar7 + TwentyFivePow7)))
 
   const a1Prime = (1 + g) * lab1.a
@@ -84,11 +92,13 @@ export function getDeltaE2000(hexA: string, hexB: string): number {
     0.32 * Math.cos((3 * hBarPrime + 6) * DegToRad) -
     0.20 * Math.cos((4 * hBarPrime - 63) * DegToRad)
 
-  const deltaTheta = 30 * Math.exp(-Math.pow((hBarPrime - 275) / 25, 2))
-  const cBarPrime7 = Math.pow(cBarPrime, 7)
+  const thetaScaled = (hBarPrime - 275) / 25
+  const deltaTheta = 30 * Math.exp(-(thetaScaled * thetaScaled))
+  const cBarPrime7 = pow7(cBarPrime)
   const rC = 2 * Math.sqrt(cBarPrime7 / (cBarPrime7 + TwentyFivePow7))
 
-  const lBarOffsetSq = Math.pow(lBarPrime - 50, 2)
+  const lBarOffset = lBarPrime - 50
+  const lBarOffsetSq = lBarOffset * lBarOffset
   const sL = 1 + (0.015 * lBarOffsetSq) / Math.sqrt(20 + lBarOffsetSq)
   const sC = 1 + 0.045 * cBarPrime
   const sH = 1 + 0.015 * cBarPrime * t

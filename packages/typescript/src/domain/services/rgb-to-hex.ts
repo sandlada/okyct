@@ -11,8 +11,8 @@ export function rgbToHex(rgb: RGB): string {
   ) {
     throw new Error('Invalid RGB input: expected an object with finite numeric r, g, and b fields.')
   }
-  const rClamped = Math.max(0, Math.min(255, Math.round(rgb.r * 255)))
-  const gClamped = Math.max(0, Math.min(255, Math.round(rgb.g * 255)))
-  const bClamped = Math.max(0, Math.min(255, Math.round(rgb.b * 255)))
-  return '#' + [rClamped, gClamped, bClamped].map(x => x.toString(16).padStart(2, '0')).join('')
+  const r = rgb.r <= 0 ? 0 : rgb.r >= 1 ? 255 : (rgb.r * 255 + 0.5) | 0
+  const g = rgb.g <= 0 ? 0 : rgb.g >= 1 ? 255 : (rgb.g * 255 + 0.5) | 0
+  const b = rgb.b <= 0 ? 0 : rgb.b >= 1 ? 255 : (rgb.b * 255 + 0.5) | 0
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)
 }

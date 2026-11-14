@@ -13,11 +13,17 @@ import { evalLinearGamutMargin } from './internal/eval-linear-gamut-margin.ts'
 
 const GamutTolerance = 1e-5
 
+function clampUnitChannel(linear: number): number {
+  if (linear <= 0) return 0
+  if (linear >= 1) return 1
+  return linearToSrgb(linear)
+}
+
 function clampUnitRgb(linear: RGB): RGB {
   return {
-    r: Math.max(0, Math.min(1, linearToSrgb(linear.r))),
-    g: Math.max(0, Math.min(1, linearToSrgb(linear.g))),
-    b: Math.max(0, Math.min(1, linearToSrgb(linear.b))),
+    r: clampUnitChannel(linear.r),
+    g: clampUnitChannel(linear.g),
+    b: clampUnitChannel(linear.b),
   }
 }
 
@@ -54,6 +60,10 @@ export function okyctToRgb(okyct: OKYCT, options: ColorConversionOptions = {}): 
   if (t >= 99.999) return { r: 1, g: 1, b: 1 }
 
   const targetY = toneToY(t)
+  if (c === 0) {
+    const srgb = linearToSrgb(targetY)
+    return { r: srgb, g: srgb, b: srgb }
+  }
   const rad = (h * Math.PI) / 180
   const cosH = Math.cos(rad)
   const sinH = Math.sin(rad)

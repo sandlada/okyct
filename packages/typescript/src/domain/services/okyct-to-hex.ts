@@ -10,6 +10,8 @@ export function okyctToHex(okyct: OKYCT, options: ColorConversionOptions = {}): 
       'okyctToHex produces 8-bit sRGB hex strings; use okyctToDisplayP3Css for Display P3 output.'
     )
   }
+  if (okyct.t <= 0.001) return '#000000'
+  if (okyct.t >= 99.999) return '#ffffff'
   if (options.gamutMapping === 'cusp-compress') {
     const mapped = rgbToOkyct(rgb)
     return snapRgbToHexForHuePreserve(rgb, okyct.h, mapped.t, mapped.c)

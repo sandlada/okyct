@@ -27,10 +27,16 @@ export function okyctToOklchCss(okyct: OKYCT): string {
   }
 
   const y = toneToY(t)
-  const rad = (h * Math.PI) / 180
-  const a = c * Math.cos(rad)
-  const b = c * Math.sin(rad)
-  const l = solveOklabLForTargetY(y, a, b)
-  const hNorm = ((h % 360) + 360) % 360
+  let l: number
+  if (c === 0) {
+    l = Math.cbrt(y)
+  } else {
+    const rad = (h * Math.PI) / 180
+    const a = c * Math.cos(rad)
+    const b = c * Math.sin(rad)
+    l = solveOklabLForTargetY(y, a, b)
+  }
+  let hNorm = h % 360
+  if (hNorm < 0) hNorm += 360
   return `oklch(${(l * 100).toFixed(2)}% ${c.toFixed(4)} ${hNorm.toFixed(2)})`
 }
