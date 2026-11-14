@@ -1,4 +1,4 @@
-import { Activity, Code2, Cpu, Grid3x3, Layers, LayoutTemplate, Palette } from 'lucide-react'
+import { Activity, Code2, Cpu, Grid3x3, Layers, LayoutTemplate, Palette, Sparkles } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { useRouter } from '../../../router/index.tsx'
 import { studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
@@ -10,6 +10,7 @@ const MobileTabs: readonly { id: StudioView; key: MessageKey; icon: typeof Palet
   { id: StudioViewIds.Oled, key: 'studio.mobile.oled', icon: Cpu },
   { id: StudioViewIds.Composition, key: 'studio.mobile.fp', icon: Layers },
   { id: StudioViewIds.Delta, key: 'studio.mobile.delta', icon: Activity },
+  { id: StudioViewIds.Simple, key: 'studio.mobile.simple', icon: Sparkles },
   { id: StudioViewIds.Page, key: 'studio.mobile.page', icon: LayoutTemplate },
   { id: StudioViewIds.Export, key: 'studio.mobile.export', icon: Code2 },
 ]

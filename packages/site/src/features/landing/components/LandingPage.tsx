@@ -210,6 +210,58 @@ export function LandingPage() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
+        {/* Palette lab                                                       */}
+        {/* ---------------------------------------------------------------- */}
+        <section id="palette" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
+          <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
+            <div className="flex flex-col gap-10 pl-7 lg:flex-row lg:items-end lg:justify-between sm:pl-9">
+              <div className="max-w-5xl">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
+                  {t('palette.eyebrow')}
+                </span>
+                <h2 className="mt-6 font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
+                  {t('palette.title')}
+                </h2>
+                <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
+                  {t('palette.body')}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-12 flex flex-col gap-5">
+              {palette.rows.map((row) => (
+                <div key={row.key} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
+                  <span className="w-32 shrink-0 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                    {t(row.labelKey)}
+                  </span>
+                  <div className="grid flex-1 grid-cols-[repeat(13,minmax(0,1fr))] gap-1">
+                    {row.swatches.map((swatch) => (
+                      <div
+                        key={`${row.key}-${swatch.tone}`}
+                        title={`T${swatch.tone} · ${swatch.hex.toUpperCase()}`}
+                        className="group relative h-9 rounded-md ring-1 ring-inset ring-black/10 transition-transform hover:scale-[1.06] sm:h-10 dark:ring-white/10"
+                        style={{ backgroundColor: swatch.hex }}
+                      >
+                        <span className="pointer-events-none absolute inset-x-0 -bottom-4 hidden text-center font-mono text-[9px] text-neutral-400 group-hover:block dark:text-neutral-500">
+                          {swatch.tone}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-neutral-400 dark:text-neutral-500">
+              <span className="font-mono uppercase tracking-[0.16em]">{t('palette.toneAxis')}</span>
+              <span className="font-mono">0 · 10 · 20 · 30 · 40 · 50 · 60 · 70 · 80 · 90 · 95 · 99 · 100</span>
+            </div>
+          </div>
+        </section>
+
+        <TokenIntroSection schemes={palette.schemes} />
+
+        {/* ---------------------------------------------------------------- */}
         {/* Statement                                                         */}
         {/* ---------------------------------------------------------------- */}
         <section id="model" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
@@ -304,77 +356,9 @@ export function LandingPage() {
         </section>
 
         {/* ---------------------------------------------------------------- */}
-        {/* Palette lab                                                       */}
-        {/* ---------------------------------------------------------------- */}
-        <section id="palette" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
-          <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
-            <div className="flex flex-col gap-10 pl-7 lg:flex-row lg:items-end lg:justify-between sm:pl-9">
-              <div className="max-w-5xl">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">
-                  {t('palette.eyebrow')}
-                </span>
-                <h2 className="mt-6 font-display text-[clamp(1.9rem,4.6vw,4rem)] font-medium leading-[1.04] tracking-[-0.035em] text-balance">
-                  {t('palette.title')}
-                </h2>
-                <p className="mt-8 max-w-3xl text-pretty text-base leading-relaxed text-neutral-600 sm:text-[17px] dark:text-neutral-400">
-                  {t('palette.body')}
-                </p>
-              </div>
-
-              <label className="flex w-fit cursor-pointer items-center gap-3 rounded-2xl border border-neutral-900/10 bg-white/70 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-white/[0.04]">
-                <input
-                  type="color"
-                  value={seedHex}
-                  onChange={(event) => dispatch(setLandingSeed(event.target.value))}
-                  aria-label={t('palette.seedLabel')}
-                  className="h-9 w-9 cursor-pointer appearance-none rounded-lg border-0 bg-transparent p-0"
-                />
-                <span className="flex flex-col">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-neutral-400 dark:text-neutral-500">
-                    {t('palette.seedLabel')}
-                  </span>
-                  <span className="font-mono text-sm tabular-nums">{seedHex.toUpperCase()}</span>
-                </span>
-              </label>
-            </div>
-
-            <div className="mt-12 flex flex-col gap-5">
-              {palette.rows.map((row) => (
-                <div key={row.key} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
-                  <span className="w-32 shrink-0 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    {t(row.labelKey)}
-                  </span>
-                  <div className="grid flex-1 grid-cols-[repeat(13,minmax(0,1fr))] gap-1">
-                    {row.swatches.map((swatch) => (
-                      <div
-                        key={`${row.key}-${swatch.tone}`}
-                        title={`T${swatch.tone} · ${swatch.hex.toUpperCase()}`}
-                        className="group relative h-9 rounded-md ring-1 ring-inset ring-black/10 transition-transform hover:scale-[1.06] sm:h-10 dark:ring-white/10"
-                        style={{ backgroundColor: swatch.hex }}
-                      >
-                        <span className="pointer-events-none absolute inset-x-0 -bottom-4 hidden text-center font-mono text-[9px] text-neutral-400 group-hover:block dark:text-neutral-500">
-                          {swatch.tone}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-neutral-400 dark:text-neutral-500">
-              <span className="font-mono uppercase tracking-[0.16em]">{t('palette.toneAxis')}</span>
-              <span className="font-mono">0 · 10 · 20 · 30 · 40 · 50 · 60 · 70 · 80 · 90 · 95 · 99 · 100</span>
-            </div>
-          </div>
-        </section>
-
-        <TokenIntroSection schemes={palette.schemes} />
-
-        {/* ---------------------------------------------------------------- */}
         {/* Closing CTA                                                       */}
         {/* ---------------------------------------------------------------- */}
-        <section className="relative pb-24 sm:pb-32">
+        <section className="relative border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
           <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
             <div className="relative overflow-hidden rounded-[2rem] border border-neutral-900/10 bg-neutral-50 px-6 py-20 text-center sm:rounded-[2.5rem] sm:px-12 sm:py-28 dark:border-white/10 dark:bg-white/[0.03]">
               <div

@@ -58,7 +58,7 @@ export const EnglishMessages = {
   'benchmarks.eyebrow': 'Measured benchmarks',
   'benchmarks.title': 'OKYCT raises the bar across a wide range of benchmarks.',
   'benchmarks.body':
-    'Every number below is measured live in your browser by @sandlada/benchmark — OKYCT, Google MCU, and culori on a shared protocol v2 seed.',
+    'Every number below is measured live in your browser by benchmark — OKYCT, Google MCU, and culori on a shared protocol v2 seed.',
   'benchmarks.liveNote': 'Measured live from seed',
   'benchmarks.column.benchmark': 'Benchmark',
   'benchmarks.column.condition': 'Setup',
@@ -160,7 +160,7 @@ export const EnglishMessages = {
     'P = 1.05·Rγ + 0.85·Gγ + 2.40·Bγ. Blue is the most expensive channel and the fastest to age, so hazardous hues are capped and nudged toward cyan.',
 
   'palette.eyebrow': 'Live palette',
-  'palette.title': 'One seed. Thirteen tones. Every role.',
+  'palette.title': 'One seed. Custom tones. Every role.',
   'palette.body':
     'The engine is running in your browser right now. Change the seed and the particles, the palette rows and the token roles all follow the same perceptual pipeline.',
   'palette.seedLabel': 'Seed color',
@@ -224,6 +224,7 @@ export const EnglishMessages = {
   'studio.tab.colorimetric': 'Colorimetry',
   'studio.tab.fp': 'Composition',
   'studio.tab.delta': 'Delta',
+  'studio.tab.simple': 'Simple',
   'studio.tab.page': 'Page',
   'studio.tab.benchmark': 'Benchmarks',
   'studio.tab.export': 'Export',
@@ -234,6 +235,7 @@ export const EnglishMessages = {
   'studio.mobile.colorimetric': 'Color',
   'studio.mobile.fp': 'Pipe',
   'studio.mobile.delta': 'Delta',
+  'studio.mobile.simple': 'Simple',
   'studio.mobile.page': 'Page',
   'studio.mobile.benchmark': 'Bench',
   'studio.mobile.export': 'Export',

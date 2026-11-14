@@ -340,6 +340,8 @@ const RampFamilies = [
   { id: 'semantic', keys: ['error', 'warning', 'success', 'info'] },
 ] as const satisfies readonly { id: string; keys: readonly (keyof PaletteSet)[] }[]
 
+const TokensPageTones = [0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100] as const
+
 export const selectRampFamilies = createSelector([selectPalettes, selectCustomLight], (palettes, customs) => {
   const families = RampFamilies.map((family) => ({
     id: family.id,
@@ -347,7 +349,7 @@ export const selectRampFamilies = createSelector([selectPalettes, selectCustomLi
       key,
       label: undefined as string | undefined,
       hue: palettes[key].hue,
-      swatches: StandardTones.map((tone) => ({
+      swatches: TokensPageTones.map((tone) => ({
         tone,
         hex: palettes[key].tone(tone),
       })),
@@ -368,7 +370,7 @@ export const selectRampFamilies = createSelector([selectPalettes, selectCustomLi
           key: color.id,
           label: color.label,
           hue: palette.hue,
-          swatches: StandardTones.map((tone) => ({
+          swatches: TokensPageTones.map((tone) => ({
             tone,
             hex: palette.tone(tone),
           })),

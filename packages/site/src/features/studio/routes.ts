@@ -4,6 +4,7 @@ import { ExportStudioSlug } from '../export/routes.ts'
 import { OledLegacySlugs, OledStudioSlug } from '../oled/routes.ts'
 import { PageStudioSlug } from '../page/routes.ts'
 import { PalettesStudioSlug } from '../palettes/routes.ts'
+import { SimpleStudioSlug } from '../simple/routes.ts'
 import { TokensLegacySlugs, TokensStudioSlug } from '../tokens/routes.ts'
 
 export const StudioViewIds = {
@@ -12,6 +13,7 @@ export const StudioViewIds = {
   Oled: OledStudioSlug,
   Composition: CompositionStudioSlug,
   Delta: DeltaStudioSlug,
+  Simple: SimpleStudioSlug,
   Export: ExportStudioSlug,
   Page: PageStudioSlug,
 } as const
@@ -24,6 +26,7 @@ export const StudioViews = [
   StudioViewIds.Oled,
   StudioViewIds.Composition,
   StudioViewIds.Delta,
+  StudioViewIds.Simple,
   StudioViewIds.Page,
   StudioViewIds.Export,
 ] as const satisfies readonly StudioView[]

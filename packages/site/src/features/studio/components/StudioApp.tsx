@@ -5,6 +5,7 @@ import { TokenExportView } from '../../export/components/TokenExportView.tsx'
 import { PageView } from '../../page/components/PageView.tsx'
 import { OledView } from '../../oled/components/OledView.tsx'
 import { PalettesView } from '../../palettes/components/PalettesView.tsx'
+import { SimpleView } from '../../simple/components/SimpleView.tsx'
 import { TokensView } from '../../tokens/components/TokensView.tsx'
 import { selectSchemePending } from '../selectors.ts'
 import { setMobileDrawerOpen } from '../slice.ts'
@@ -58,6 +59,7 @@ export default function StudioApp() {
           {view === StudioViewIds.Oled && <OledView />}
           {view === StudioViewIds.Composition && <FpPlaygroundView />}
           {view === StudioViewIds.Delta && <DeltaView />}
+          {view === StudioViewIds.Simple && <SimpleView />}
           {view === StudioViewIds.Page && <PageView />}
           {view === StudioViewIds.Export && <TokenExportView />}
         </main>

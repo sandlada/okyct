@@ -151,7 +151,7 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
     'P = 1.05·Rγ + 0.85·Gγ + 2.40·Bγ。藍色是最耗電、老化最快的通道，因此高危色相會被收斂並微偏青藍。',
 
   'palette.eyebrow': '即時調色盤',
-  'palette.title': '一個種子色，十三級明度，涵蓋所有角色。',
+  'palette.title': '一個種子色，自訂色階，涵蓋所有角色。',
   'palette.body':
     '引擎此刻正在你的瀏覽器中運行。改變種子色，粒子、色階列與 Token 角色都會沿著同一條感知管線同步更新。',
   'palette.seedLabel': '種子色',
@@ -215,6 +215,7 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
   'studio.tab.colorimetric': '色度色域',
   'studio.tab.fp': '管道組合',
   'studio.tab.delta': 'Delta',
+  'studio.tab.simple': '小白工具',
   'studio.tab.page': '頁面',
   'studio.tab.benchmark': '模型對標',
   'studio.tab.export': '程式碼匯出',
@@ -225,6 +226,7 @@ export const TraditionalChineseMessages: Record<MessageKey, string> = {
   'studio.mobile.colorimetric': '色域',
   'studio.mobile.fp': '管道',
   'studio.mobile.delta': 'Delta',
+  'studio.mobile.simple': '小白',
   'studio.mobile.page': '頁面',
   'studio.mobile.benchmark': '對標',
   'studio.mobile.export': '匯出',

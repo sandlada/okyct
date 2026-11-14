@@ -34,7 +34,7 @@ export function TokenIntroSection({ schemes }: { readonly schemes: LandingScheme
   const { t } = useI18n()
 
   return (
-    <section id="tokens" className="relative scroll-mt-24 border-t border-neutral-900/10 py-24 sm:py-32 dark:border-white/10">
+    <section id="tokens" className="relative scroll-mt-24 py-24 sm:py-32">
       <div className="mx-auto w-full max-w-[1440px] px-5 sm:px-8">
         <div className="max-w-5xl pl-7 sm:pl-9">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-400 dark:text-neutral-500">

@@ -15,6 +15,7 @@ const NavItems: readonly { view: StudioView; key: MessageKey }[] = [
   { view: StudioViewIds.Oled, key: 'studio.tab.oled' },
   { view: StudioViewIds.Composition, key: 'studio.tab.fp' },
   { view: StudioViewIds.Delta, key: 'studio.tab.delta' },
+  { view: StudioViewIds.Simple, key: 'studio.tab.simple' },
   { view: StudioViewIds.Page, key: 'studio.tab.page' },
   { view: StudioViewIds.Export, key: 'studio.tab.export' },
 ]
@@ -40,7 +41,7 @@ export function TopNav() {
   const onTabChange = (view: StudioView) => navigate(studioPath(locale, view))
 
   return (
-    <header className="h-14 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 flex items-center justify-between gap-4 shrink-0 select-none z-30">
+    <header className="h-10 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 flex items-center justify-between gap-4 shrink-0 select-none z-30">
       <div className="flex min-w-0 items-center gap-2 md:gap-6">
         <button
           type="button"
@@ -79,7 +80,7 @@ export function TopNav() {
           type="button"
           onClick={toggleTheme}
           title={isDark ? t('theme.toLight') : t('theme.toDark')}
-          className="p-2 min-h-[38px] min-w-[38px] flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+          className="p-1.5 flex items-center justify-center text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
         >
           {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -88,7 +89,7 @@ export function TopNav() {
         <button
           type="button"
           onClick={() => onTabChange(StudioViewIds.Export)}
-          className="flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] text-xs font-semibold rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors whitespace-nowrap shrink-0"
         >
           <Code2 className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">{t('studio.nav.export')}</span>
