@@ -1,6 +1,6 @@
 {
   "name": "@sandlada/okyct",
-  "version": "0.0.1-20261114.a",
+  "version": "0.0.1-20261114.b",
   "description": "OKYCT Perceptual Color Space & MD3 Theme Engine for Emissive Displays",
   "keywords": [
     "okyct",
@@ -24,7 +24,37 @@
     "typescript"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./domain": {
+        "types": "./dist/domain/index.d.ts",
+        "import": "./dist/domain/index.js",
+        "default": "./dist/domain/index.js"
+      },
+      "./ports": {
+        "types": "./dist/ports/index.d.ts",
+        "import": "./dist/ports/index.js",
+        "default": "./dist/ports/index.js"
+      },
+      "./application": {
+        "types": "./dist/application/index.d.ts",
+        "import": "./dist/application/index.js",
+        "default": "./dist/application/index.js"
+      },
+      "./adapters": {
+        "types": "./dist/adapters/index.d.ts",
+        "import": "./dist/adapters/index.js",
+        "default": "./dist/adapters/index.js"
+      }
+    }
   },
   "homepage": "https://github.com/sandlada/okyct#readme",
   "bugs": {
@@ -40,7 +70,7 @@
   "type": "module",
   "sideEffects": false,
   "files": [
-    "src",
+    "dist",
     "README.md",
     "LICENSE"
   ],
@@ -75,9 +105,10 @@
     }
   },
   "scripts": {
-    "build": "tsc --emitDeclarationOnly false",
+    "build": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json && node -e \"for (const f of fs.globSync('dist/**/*.d.ts')) { fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/(from\\s+['\\\"][^'\\\"]+)\\.ts(['\\\"])/g, '$1.js$2')); }\"",
     "lint": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test test/**/*.test.ts"
+    "test": "node --experimental-strip-types --test test/**/*.test.ts",
+    "prepublishOnly": "pnpm run lint && pnpm run test && pnpm run build"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
