@@ -15,6 +15,7 @@ interface VertexCusp {
   tone: number
 }
 
+const DegToRad = Math.PI / 180
 const RadToDeg = 180 / Math.PI
 
 const ChromaticVertices: ReadonlyArray<RGB> = [
@@ -80,6 +81,10 @@ export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): 
   const dg = v1.g - v0.g
   const db = v1.b - v0.b
 
+  const targetRad = h * DegToRad
+  const refCos = Math.cos(targetRad)
+  const refSin = Math.sin(targetRad)
+
   let lo = 0
   let hi = 1
   let side = 0
@@ -117,10 +122,9 @@ export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): 
     bestB = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
     bestY = y
 
-    let sampleHue = Math.atan2(bestB, bestA) * RadToDeg
-    if (sampleHue < 0) sampleHue += 360
-
-    const err = signedHueDiff(sampleHue, h)
+    const dParallel = bestA * refCos + bestB * refSin
+    const dPerp = bestB * refCos - bestA * refSin
+    const err = Math.atan2(dPerp, dParallel) * RadToDeg
     if (Math.abs(err) < 1e-4 || hi - lo < 1e-6) break
 
     if (err <= 0) {

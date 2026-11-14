@@ -4,12 +4,13 @@
  * Uses 3-bit octant masks, Tone branch-and-bound pruning, and 24-bit bitwise hex packing.
  */
 
-import type { OKYCT, RGB } from '../../models/index.ts'
-import { shortestHueDelta } from '../shortest-hue-delta.ts'
+import type { RGB } from '../../models/index.ts'
+import { toneToY } from '../tone-to-y.ts'
 import { yToTone } from '../y-to-tone.ts'
 import { SrgbByteToLinearLut } from './srgb-lut.ts'
 
 const HueSnapMinChromaForDrift = 0.01
+const HueSnapMinChromaSq = HueSnapMinChromaForDrift * HueSnapMinChromaForDrift
 const ToneBudgetStandard = 0.25
 const ToneBudgetDark = 0.35
 const HueBudgetDeg = 0.48
@@ -18,8 +19,17 @@ const WeightHueArc = 1.0 / (0.0018 * 0.0018)
 const WeightChroma = 1.0 / (0.012 * 0.012)
 const DegToRad = Math.PI / 180
 const RadToDeg = 180 / Math.PI
+const TanHueBudgetSafe = Math.tan((HueBudgetDeg + 1e-6) * DegToRad)
 
-function byteToOkyctFromTone(r8: number, g8: number, b8: number, y: number, t: number): OKYCT {
+function byteLuminance(r8: number, g8: number, b8: number): number {
+  return (
+    0.2126729 * SrgbByteToLinearLut[r8] +
+    0.7151522 * SrgbByteToLinearLut[g8] +
+    0.0721750 * SrgbByteToLinearLut[b8]
+  )
+}
+
+function byteOklabChromaSq(r8: number, g8: number, b8: number, y: number): { a: number; b: number; cSq: number } {
   const lr = SrgbByteToLinearLut[r8]
   const lg = SrgbByteToLinearLut[g8]
   const lb = SrgbByteToLinearLut[b8]
@@ -33,36 +43,28 @@ function byteToOkyctFromTone(r8: number, g8: number, b8: number, y: number, t: n
 
   const a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
   const b = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
-
-  let h = Math.atan2(b, a) * RadToDeg
-  if (h < 0) h += 360
-  return {
-    h,
-    c: Math.hypot(a, b),
-    t,
-  }
+  return { a, b, cSq: a * a + b * b }
 }
 
-function byteLuminance(r8: number, g8: number, b8: number): number {
-  return (
-    0.2126729 * SrgbByteToLinearLut[r8] +
-    0.7151522 * SrgbByteToLinearLut[g8] +
-    0.0721750 * SrgbByteToLinearLut[b8]
-  )
-}
-
-function scoreCandidate(
-  cand: OKYCT,
-  referenceHueDeg: number,
-  nominalTone: number,
+function scoreFromLab(
+  a: number,
+  b: number,
+  candC: number,
+  refCos: number,
+  refSin: number,
   refChroma: number,
   toneErr: number,
   withinTone: boolean,
   withinFallbackTone: boolean
 ): { tier: number; cost: number } {
-  const hueDeg = cand.c > HueSnapMinChromaForDrift
-    ? shortestHueDelta(cand.h, referenceHueDeg)
-    : 0
+  let hueRad = 0
+  let hueDeg = 0
+  if (candC > HueSnapMinChromaForDrift) {
+    const dParallel = a * refCos + b * refSin
+    const dPerpAbs = Math.abs(b * refCos - a * refSin)
+    hueRad = Math.atan2(dPerpAbs, dParallel)
+    hueDeg = hueRad * RadToDeg
+  }
   const withinHue = hueDeg <= HueBudgetDeg
   const tier =
     withinTone && withinHue
@@ -73,8 +75,8 @@ function scoreCandidate(
       ? 1
       : 0
 
-  const hueArc = cand.c * (hueDeg * DegToRad)
-  const chromaErr = cand.c - refChroma
+  const hueArc = candC * hueRad
+  const chromaErr = candC - refChroma
   const cost =
     WeightTone * toneErr * toneErr +
     WeightHueArc * hueArc * hueArc +
@@ -112,10 +114,10 @@ export function snapRgbToHexForHuePreserve(
   }
 
   const baseY = byteLuminance(rRound, gRound, bRound)
-  const baseT = yToTone(baseY)
-  const baseCandidate = byteToOkyctFromTone(rRound, gRound, bRound, baseY, baseT)
-  const refChroma = nominalChroma ?? baseCandidate.c
-  if (refChroma < HueSnapMinChromaForDrift && baseCandidate.c < HueSnapMinChromaForDrift) {
+  const baseLab = byteOklabChromaSq(rRound, gRound, bRound, baseY)
+  const baseC = Math.sqrt(baseLab.cSq)
+  const refChroma = nominalChroma ?? baseC
+  if (refChroma < HueSnapMinChromaForDrift && baseC < HueSnapMinChromaForDrift) {
     return hexFromBytes(rRound, gRound, bRound)
   }
 
@@ -123,12 +125,24 @@ export function snapRgbToHexForHuePreserve(
   const g0 = Math.min(254, Math.floor(gf))
   const b0 = Math.min(254, Math.floor(bf))
 
+  const refRad = referenceHueDeg * DegToRad
+  const refCos = Math.cos(refRad)
+  const refSin = Math.sin(refRad)
+
   const toneBudget = nominalTone < 10 ? ToneBudgetDark : ToneBudgetStandard
-  const baseToneErr = Math.abs(baseCandidate.t - nominalTone)
-  const baseScore = scoreCandidate(
-    baseCandidate,
-    referenceHueDeg,
-    nominalTone,
+  const yMinTone = toneToY(Math.max(0, nominalTone - toneBudget - 1e-6))
+  const yMaxTone = toneToY(Math.min(100, nominalTone + toneBudget + 1e-6))
+  const yMinFallback = toneToY(Math.max(0, nominalTone - ToneBudgetDark - 1e-6))
+  const yMaxFallback = toneToY(Math.min(100, nominalTone + ToneBudgetDark + 1e-6))
+
+  const baseT = yToTone(baseY)
+  const baseToneErr = Math.abs(baseT - nominalTone)
+  const baseScore = scoreFromLab(
+    baseLab.a,
+    baseLab.b,
+    baseC,
+    refCos,
+    refSin,
     refChroma,
     baseToneErr,
     baseToneErr <= toneBudget,
@@ -151,6 +165,9 @@ export function snapRgbToHexForHuePreserve(
     const cb = b0 + (mask & 1)
 
     const y = byteLuminance(cr, cg, cb)
+    if (bestTier === 3 && (y < yMinTone || y > yMaxTone)) continue
+    if (bestTier >= 1 && (y < yMinFallback || y > yMaxFallback)) continue
+
     const candT = yToTone(y)
     const toneErr = Math.abs(candT - nominalTone)
     const withinTone = toneErr <= toneBudget
@@ -158,11 +175,20 @@ export function snapRgbToHexForHuePreserve(
     const maxPossibleTier = withinTone ? 3 : withinFallbackTone ? 2 : 0
     if (maxPossibleTier < bestTier) continue
 
-    const cand = byteToOkyctFromTone(cr, cg, cb, y, candT)
-    const candScore = scoreCandidate(
-      cand,
-      referenceHueDeg,
-      nominalTone,
+    const lab = byteOklabChromaSq(cr, cg, cb, y)
+    if (bestTier >= 2 && lab.cSq > HueSnapMinChromaSq) {
+      const dParallel = lab.a * refCos + lab.b * refSin
+      const dPerpAbs = Math.abs(lab.b * refCos - lab.a * refSin)
+      if (dParallel <= 0 || dPerpAbs > dParallel * TanHueBudgetSafe) continue
+    }
+
+    const candC = Math.sqrt(lab.cSq)
+    const candScore = scoreFromLab(
+      lab.a,
+      lab.b,
+      candC,
+      refCos,
+      refSin,
       refChroma,
       toneErr,
       withinTone,
