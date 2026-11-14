@@ -1,0 +1,173 @@
+---
+const ExportFormats = [
+  { id: 'css', label: 'CSS Variables' },
+  { id: 'tailwind', label: 'Tailwind v4' },
+  { id: 'w3c', label: 'W3C Tokens' },
+  { id: 'ts', label: 'TypeScript' },
+] as const
+---
+
+<section id="export" class="m3-section m3-export-section">
+  <div class="m3-section-header">
+    <h2 class="m3-headline">Export Tokens</h2>
+
+    <div class="m3-export-actions">
+      <div class="m3-mode-segmented" role="group" aria-label="CSS scheme mode">
+        <button type="button" class="m3-seg-btn is-selected" data-css-mode-btn="class">.light / .dark</button>
+        <button type="button" class="m3-seg-btn" data-css-mode-btn="light-dark">light-dark()</button>
+      </div>
+      <button id="download-export-btn" type="button" class="m3-btn-tonal-sm">
+        Download
+      </button>
+      <button id="copy-css-btn" type="button" class="m3-copy-btn">
+        Copy
+      </button>
+    </div>
+  </div>
+
+  <div class="m3-code-panel">
+    <div class="m3-code-header">
+      <div class="m3-format-tabs" role="tablist" aria-label="Export format">
+        {
+          ExportFormats.map((fmt, idx) => (
+            <button
+              type="button"
+              role="tab"
+              class={`m3-format-tab${idx === 0 ? ' is-selected' : ''}`}
+              data-export-format={fmt.id}
+            >
+              {fmt.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <span class="m3-export-meta" id="export-meta-info">@sandlada/okyct · 0.0.1-20261114.b</span>
+    </div>
+
+    <pre id="css-export-output" class="m3-code-pre"><code>/* Initializing... */</code></pre>
+  </div>
+</section>
+
+<style>
+  .m3-export-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .m3-export-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m3-mode-segmented {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background-color: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .m3-seg-btn {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    border-radius: var(--md-sys-shape-corner-full);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: var(--m3-transition-color);
+  }
+
+  .m3-seg-btn.is-selected {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-btn-tonal-sm {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: none;
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .m3-copy-btn {
+    height: 34px;
+    padding: 0 16px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: none;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .m3-code-panel {
+    flex: 1;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
+  }
+
+  .m3-code-header {
+    padding: 8px 14px;
+    background-color: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .m3-format-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .m3-format-tab {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .m3-format-tab.is-selected {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-export-meta {
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-code-pre {
+    flex: 1;
+    padding: 14px 16px;
+    overflow: auto;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    color: var(--md-sys-color-on-surface);
+  }
+</style>

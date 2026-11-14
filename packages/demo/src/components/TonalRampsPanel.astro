@@ -1,0 +1,160 @@
+---
+import { createTheme } from '@sandlada/okyct'
+
+const PaletteKeys = [
+  { key: 'primary', label: 'Primary (P)', paletteKey: 'primary' },
+  { key: 'secondary', label: 'Secondary (S)', paletteKey: 'secondary' },
+  { key: 'tertiary', label: 'Tertiary (T)', paletteKey: 'tertiary' },
+  { key: 'error', label: 'Error (E)', paletteKey: 'error' },
+  { key: 'neutral', label: 'Neutral (N)', paletteKey: 'neutral' },
+  { key: 'neutral-variant', label: 'Neutral Variant (NV)', paletteKey: 'neutralVariant' },
+  { key: 'success', label: 'Success (S)', paletteKey: 'success' },
+  { key: 'info', label: 'Info (I)', paletteKey: 'info' },
+  { key: 'warning', label: 'Warning (W)', paletteKey: 'warning' },
+] as const
+
+const Tones = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
+  91, 92, 93, 94, 95, 96, 97, 98, 99, 100,
+] as const
+
+const InitialTheme = createTheme('#6750A4')
+---
+
+<section id="palettes" class="m3-section">
+  <div class="m3-section-header">
+    <h2 class="m3-headline">Tonal Palettes (PSTENNVSIW)</h2>
+    <button type="button" class="m3-copy-btn" data-switch-panel="2">
+      Adjust Seed
+    </button>
+  </div>
+
+  <div class="m3-ramps">
+    {
+      PaletteKeys.map((palette) => (
+        <div class="m3-ramp-row">
+          <div class="m3-ramp-label">{palette.label}</div>
+          <div class="m3-ramp-stops">
+            {
+              Tones.map((tone) => {
+                const initialHex = InitialTheme.palettes[palette.paletteKey].tone(tone)
+                return (
+                  <button
+                    type="button"
+                    class={`m3-ramp-stop${tone <= 9 || tone >= 91 ? ' is-half' : ''}`}
+                    data-ramp-palette={palette.paletteKey}
+                    data-ramp-tone={tone}
+                    title={`Click to copy ${palette.label} Tone ${tone}`}
+                  >
+                    <span class="m3-ramp-swatch" data-ramp-swatch style={`background-color: ${initialHex};`} />
+                    <span class="m3-ramp-num">{tone}</span>
+                  </button>
+                )
+              })
+            }
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .m3-copy-btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: none;
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 140ms ease;
+  }
+
+  .m3-copy-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .m3-ramps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .m3-ramp-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .m3-ramp-label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-ramp-stops {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 0.2fr)) repeat(17, minmax(0, 1fr)) repeat(10, minmax(0, 0.2fr));
+  }
+
+  .m3-ramp-stop {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    padding: 0;
+    transition: transform 120ms ease;
+  }
+
+  .m3-ramp-swatch {
+    height: 28px;
+    width: 100%;
+    display: block;
+  }
+
+  .m3-ramp-stop:first-child .m3-ramp-swatch {
+    border-radius: 8px 0 0 8px;
+  }
+
+  .m3-ramp-stop:last-child .m3-ramp-swatch {
+    border-radius: 0 8px 8px 0;
+  }
+
+  .m3-ramp-num {
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-ramp-stop.is-half .m3-ramp-num {
+    font-size: 0.52rem;
+    letter-spacing: -0.04em;
+  }
+
+  .m3-ramp-stop:hover {
+    transform: scale(1.08);
+    z-index: 2;
+  }
+
+  @media (max-width: 1120px) {
+    .m3-ramp-row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .m3-ramp-stops {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+  }
+</style>

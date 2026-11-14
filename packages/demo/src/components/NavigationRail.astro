@@ -1,0 +1,244 @@
+---
+const NavItems = [
+  { id: 'overview', label: 'Overview', icon: 'home' },
+  { id: 'components', label: 'Widgets', icon: 'widgets' },
+  { id: 'tokens', label: 'Roles', icon: 'palette' },
+  { id: 'palettes', label: 'Palettes', icon: 'grid' },
+  { id: 'export', label: 'Export', icon: 'code' },
+] as const
+---
+
+<aside class="m3-rail" aria-label="Primary navigation">
+  <div class="m3-rail-top">
+    <a href="#overview" class="m3-rail-brand" title="OKYCT × M3">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="9" height="9" rx="3" fill="currentColor" />
+        <circle cx="17.5" cy="6.5" r="4.5" fill="currentColor" opacity="0.7" />
+        <rect x="13" y="13" width="9" height="9" rx="4.5" fill="currentColor" />
+        <circle cx="6.5" cy="17.5" r="4.5" fill="currentColor" opacity="0.45" />
+      </svg>
+    </a>
+
+    <button
+      id="rail-mode-toggle"
+      type="button"
+      class="m3-rail-fab"
+      aria-label="Toggle dark mode"
+      title="Toggle Light / Dark mode"
+    >
+      <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      </svg>
+      <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="m3-rail-nav">
+    {
+      NavItems.map((item, idx) => (
+        <button
+          type="button"
+          class={`m3-rail-item${idx === 0 ? ' is-active' : ''}`}
+          data-panel-index={idx}
+          data-nav-target={item.id}
+        >
+          <span class="m3-rail-pill">
+            {item.icon === 'home' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            )}
+            {item.icon === 'palette' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+              </svg>
+            )}
+            {item.icon === 'widgets' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+            )}
+            {item.icon === 'layers' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
+              </svg>
+            )}
+            {item.icon === 'grid' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 7V4h16v3" />
+                <path d="M9 20h6" />
+                <path d="M12 4v16" />
+              </svg>
+            )}
+            {item.icon === 'code' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+            )}
+          </span>
+          <span class="m3-rail-label">{item.label}</span>
+        </button>
+      ))
+    }
+  </nav>
+
+  <div class="m3-rail-footer">
+    <span class="m3-rail-version" title="@sandlada/okyct@0.0.1-20261114.b">v0.0.1</span>
+  </div>
+</aside>
+
+<style>
+  .m3-rail {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: var(--m3-rail-width);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 8px;
+    background-color: var(--md-sys-color-surface-container);
+    z-index: 20;
+  }
+
+  .m3-rail-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .m3-rail-brand {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    text-decoration: none;
+    transition: transform 160ms ease;
+  }
+
+  .m3-rail-brand:hover {
+    transform: scale(1.05);
+  }
+
+  .m3-rail-fab {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    transition: transform 160ms ease, background-color 180ms ease;
+  }
+
+  .m3-rail-fab:hover {
+    transform: scale(1.06);
+  }
+
+  :global(html.light) .m3-rail-fab .icon-moon,
+  :global(html.dark) .m3-rail-fab .icon-sun {
+    display: none;
+  }
+
+  .m3-rail-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .m3-rail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.75rem;
+    font-weight: 500;
+    width: 100%;
+  }
+
+  .m3-rail-pill {
+    width: 56px;
+    height: 32px;
+    border-radius: var(--md-sys-shape-corner-full);
+    display: grid;
+    place-items: center;
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+
+  .m3-rail-item:hover .m3-rail-pill {
+    background-color: var(--md-sys-color-surface-container-highest);
+  }
+
+  .m3-rail-item.is-active {
+    color: var(--md-sys-color-on-surface);
+    font-weight: 600;
+  }
+
+  .m3-rail-item.is-active .m3-rail-pill {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-rail-version {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  @media (max-width: 860px) {
+    .m3-rail {
+      position: fixed;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 72px;
+      flex-direction: row;
+      padding: 8px 16px;
+      border-top: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .m3-rail-top,
+    .m3-rail-footer {
+      display: none;
+    }
+
+    .m3-rail-nav {
+      flex-direction: row;
+      justify-content: space-around;
+      gap: 4px;
+    }
+  }
+</style>

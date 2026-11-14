@@ -8,14 +8,16 @@
   "scripts": {
     "dev": "pnpm --filter @sandlada/site run dev",
     "dev:app": "pnpm --filter @sandlada/dev-app run dev",
+    "dev:demo": "pnpm --filter @sandlada/demo run dev",
     "bench": "pnpm --filter @sandlada/benchmark run bench",
     "build": "pnpm --filter @sandlada/okyct run build && pnpm --filter @sandlada/site run build && pnpm --filter @sandlada/dev-app run build",
     "build:all": "pnpm --filter @sandlada/okyct run build && pnpm --filter @sandlada/site run build && pnpm --filter @sandlada/dev-app run build",
     "build:core": "pnpm --filter @sandlada/okyct run build",
     "build:site": "pnpm --filter @sandlada/site run build",
     "build:dev-app": "pnpm --filter @sandlada/dev-app run build",
+    "build:demo": "pnpm --filter @sandlada/demo run build",
     "preview": "pnpm --filter @sandlada/site run preview",
-    "clean": "node -e \"['dist', 'packages/site/dist', 'packages/dev-app/dist', 'packages/typescript/dist'].forEach(d => fs.rmSync(d, { recursive: true, force: true }))\"",
+    "clean": "node -e \"['dist', 'packages/site/dist', 'packages/dev-app/dist', 'packages/demo/dist', 'packages/demo/.astro', 'packages/typescript/dist'].forEach(d => fs.rmSync(d, { recursive: true, force: true }))\"",
     "lint": "pnpm -r run lint",
     "lint:all": "pnpm -r run lint",
     "typecheck": "pnpm -r run lint"

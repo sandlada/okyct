@@ -1,0 +1,43 @@
+---
+import { createTheme } from '@sandlada/okyct'
+import '../styles/m3-global.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'OKYCT × Material Design 3 — Perceptual Dynamic Color Demo',
+  description = 'Interactive Material Design 3 dynamic color system powered by @sandlada/okyct perceptual color engine.',
+} = Astro.props
+
+const InitialTheme = createTheme({
+  sourceHex: '#6750A4',
+  variant: 'tonalSpot',
+  contrastLevel: 0,
+  emissive: {
+    profile: 'standard-lcd',
+    burnInGuard: false,
+  },
+})
+
+const InitialCss = InitialTheme['export']('css', {
+  cssSchemeMode: 'class',
+})
+---
+
+<!doctype html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style id="okyct-dynamic-theme" set:html={InitialCss}></style>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

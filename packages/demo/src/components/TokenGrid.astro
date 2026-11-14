@@ -1,0 +1,635 @@
+---
+const RolePairs = [
+  { bg: 'primary', fg: 'on-primary', tokenKey: 'primary', label: 'Primary' },
+  { bg: 'primary-container', fg: 'on-primary-container', tokenKey: 'primaryContainer', label: 'Primary Container' },
+  { bg: 'secondary', fg: 'on-secondary', tokenKey: 'secondary', label: 'Secondary' },
+  { bg: 'secondary-container', fg: 'on-secondary-container', tokenKey: 'secondaryContainer', label: 'Secondary Container' },
+  { bg: 'tertiary', fg: 'on-tertiary', tokenKey: 'tertiary', label: 'Tertiary' },
+  { bg: 'tertiary-container', fg: 'on-tertiary-container', tokenKey: 'tertiaryContainer', label: 'Tertiary Container' },
+  { bg: 'error', fg: 'on-error', tokenKey: 'error', label: 'Error' },
+  { bg: 'error-container', fg: 'on-error-container', tokenKey: 'errorContainer', label: 'Error Container' },
+] as const
+
+const SurfaceLevels = [
+  { token: 'surface-container-lowest', label: 'Lowest' },
+  { token: 'surface-container-low', label: 'Low' },
+  { token: 'surface-container', label: 'Default' },
+  { token: 'surface-container-high', label: 'High' },
+  { token: 'surface-container-highest', label: 'Highest' },
+] as const
+
+const PresetSeeds = [
+  { name: 'M3 Purple', hex: '#6750A4' },
+  { name: 'Cobalt', hex: '#2563EB' },
+  { name: 'Emerald', hex: '#059669' },
+  { name: 'Amber', hex: '#D97706' },
+  { name: 'Crimson', hex: '#E11D48' },
+  { name: 'Cyan', hex: '#0891B2' },
+] as const
+
+const Variants = [
+  { id: 'tonalSpot', label: 'Tonal Spot' },
+  { id: 'vibrant', label: 'Vibrant' },
+  { id: 'expressive', label: 'Expressive' },
+  { id: 'fidelity', label: 'Fidelity' },
+  { id: 'neutral', label: 'Neutral' },
+  { id: 'monochrome', label: 'Monochrome' },
+] as const
+
+const EmissiveProfiles = [
+  { id: 'standard-lcd', label: 'Standard LCD' },
+  { id: 'oled-true-black', label: 'OLED True Black (T=0)' },
+  { id: 'amoled-anti-smear', label: 'AMOLED Anti-Smear (T=4)' },
+  { id: 'micro-oled-xr', label: 'MicroOLED XR (T=8..92)' },
+] as const
+---
+
+<section id="tokens" class="m3-section">
+  <div class="m3-section-header">
+    <h2 class="m3-headline">Roles &amp; Theme Controller</h2>
+
+    <div class="m3-header-actions">
+      <div class="m3-mode-segmented" role="group" aria-label="Theme mode">
+        <button type="button" class="m3-seg-btn is-selected" data-mode-btn="light">Light</button>
+        <button type="button" class="m3-seg-btn" data-mode-btn="dark">Dark</button>
+      </div>
+      <button type="button" class="m3-copy-btn" data-switch-panel="4">
+        Export Tokens
+      </button>
+    </div>
+  </div>
+
+  <!-- Compact Theme Modifiers -->
+  <div class="m3-controls-grid">
+    <div class="m3-control-card">
+      <div class="m3-control-label">Seed Color</div>
+      <div class="m3-seed-row">
+        <div class="m3-swatch-list">
+          {
+            PresetSeeds.map((seed, idx) => (
+              <button
+                type="button"
+                class={`m3-seed-dot${idx === 0 ? ' is-selected' : ''}`}
+                data-seed-preset={seed.hex}
+                style={`background-color: ${seed.hex};`}
+                title={`${seed.name} (${seed.hex})`}
+                aria-label={`Select ${seed.name}`}
+              />
+            ))
+          }
+        </div>
+        <label class="m3-hex-picker">
+          <input id="seed-color-picker" type="color" value="#6750A4" aria-label="Custom color picker" />
+          <input id="seed-hex-input" type="text" value="#6750A4" maxlength="7" spellcheck="false" aria-label="Hex color code" />
+        </label>
+      </div>
+    </div>
+
+    <div class="m3-control-card">
+      <div class="m3-control-label">Variant</div>
+      <div class="m3-chip-group" role="group" aria-label="Palette variant">
+        {
+          Variants.map((variant, idx) => (
+            <button
+              type="button"
+              class={`m3-filter-chip${idx === 0 ? ' is-selected' : ''}`}
+              data-variant-btn={variant.id}
+            >
+              {variant.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="m3-control-card">
+      <div class="m3-control-head">
+        <span class="m3-control-label">Contrast</span>
+        <span id="contrast-value-label" class="m3-control-value">0.0 (Standard)</span>
+      </div>
+      <input id="contrast-slider" type="range" min="-1" max="1" step="0.1" value="0" class="m3-slider" aria-label="Contrast level" />
+    </div>
+
+    <div class="m3-control-card">
+      <div class="m3-control-head">
+        <span class="m3-control-label">Emissive Physics</span>
+        <label class="m3-toggle-wrap">
+          <input id="burn-in-guard-toggle" type="checkbox" />
+          <span>Blue Burn-in Guard</span>
+        </label>
+      </div>
+      <select id="emissive-profile-select" class="m3-select" aria-label="Emissive display profile">
+        {
+          EmissiveProfiles.map((profile) => (
+            <option value={profile.id}>{profile.label}</option>
+          ))
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- System Role Pairs -->
+  <div class="m3-roles-grid">
+    {
+      RolePairs.map((pair) => (
+        <button
+          type="button"
+          class="m3-role-swatch"
+          data-role-copy={pair.tokenKey}
+          style={`background-color: var(--md-sys-color-${pair.bg}); color: var(--md-sys-color-${pair.fg});`}
+          title="Click to copy hex"
+        >
+          <div class="m3-role-top">
+            <span class="m3-role-name">{pair.label}</span>
+            <span class="m3-role-hex" data-role-hex={pair.tokenKey}>#------</span>
+          </div>
+          <code class="m3-role-var">--md-sys-color-{pair.bg}</code>
+        </button>
+      ))
+    }
+  </div>
+
+  <!-- 5-Level Surface Container Hierarchy -->
+  <div class="m3-surface-strip">
+    {
+      SurfaceLevels.map((level, index) => (
+        <div
+          class="m3-surface-chip"
+          style={`background-color: var(--md-sys-color-${level.token});`}
+        >
+          <span class="m3-surface-step">L{index + 1} · {level.label}</span>
+          <code class="m3-surface-token">--md-sys-color-{level.token}</code>
+        </div>
+      ))
+    }
+  </div>
+
+  <!-- Live WCAG & APCA Contrast Audit -->
+  <div class="m3-audit-block">
+    <div class="m3-audit-title">Deterministic Contrast Audit (WCAG 2.1 &amp; APCA)</div>
+    <div id="contrast-audit-grid" class="m3-audit-grid"></div>
+  </div>
+</section>
+
+<style>
+  .m3-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .m3-mode-segmented {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background-color: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .m3-seg-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    border-radius: var(--md-sys-shape-corner-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: var(--m3-transition-color);
+  }
+
+  .m3-seg-btn.is-selected {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .m3-control-card {
+    padding: 8px 10px;
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .m3-control-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .m3-control-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .m3-control-value {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--md-sys-color-primary);
+  }
+
+  .m3-seed-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .m3-swatch-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m3-seed-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+  }
+
+  .m3-seed-dot:hover {
+    transform: scale(1.1);
+  }
+
+  .m3-seed-dot.is-selected {
+    box-shadow: 0 0 0 2px var(--md-sys-color-surface), 0 0 0 4px var(--md-sys-color-primary);
+  }
+
+  .m3-hex-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 5px;
+    border-radius: var(--md-sys-shape-corner-full);
+    background-color: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .m3-hex-picker input[type='color'] {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .m3-hex-picker input[type='text'] {
+    width: 70px;
+    border: none;
+    background: transparent;
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    outline: none;
+  }
+
+  .m3-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .m3-filter-chip {
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.76rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--m3-transition-color);
+  }
+
+  .m3-filter-chip.is-selected {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .m3-slider {
+    width: 100%;
+    accent-color: var(--md-sys-color-primary);
+    cursor: pointer;
+  }
+
+  .m3-select {
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .m3-toggle-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+  }
+
+  .m3-toggle-wrap input {
+    accent-color: var(--md-sys-color-primary);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+
+  .m3-copy-btn {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: var(--md-sys-shape-corner-full);
+    border: none;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 140ms ease;
+  }
+
+  .m3-copy-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .m3-roles-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .m3-role-swatch {
+    padding: 8px 10px;
+    border-radius: 10px;
+    min-height: 50px;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 140ms ease;
+  }
+
+  .m3-role-swatch:hover {
+    transform: translateY(-2px);
+  }
+
+  .m3-role-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .m3-role-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .m3-role-hex {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    opacity: 0.88;
+  }
+
+  .m3-role-var {
+    font-size: 0.72rem;
+    opacity: 0.85;
+  }
+
+  .m3-surface-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .m3-surface-chip {
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .m3-surface-step {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .m3-surface-token {
+    font-size: 0.68rem;
+    color: var(--md-sys-color-on-surface-variant);
+    word-break: break-all;
+  }
+
+  .m3-audit-block {
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background-color: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .m3-audit-title {
+    font-size: 0.74rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .m3-audit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  :global(.m3-audit-item) {
+    padding: 6px 8px;
+    border-radius: 8px;
+    background-color: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  :global(.m3-audit-pair) {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  :global(.m3-audit-metrics) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  :global(.m3-audit-badge) {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    background-color: var(--md-sys-color-success-container);
+    color: var(--md-sys-color-on-success-container);
+  }
+
+  .m3-ramps {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .m3-ramp-row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+
+  .m3-ramp-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-ramp-stops {
+    display: grid;
+    grid-template-columns: repeat(13, minmax(0, 1fr));
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .m3-ramp-stop {
+    height: 22px;
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    transition: transform 120ms ease;
+  }
+
+  .m3-ramp-stop:hover {
+    transform: scale(1.06);
+    z-index: 2;
+  }
+
+  .m3-code-panel {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background-color: var(--md-sys-color-surface-container-low);
+  }
+
+  .m3-code-header {
+    padding: 10px 16px;
+    background-color: var(--md-sys-color-surface-container);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-format-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .m3-format-tab {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .m3-format-tab.is-selected {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-code-pre {
+    padding: 10px 12px;
+    max-height: 150px;
+    overflow: auto;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  @media (max-width: 980px) {
+    .m3-controls-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .m3-roles-grid,
+    .m3-audit-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .m3-surface-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .m3-ramp-row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .m3-roles-grid,
+    .m3-audit-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .m3-ramp-stops {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,148 @@
+/* ==========================================================================
+   OKYCT × Material Design 3 Portal Stylesheet
+   Inspired by https://m3.material.io/
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-hero: 36px;
+  --md-sys-shape-corner-full: 9999px;
+
+  --m3-rail-width: 72px;
+  --m3-transition-color: background-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    color 180ms cubic-bezier(0.2, 0, 0, 1),
+    border-color 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Roboto', 'Google Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  transition: var(--m3-transition-color);
+  line-height: 1.5;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+code,
+pre {
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+}
+
+/* M3 Shell Layout: Fixed Viewport + Vertical Sliding Panels */
+.m3-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.m3-main {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+  padding: 0;
+}
+
+.m3-panel-track {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--active-panel, 0) * -100%));
+  transition: transform 420ms cubic-bezier(0.2, 0, 0, 1);
+  will-change: transform;
+}
+
+.m3-panel {
+  flex: 0 0 100%;
+  height: 100vh;
+  padding: 10px 14px 16px 2px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.m3-panel > section {
+  min-height: 100%;
+}
+
+.m3-section {
+  background-color: var(--md-sys-color-surface);
+  border-radius: 20px;
+  padding: 14px 18px;
+  transition: var(--m3-transition-color);
+}
+
+.m3-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.m3-headline {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* M3 Pill / Badge */
+.m3-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+@media (max-width: 860px) {
+  .m3-shell {
+    flex-direction: column;
+  }
+
+  .m3-main {
+    height: calc(100vh - 72px);
+  }
+
+  .m3-panel {
+    height: calc(100vh - 72px);
+    padding: 10px 10px 16px;
+  }
+
+  .m3-section {
+    padding: 16px;
+    border-radius: 20px;
+  }
+}

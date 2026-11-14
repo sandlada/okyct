@@ -1,0 +1,467 @@
+---
+---
+
+<section id="components" class="m3-section">
+  <div class="m3-section-header">
+    <h2 class="m3-headline">Components</h2>
+  </div>
+
+  <div class="m3-showcase-grid">
+    <!-- Card 1: Buttons & FABs -->
+    <div class="m3-demo-card">
+      <h3 class="m3-card-title">Buttons &amp; Floating Action</h3>
+      <div class="m3-btn-row">
+        <button type="button" class="m3-comp-btn is-filled" data-demo-btn="Filled (--md-sys-color-primary)">Filled</button>
+        <button type="button" class="m3-comp-btn is-tonal" data-demo-btn="Tonal (--md-sys-color-secondary-container)">Tonal</button>
+        <button type="button" class="m3-comp-btn is-elevated" data-demo-btn="Elevated (--md-sys-color-surface-container-high)">Elevated</button>
+        <button type="button" class="m3-comp-btn is-outlined" data-demo-btn="Outlined (--md-sys-color-outline)">Outlined</button>
+        <button type="button" class="m3-comp-btn is-text" data-demo-btn="Text (--md-sys-color-primary)">Text</button>
+      </div>
+      <div class="m3-fab-row">
+        <button id="fab-randomize-btn" type="button" class="m3-fab-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>Randomize Seed</span>
+        </button>
+        <button id="fab-edit-btn" type="button" class="m3-fab-tertiary" aria-label="Jump to seed editor" title="Edit seed hex">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 2: Semantic Status & Chips -->
+    <div class="m3-demo-card">
+      <h3 class="m3-card-title">Semantic Roles &amp; Chips</h3>
+      <div class="m3-chip-wrap">
+        <span class="m3-status-chip is-primary">Primary</span>
+        <span class="m3-status-chip is-secondary">Secondary</span>
+        <span class="m3-status-chip is-tertiary">Tertiary</span>
+        <span class="m3-status-chip is-success">Success</span>
+        <span class="m3-status-chip is-warning">Warning</span>
+        <span class="m3-status-chip is-error">Error</span>
+        <span class="m3-status-chip is-info">Info</span>
+      </div>
+
+      <div class="m3-alert-banner">
+        <strong>Deterministic Accessibility</strong>
+        <span>All foreground/background pairs maintain WCAG AA/AAA &amp; APCA contrast regardless of hue.</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Media Player & Interactive Controls -->
+    <div class="m3-demo-card m3-widget-col">
+      <div class="m3-player-card">
+        <div class="m3-player-art">
+          <span>OKLab</span>
+        </div>
+        <div class="m3-player-meta">
+          <div id="player-hue-title" class="m3-player-title">Perceptual Hue 285°</div>
+          <div class="m3-player-sub">CIE 1931 Y-Tone Bijection</div>
+          <div class="m3-progress-track">
+            <div id="player-progress-fill" class="m3-progress-fill"></div>
+          </div>
+        </div>
+        <button id="player-toggle-btn" type="button" class="m3-player-play" aria-label="Toggle playback">
+          <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="6 3 20 12 6 21 6 3" />
+          </svg>
+          <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+            <rect x="6" y="4" width="4" height="16" rx="1" />
+            <rect x="14" y="4" width="4" height="16" rx="1" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="m3-input-preview">
+        <label class="m3-outlined-field">
+          <span>Export CSS Prefix</span>
+          <input id="showcase-namespace-input" type="text" value="--md-sys-color" aria-label="Export CSS prefix" />
+        </label>
+        <label class="m3-switch-row">
+          <span>Blue Burn-in Guard</span>
+          <input id="showcase-subpixel-switch" type="checkbox" class="m3-switch" aria-label="Blue burn-in guard" />
+        </label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .m3-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .m3-demo-card {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background-color: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .m3-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .m3-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .m3-comp-btn {
+    height: 38px;
+    padding: 0 18px;
+    border-radius: var(--md-sys-shape-corner-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: transform 140ms ease;
+  }
+
+  .m3-comp-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .m3-comp-btn.is-filled {
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+  }
+
+  .m3-comp-btn.is-tonal {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-comp-btn.is-elevated {
+    background-color: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-primary);
+  }
+
+  .m3-comp-btn.is-outlined {
+    background-color: transparent;
+    color: var(--md-sys-color-primary);
+    border: 1px solid var(--md-sys-color-outline);
+  }
+
+  .m3-comp-btn.is-text {
+    background-color: transparent;
+    color: var(--md-sys-color-primary);
+  }
+
+  .m3-fab-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+  }
+
+  .m3-fab-primary {
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 16px;
+    border: none;
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .m3-fab-tertiary {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    border: none;
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .m3-chip-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .m3-status-chip {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .m3-status-chip.is-primary {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  .m3-status-chip.is-secondary {
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-status-chip.is-tertiary {
+    background-color: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .m3-status-chip.is-success {
+    background-color: var(--md-sys-color-success-container);
+    color: var(--md-sys-color-on-success-container);
+  }
+
+  .m3-status-chip.is-warning {
+    background-color: var(--md-sys-color-warning-container);
+    color: var(--md-sys-color-on-warning-container);
+  }
+
+  .m3-status-chip.is-error {
+    background-color: var(--md-sys-color-error-container);
+    color: var(--md-sys-color-on-error-container);
+  }
+
+  .m3-status-chip.is-info {
+    background-color: var(--md-sys-color-info-container);
+    color: var(--md-sys-color-on-info-container);
+  }
+
+  .m3-alert-banner {
+    margin-top: auto;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-alert-banner strong {
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .m3-widget-col {
+    gap: 14px;
+    justify-content: space-between;
+  }
+
+  .m3-player-card {
+    background-color: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .m3-input-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .m3-outlined-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .m3-outlined-field span {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--md-sys-color-primary);
+  }
+
+  .m3-outlined-field input {
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid var(--md-sys-color-outline);
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .m3-outlined-field input:focus {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-sys-color-primary) 22%, transparent);
+  }
+
+  .m3-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    cursor: pointer;
+  }
+
+  .m3-switch {
+    appearance: none;
+    width: 46px;
+    height: 26px;
+    border-radius: 999px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    border: 1.5px solid var(--md-sys-color-outline);
+    position: relative;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease;
+  }
+
+  .m3-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background-color: var(--md-sys-color-outline);
+    transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), background-color 160ms ease;
+  }
+
+  .m3-switch:checked {
+    background-color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+  }
+
+  .m3-switch:checked::after {
+    transform: translateX(20px);
+    background-color: var(--md-sys-color-on-primary);
+  }
+
+  .m3-player-art {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    flex-shrink: 0;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .m3-player-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .m3-player-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .m3-player-sub {
+    font-size: 0.78rem;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  .m3-progress-track {
+    margin-top: 10px;
+    height: 5px;
+    border-radius: 999px;
+    background-color: var(--md-sys-color-surface-container-highest);
+    overflow: hidden;
+  }
+
+  .m3-progress-fill {
+    width: 64%;
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--md-sys-color-primary);
+  }
+
+  .m3-player-play {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    flex-shrink: 0;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .m3-surface-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .m3-surface-card {
+    padding: 14px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 104px;
+  }
+
+  .m3-surface-step {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--md-sys-color-primary);
+  }
+
+  .m3-surface-name {
+    font-size: 0.92rem;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .m3-surface-desc {
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .m3-surface-token {
+    margin-top: auto;
+    font-size: 0.7rem;
+    color: var(--md-sys-color-on-surface-variant);
+    word-break: break-all;
+  }
+
+  @media (max-width: 1120px) {
+    .m3-showcase-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .m3-surface-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 600px) {
+    .m3-surface-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

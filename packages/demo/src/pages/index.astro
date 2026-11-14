@@ -1,0 +1,52 @@
+---
+import M3Layout from '../layouts/M3Layout.astro'
+import NavigationRail from '../components/NavigationRail.astro'
+import HeroBanner from '../components/HeroBanner.astro'
+import ComponentShowcase from '../components/ComponentShowcase.astro'
+import TokenGrid from '../components/TokenGrid.astro'
+import TonalRampsPanel from '../components/TonalRampsPanel.astro'
+import ExportPanel from '../components/ExportPanel.astro'
+---
+
+<M3Layout>
+  <div class="m3-shell">
+    <NavigationRail />
+    <main class="m3-main">
+      <div id="m3-panel-track" class="m3-panel-track" style="--active-panel: 0;">
+        <div class="m3-panel" data-panel="0"><HeroBanner /></div>
+        <div class="m3-panel" data-panel="1"><ComponentShowcase /></div>
+        <div class="m3-panel" data-panel="2"><TokenGrid /></div>
+        <div class="m3-panel" data-panel="3"><TonalRampsPanel /></div>
+        <div class="m3-panel" data-panel="4"><ExportPanel /></div>
+      </div>
+    </main>
+  </div>
+
+  <div id="m3-snackbar" class="m3-snackbar" role="status" aria-live="polite"></div>
+
+  <script src="../scripts/theme-client.ts"></script>
+</M3Layout>
+
+<style>
+  .m3-snackbar {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 50;
+    padding: 12px 20px;
+    border-radius: 14px;
+    background-color: var(--md-sys-color-inverse-surface);
+    color: var(--md-sys-color-inverse-on-surface);
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .m3-snackbar.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
