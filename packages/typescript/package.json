@@ -23,6 +23,9 @@
     "gamut-mapping",
     "typescript"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/sandlada/okyct#readme",
   "bugs": {
     "url": "https://github.com/sandlada/okyct/issues"
