@@ -4,6 +4,6 @@ allowBuilds:
   '@google/genai': true
   esbuild: true
   protobufjs: true
-  sharp: set this to true or false
+  sharp: true
 minimumReleaseAgeExclude:
   - '@sandlada/okyct@0.0.1-20261114.b'
