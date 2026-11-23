@@ -1,10 +1,11 @@
-
 import {
   SystemColorTokens,
   type DynamicSchemeColors,
+  type ExportTokensBaseOptions,
   type ResolvedCustomColor,
-  type StateLayersOption,
 } from '../../ports/index.ts'
+import type { CssColorFormat } from '../../domain/index.ts'
+import { formatColorValue, formatSchemeToken, resolveExportColorFormat } from './internal/format-export-color.ts'
 import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
@@ -12,14 +13,15 @@ import {
 
 function extractTokens(
   scheme: DynamicSchemeColors,
-  stateLayers?: StateLayersOption
+  colorFormat: CssColorFormat,
+  stateLayers?: ExportTokensBaseOptions['stateLayers']
 ): Record<string, string> {
   const result: Record<string, string> = {}
   for (const key of SystemColorTokens) {
-    result[key] = scheme[key]
+    result[key] = formatSchemeToken(scheme, key, colorFormat)
   }
   for (const [stateKey, stateHex] of resolveSystemStateLayersForExport(scheme, stateLayers)) {
-    result[stateKey] = stateHex
+    result[stateKey] = formatColorValue(stateHex, colorFormat)
   }
   return result
 }
@@ -27,32 +29,42 @@ function extractTokens(
 export function exportTypeScriptTokens(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  customColorsLight: readonly ResolvedCustomColor[] = [],
-  customColorsDark: readonly ResolvedCustomColor[] = [],
-  stateLayers?: StateLayersOption
+  options: ExportTokensBaseOptions = {}
 ): string {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new Error('Invalid exportTypeScriptTokens options: expected an object.')
+  }
+
+  const {
+    customColorsLight = [],
+    customColorsDark = [],
+    stateLayers,
+  } = options
+  const colorFormat = resolveExportColorFormat(options.colorFormat)
+
   const buildCustomMap = (customs: readonly ResolvedCustomColor[]) => {
     const res: Record<string, Record<string, string>> = {}
+    const fmt = (hex: string) => formatColorValue(hex, colorFormat)
     for (const c of customs) {
       const entry: Record<string, string> = {
-        color: c.color,
-        onColor: c.onColor,
-        colorContainer: c.colorContainer,
-        onColorContainer: c.onColorContainer,
+        color: fmt(c.color),
+        onColor: fmt(c.onColor),
+        colorContainer: fmt(c.colorContainer),
+        onColorContainer: fmt(c.onColorContainer),
       }
       const { colorStates, onColorStates, containerStates, onContainerStates } =
         resolveCustomStateLayersForExport(c, stateLayers)
       for (const [state, hex] of colorStates) {
-        entry[`color${state.charAt(0).toUpperCase()}${state.slice(1)}`] = hex
+        entry[`color${state.charAt(0).toUpperCase()}${state.slice(1)}`] = fmt(hex)
       }
       for (const [state, hex] of onColorStates) {
-        entry[`onColor${state.charAt(0).toUpperCase()}${state.slice(1)}`] = hex
+        entry[`onColor${state.charAt(0).toUpperCase()}${state.slice(1)}`] = fmt(hex)
       }
       for (const [state, hex] of containerStates) {
-        entry[`colorContainer${state.charAt(0).toUpperCase()}${state.slice(1)}`] = hex
+        entry[`colorContainer${state.charAt(0).toUpperCase()}${state.slice(1)}`] = fmt(hex)
       }
       for (const [state, hex] of onContainerStates) {
-        entry[`onColorContainer${state.charAt(0).toUpperCase()}${state.slice(1)}`] = hex
+        entry[`onColorContainer${state.charAt(0).toUpperCase()}${state.slice(1)}`] = fmt(hex)
       }
       res[c.name] = entry
     }
@@ -64,13 +76,13 @@ export function exportTypeScriptTokens(
  */
 
 export const LightThemeTokens = ${JSON.stringify(
-    { ...extractTokens(lightScheme, stateLayers), custom: buildCustomMap(customColorsLight) },
+    { ...extractTokens(lightScheme, colorFormat, stateLayers), custom: buildCustomMap(customColorsLight) },
     null,
     2
   )} as const
 
 export const DarkThemeTokens = ${JSON.stringify(
-    { ...extractTokens(darkScheme, stateLayers), custom: buildCustomMap(customColorsDark) },
+    { ...extractTokens(darkScheme, colorFormat, stateLayers), custom: buildCustomMap(customColorsDark) },
     null,
     2
   )} as const

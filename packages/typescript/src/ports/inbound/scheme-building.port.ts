@@ -4,7 +4,7 @@
  * Constraint: depends only on domain/models and sibling inbound ports.
  */
 
-import type { ContrastMetric, CvdType } from '../../domain/models/index.ts'
+import type { ContrastMetric, CvdType, OKYCT } from '../../domain/models/index.ts'
 import type { PaletteSet, ITonalPalettePort } from './palette-generation.port.ts'
 
 export const ThemeModes = ['light', 'dark'] as const
@@ -235,6 +235,7 @@ export type DynamicSchemeColors = {
   [K in SystemColorToken]: string
 } & Partial<Record<SystemStateLayerToken, string>> & {
   tones: Record<SystemColorToken, number>
+  okyct: Record<SystemColorToken, OKYCT>
   stateLayers?: SchemeStateLayerTokens
 }
 

@@ -1,3 +1,4 @@
+import type { CssColorFormat } from '../../domain/index.ts'
 import type {
   CssSchemeMode,
   DynamicSchemeColors,
@@ -35,6 +36,7 @@ export interface ExportThemeOptions {
   cssSchemeMode?: CssSchemeMode
   tailwindFallback?: TailwindFallbackMode
   stateLayers?: StateLayersOption
+  colorFormat?: CssColorFormat
 }
 
 function isOkyctTheme(input: ExportThemeInput | OkyctTheme): input is OkyctTheme {
@@ -63,53 +65,48 @@ export function exportTheme(
 
   const palettes = isTheme
     ? input.palettes
-    : input.palettes ?? (
-        input.sourceHex !== undefined
-          ? createPalettesFromSource(input.sourceHex, {
-              variant: input.variant,
-              harmonizeSemantics: input.harmonizeSemantics,
-            })
-          : undefined
-      )
-  const customLight = isTheme ? (input.customColors?.light ?? []) : (input.customColorsLight ?? [])
-  const customDark = isTheme ? (input.customColors?.dark ?? []) : (input.customColorsDark ?? [])
+    : input.palettes ??
+      (input.sourceHex !== undefined
+        ? createPalettesFromSource(input.sourceHex, {
+            variant: input.variant,
+            harmonizeSemantics: input.harmonizeSemantics,
+          })
+        : undefined)
+  const customColorsLight = isTheme ? (input.customColors?.light ?? []) : (input.customColorsLight ?? [])
+  const customColorsDark = isTheme ? (input.customColors?.dark ?? []) : (input.customColorsDark ?? [])
 
   switch (format) {
     case 'css':
-      return exportCssVariables(
-        lightScheme,
-        darkScheme,
+      return exportCssVariables(lightScheme, darkScheme, {
         palettes,
-        customLight,
-        customDark,
-        options.cssSchemeMode ?? 'light-dark',
-        options.stateLayers
-      )
+        customColorsLight,
+        customColorsDark,
+        schemeMode: options.cssSchemeMode ?? 'light-dark',
+        stateLayers: options.stateLayers,
+        colorFormat: options.colorFormat,
+      })
     case 'tailwind':
-      return exportTailwindV4(
-        lightScheme,
-        darkScheme,
-        customLight,
-        customDark,
-        options.tailwindFallback ?? 'light-dark',
-        options.stateLayers
-      )
+      return exportTailwindV4(lightScheme, darkScheme, {
+        customColorsLight,
+        customColorsDark,
+        fallback: options.tailwindFallback ?? 'light-dark',
+        stateLayers: options.stateLayers,
+        colorFormat: options.colorFormat,
+      })
     case 'w3c':
-      return exportW3cDesignTokens(
-        lightScheme,
-        darkScheme,
-        customLight,
-        customDark,
-        options.stateLayers
-      )
+      return exportW3cDesignTokens(lightScheme, darkScheme, {
+        customColorsLight,
+        customColorsDark,
+        stateLayers: options.stateLayers,
+        colorFormat: options.colorFormat,
+      })
     case 'ts':
-      return exportTypeScriptTokens(
-        lightScheme,
-        darkScheme,
-        customLight,
-        customDark,
-        options.stateLayers
-      )
+      return exportTypeScriptTokens(lightScheme, darkScheme, {
+        customColorsLight,
+        customColorsDark,
+        stateLayers: options.stateLayers,
+        colorFormat: options.colorFormat,
+      })
     default: {
       const unknownFormat: never = format
       throw new Error(`Unknown export format: ${String(unknownFormat)}`)

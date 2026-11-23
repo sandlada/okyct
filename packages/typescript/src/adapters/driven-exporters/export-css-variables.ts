@@ -1,4 +1,3 @@
-
 import {
   StandardTones,
   StandardPaletteKeys,
@@ -6,19 +5,25 @@ import {
   CssSchemeModes,
   type CssSchemeMode,
   type DynamicSchemeColors,
+  type ExportCssVariablesOptions,
   type ResolvedCustomColor,
   type StateLayersOption,
 } from '../../ports/index.ts'
-import type { PaletteSet } from '../../application/index.ts'
+import type { CssColorFormat } from '../../domain/index.ts'
+import { formatColorValue, formatSchemeToken, resolveExportColorFormat } from './internal/format-export-color.ts'
 import { kebabCase } from './internal/kebab-case.ts'
 import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
 } from './internal/resolve-export-state-layers.ts'
 
-export { CssSchemeModes, type CssSchemeMode }
+export { CssSchemeModes, type CssSchemeMode, type ExportCssVariablesOptions }
 
-const customTuple = (color: ResolvedCustomColor, stateLayers?: StateLayersOption) => {
+const customTuple = (
+  color: ResolvedCustomColor,
+  colorFormat: CssColorFormat,
+  stateLayers?: StateLayersOption
+) => {
   const k = kebabCase(color.name)
   if (!k) {
     throw new Error(`Invalid custom color name: "${color.name}". Expected at least one alphanumeric word.`)
@@ -26,17 +31,23 @@ const customTuple = (color: ResolvedCustomColor, stateLayers?: StateLayersOption
   const { colorStates, onColorStates, containerStates, onContainerStates } =
     resolveCustomStateLayersForExport(color, stateLayers)
   return [
-    [`--md-custom-color-${k}`, color.color],
-    ...colorStates.map(([state, hex]) => [`--md-custom-color-${k}-${state}`, hex] as const),
-    [`--md-custom-color-on-${k}`, color.onColor],
-    ...onColorStates.map(([state, hex]) => [`--md-custom-color-on-${k}-${state}`, hex] as const),
-    [`--md-custom-color-${k}-container`, color.colorContainer],
-    ...containerStates.map(
-      ([state, hex]) => [`--md-custom-color-${k}-container-${state}`, hex] as const
+    [`--md-custom-color-${k}`, formatColorValue(color.color, colorFormat)],
+    ...colorStates.map(
+      ([state, hex]) => [`--md-custom-color-${k}-${state}`, formatColorValue(hex, colorFormat)] as const
     ),
-    [`--md-custom-color-on-${k}-container`, color.onColorContainer],
+    [`--md-custom-color-on-${k}`, formatColorValue(color.onColor, colorFormat)],
+    ...onColorStates.map(
+      ([state, hex]) => [`--md-custom-color-on-${k}-${state}`, formatColorValue(hex, colorFormat)] as const
+    ),
+    [`--md-custom-color-${k}-container`, formatColorValue(color.colorContainer, colorFormat)],
+    ...containerStates.map(
+      ([state, hex]) =>
+        [`--md-custom-color-${k}-container-${state}`, formatColorValue(hex, colorFormat)] as const
+    ),
+    [`--md-custom-color-on-${k}-container`, formatColorValue(color.onColorContainer, colorFormat)],
     ...onContainerStates.map(
-      ([state, hex]) => [`--md-custom-color-on-${k}-container-${state}`, hex] as const
+      ([state, hex]) =>
+        [`--md-custom-color-on-${k}-container-${state}`, formatColorValue(hex, colorFormat)] as const
     ),
   ] as const
 }
@@ -44,22 +55,31 @@ const customTuple = (color: ResolvedCustomColor, stateLayers?: StateLayersOption
 export function exportCssVariables(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  palettes?: PaletteSet,
-  customColorsLight: readonly ResolvedCustomColor[] = [],
-  customColorsDark: readonly ResolvedCustomColor[] = [],
-  schemeMode: CssSchemeMode = 'light-dark',
-  stateLayers?: StateLayersOption
+  options: ExportCssVariablesOptions = {}
 ): string {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new Error('Invalid exportCssVariables options: expected an object.')
+  }
+
+  const {
+    palettes,
+    customColorsLight = [],
+    customColorsDark = [],
+    schemeMode = 'light-dark',
+    stateLayers,
+  } = options
+
   if (!CssSchemeModes.includes(schemeMode)) {
     throw new Error(`Invalid cssSchemeMode: "${String(schemeMode)}". Expected one of: ${CssSchemeModes.join(', ')}.`)
   }
+  const colorFormat = resolveExportColorFormat(options.colorFormat)
 
   const formatEntries = (scheme: DynamicSchemeColors, indent = '  ') => {
     const baseLines = SystemColorTokens.map(
-      (key) => `${indent}--md-sys-color-${kebabCase(key)}: ${scheme[key]};`
+      (key) => `${indent}--md-sys-color-${kebabCase(key)}: ${formatSchemeToken(scheme, key, colorFormat)};`
     )
     const stateLines = resolveSystemStateLayersForExport(scheme, stateLayers).map(
-      ([key, value]) => `${indent}--md-sys-color-${kebabCase(key)}: ${value};`
+      ([key, value]) => `${indent}--md-sys-color-${kebabCase(key)}: ${formatColorValue(value, colorFormat)};`
     )
     return [...baseLines, ...stateLines].join('\n')
   }
@@ -67,7 +87,7 @@ export function exportCssVariables(
   const formatCustomEntries = (customs: readonly ResolvedCustomColor[], indent = '  ') => {
     if (customs.length === 0) return ''
     const lines = customs.flatMap((c) =>
-      customTuple(c, stateLayers).map(([name, value]) => `${indent}${name}: ${value};`)
+      customTuple(c, colorFormat, stateLayers).map(([name, value]) => `${indent}${name}: ${value};`)
     )
     return `\n\n  /* -------------------------------------------------------------\n     Custom Extended Semantic Colors\n     ------------------------------------------------------------- */\n${lines.join('\n')}`
   }
@@ -77,7 +97,7 @@ export function exportCssVariables(
     const list: string[] = []
     for (const key of StandardPaletteKeys) {
       for (const t of StandardTones) {
-        list.push(`${indent}--md-ref-palette-${kebabCase(key)}-${t}: ${palettes[key].tone(t)};`)
+        list.push(`${indent}--md-ref-palette-${kebabCase(key)}-${t}: ${palettes[key].toneCss(t, colorFormat)};`)
       }
     }
     return list.join('\n')
@@ -97,26 +117,30 @@ ${paletteEntries('  ')}`
   if (schemeMode === 'light-dark') {
     const darkByName = new Map(customColorsDark.map((color) => [color.name, color]))
     const systemLinesList = SystemColorTokens.map(
-      (key) => `  --md-sys-color-${kebabCase(key)}: light-dark(${lightScheme[key]}, ${darkScheme[key]});`
+      (key) =>
+        `  --md-sys-color-${kebabCase(key)}: light-dark(${formatSchemeToken(lightScheme, key, colorFormat)}, ${formatSchemeToken(darkScheme, key, colorFormat)});`
     )
     const lightStates = resolveSystemStateLayersForExport(lightScheme, stateLayers)
     const darkStatesMap = new Map(resolveSystemStateLayersForExport(darkScheme, stateLayers))
     for (const [key, lightVal] of lightStates) {
       const darkVal = darkStatesMap.get(key) ?? lightVal
-      systemLinesList.push(`  --md-sys-color-${kebabCase(key)}: light-dark(${lightVal}, ${darkVal});`)
+      systemLinesList.push(
+        `  --md-sys-color-${kebabCase(key)}: light-dark(${formatColorValue(lightVal, colorFormat)}, ${formatColorValue(darkVal, colorFormat)});`
+      )
     }
     const systemLines = systemLinesList.join('\n')
     const customLines = customColorsLight.flatMap((color) => {
       const dark = darkByName.get(color.name) ?? color
-      const darkSlots = new Map(customTuple(dark, stateLayers))
-      return customTuple(color, stateLayers).map(([name, value]) => {
+      const darkSlots = new Map(customTuple(dark, colorFormat, stateLayers))
+      return customTuple(color, colorFormat, stateLayers).map(([name, value]) => {
         const darkValue = darkSlots.get(name) ?? value
         return `  ${name}: light-dark(${value}, ${darkValue});`
       })
     })
-    const customBlock = customLines.length === 0
-      ? ''
-      : `\n\n  /* -------------------------------------------------------------\n     Custom Extended Semantic Colors\n     ------------------------------------------------------------- */\n${customLines.join('\n')}`
+    const customBlock =
+      customLines.length === 0
+        ? ''
+        : `\n\n  /* -------------------------------------------------------------\n     Custom Extended Semantic Colors\n     ------------------------------------------------------------- */\n${customLines.join('\n')}`
     const paletteSection = paletteBlock ? `\n${paletteBlock}\n` : ''
 
     return `${header}

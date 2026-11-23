@@ -51,15 +51,13 @@ export const selectPagePreviewSrcDoc = createSelector(
     (_state: RootState, strings: PagePreviewStrings) => strings,
   ],
   (palettes, light, dark, customLight, customDark, mode, data, strings) => {
-    const tokenCss = exportCssVariables(
-      light,
-      dark,
+    const tokenCss = exportCssVariables(light, dark, {
       palettes,
-      customLight,
-      customDark,
-      'class',
-      ['hovered', 'focused', 'pressed']
-    )
+      customColorsLight: customLight,
+      customColorsDark: customDark,
+      schemeMode: 'class',
+      stateLayers: ['hovered', 'focused', 'pressed'],
+    })
     const copy: SamplePreviewCopy = { ...strings, ...data }
     return buildSamplePreviewDocument(tokenCss, mode, copy)
   },

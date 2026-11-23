@@ -50,19 +50,27 @@ function signedHueDiff(actualHue: number, targetHue: number): number {
   return ((actualHue - targetHue + 540) % 360) - 180
 }
 
+export function findContainingEdgeIndex(h: number, vertices: readonly VertexCusp[]): number {
+  const n = vertices.length
+  for (let i = 0; i < n; i++) {
+    const h0 = vertices[i].hue
+    const h1 = vertices[(i + 1) % n].hue
+    const span = (h1 - h0 + 360) % 360
+    const offset = (h - h0 + 360) % 360
+    if (offset < span) {
+      return i
+    }
+  }
+  return n - 1
+}
+
 export function findCuspForMaxChroma(hue: number, gamut: GamutTarget = 'srgb'): GamutCusp {
   let h = hue % 360
   if (h < 0) h += 360
   const isP3 = gamut === 'display-p3'
   const vertices = isP3 ? P3Vertices : SrgbVertices
 
-  let edgeIdx = 5
-  for (let i = 0; i < 5; i++) {
-    if (h >= vertices[i].hue && h < vertices[i + 1].hue) {
-      edgeIdx = i
-      break
-    }
-  }
+  const edgeIdx = findContainingEdgeIndex(h, vertices)
 
   const v0Vert = vertices[edgeIdx]
   let fLo = signedHueDiff(v0Vert.hue, h)

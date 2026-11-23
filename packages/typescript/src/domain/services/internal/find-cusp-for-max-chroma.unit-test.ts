@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { hexToOkyct } from '../hex-to-okyct.ts'
-import { findCuspForMaxChroma } from './find-cusp-for-max-chroma.ts'
+import { findContainingEdgeIndex, findCuspForMaxChroma } from './find-cusp-for-max-chroma.ts'
 
 describe('findCuspForMaxChroma', () => {
   it('returns exact vertex tone and chroma at all six primary and secondary sRGB vertices', () => {
@@ -31,5 +31,21 @@ describe('findCuspForMaxChroma', () => {
     const canonical = findCuspForMaxChroma(315, 'srgb')
     assert.ok(Math.abs(wrapped.tone - canonical.tone) < 1e-6)
     assert.ok(Math.abs(wrapped.chroma - canonical.chroma) < 1e-6)
+  })
+
+  it('findContainingEdgeIndex handles arbitrary wrapped vertex orderings across 0/360 degrees', () => {
+    const rotatedVertices = [
+      { hue: 350, chroma: 0.3, tone: 50 },
+      { hue: 55, chroma: 0.25, tone: 70 },
+      { hue: 140, chroma: 0.28, tone: 80 },
+      { hue: 210, chroma: 0.2, tone: 65 },
+      { hue: 265, chroma: 0.31, tone: 35 },
+      { hue: 315, chroma: 0.29, tone: 55 },
+    ]
+    assert.equal(findContainingEdgeIndex(0, rotatedVertices), 0)
+    assert.equal(findContainingEdgeIndex(355, rotatedVertices), 0)
+    assert.equal(findContainingEdgeIndex(54.9, rotatedVertices), 0)
+    assert.equal(findContainingEdgeIndex(55, rotatedVertices), 1)
+    assert.equal(findContainingEdgeIndex(349.9, rotatedVertices), 5)
   })
 })

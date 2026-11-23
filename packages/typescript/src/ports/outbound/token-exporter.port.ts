@@ -1,9 +1,10 @@
 /**
  * [Hexagonal Layer: Outbound Port]
- * 多格式生产级设计 Token 导出器被驱动端契约 (一个口对应一个文件)
- * 约束：仅依赖 domain/models 与同层契约
+ * Multi-format production design token exporter driven contract (one port per file).
+ * Constraint: depends only on domain/models and sibling port contracts.
  */
 
+import type { CssColorFormat } from '../../domain/models/index.ts'
 import type {
   DynamicSchemeColors,
   ResolvedCustomColor,
@@ -17,39 +18,46 @@ export type CssSchemeMode = (typeof CssSchemeModes)[number]
 export const TailwindFallbackModes = ['none', 'light-dark'] as const
 export type TailwindFallbackMode = (typeof TailwindFallbackModes)[number]
 
+export interface ExportTokensBaseOptions {
+  customColorsLight?: readonly ResolvedCustomColor[]
+  customColorsDark?: readonly ResolvedCustomColor[]
+  stateLayers?: StateLayersOption
+  colorFormat?: CssColorFormat
+}
+
+export interface ExportCssVariablesOptions<
+  TPalette extends ITonalPalettePort = ITonalPalettePort,
+> extends ExportTokensBaseOptions {
+  palettes?: PaletteSet<TPalette>
+  schemeMode?: CssSchemeMode
+}
+
+export interface ExportTailwindV4Options extends ExportTokensBaseOptions {
+  fallback?: TailwindFallbackMode
+}
+
 export interface ITokenExporterPort<TPalette extends ITonalPalettePort = ITonalPalettePort> {
   exportCssVariables(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    palettes?: PaletteSet<TPalette>,
-    customColorsLight?: readonly ResolvedCustomColor[],
-    customColorsDark?: readonly ResolvedCustomColor[],
-    schemeMode?: CssSchemeMode,
-    stateLayers?: StateLayersOption
+    options?: ExportCssVariablesOptions<TPalette>
   ): string
 
   exportTailwindV4(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: readonly ResolvedCustomColor[],
-    customColorsDark?: readonly ResolvedCustomColor[],
-    fallback?: TailwindFallbackMode,
-    stateLayers?: StateLayersOption
+    options?: ExportTailwindV4Options
   ): string
 
   exportW3cDesignTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: readonly ResolvedCustomColor[],
-    customColorsDark?: readonly ResolvedCustomColor[],
-    stateLayers?: StateLayersOption
+    options?: ExportTokensBaseOptions
   ): string
 
   exportTypeScriptTokens(
     lightScheme: DynamicSchemeColors,
     darkScheme: DynamicSchemeColors,
-    customColorsLight?: readonly ResolvedCustomColor[],
-    customColorsDark?: readonly ResolvedCustomColor[],
-    stateLayers?: StateLayersOption
+    options?: ExportTokensBaseOptions
   ): string
 }

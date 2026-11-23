@@ -6,6 +6,7 @@ import {
   solveTonesForContrast,
   toneToY,
   type ContrastMetric,
+  type OKYCT,
 } from '../domain/index.ts'
 import {
   AmbientSurrounds,
@@ -22,6 +23,7 @@ import {
   DefaultEmissivePanelSpecs,
   type IDisplayPhysicsPort,
 } from '../ports/outbound/display-physics.port.ts'
+import { refineToneForContrast } from './internal/refine-tone-for-contrast.ts'
 import { SchemeTokenRoleMap, normalizeStateLayerStates, type SchemeRoleKind } from './internal/scheme-token-role-map.ts'
 import type { PaletteSet } from './palette-set.ts'
 import { resolveSchemeStateLayers } from './resolve-scheme-state-layers.ts'
@@ -366,101 +368,68 @@ export function buildDynamicSchemeWithPhysics(
     const fgCap = fgBinding.kind === 'foreground' ? fgHighlightCap : peakWhiteCap
 
     if (preferLightFg) {
-      let candidateT =
+      const startFgT =
         solved.lightForegroundTone !== null && solved.lightForegroundTone <= fgCap
           ? solved.lightForegroundTone
           : fgCap
 
-      let candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
-      let steps = 0
-      while (
-        !meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric) &&
-        candidateT < fgCap &&
-        steps < 24
-      ) {
-        candidateT = Math.min(fgCap, candidateT + 0.5)
-        candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
-        steps++
-      }
+      const fgRefined = refineToneForContrast({
+        startTone: startFgT,
+        limitTone: fgCap,
+        resolveHex: (t) => resolveRoleHex(fgPalette, t, fgBinding.kind),
+        passes: (hex) => meetsContrast(hex, bgHex, spec.minRatio, spec.minApca, contrastMetric),
+      })
 
-      if (meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric)) {
-        tones[spec.fg] = candidateT
-        resolvedColors[spec.fg] = candidateHex
-        return
-      }
+      tones[spec.fg] = fgRefined.tone
+      resolvedColors[spec.fg] = fgRefined.hex
+      if (fgRefined.passed) return
 
-      // Apply peak foreground cap and nudge background darker within panel floor if needed
-      tones[spec.fg] = candidateT
-      resolvedColors[spec.fg] = candidateHex
-      fgHex = candidateHex
-
+      fgHex = fgRefined.hex
       const bgFloor = bgBinding.kind === 'surface' && isDark ? darkFloors.surface : 0
       const bgSolved = solveTonesForContrast(hexToOkyct(fgHex).t, spec.minRatio, {
         metric: contrastMetric,
         targetLc: spec.minApca,
       })
-      let bgT =
+      const startBgT =
         bgSolved.darkForegroundTone !== null
           ? Math.max(bgFloor, bgSolved.darkForegroundTone)
           : bgFloor
-      let nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
-      let bgSteps = 0
-      while (
-        !meetsContrast(fgHex, nextBgHex, spec.minRatio, spec.minApca, contrastMetric) &&
-        bgT > bgFloor &&
-        bgSteps < 24
-      ) {
-        bgT = Math.max(bgFloor, bgT - 0.5)
-        nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
-        bgSteps++
-      }
-      tones[spec.bg] = bgT
-      resolvedColors[spec.bg] = nextBgHex
+      const bgRefined = refineToneForContrast({
+        startTone: startBgT,
+        limitTone: bgFloor,
+        resolveHex: (t) => resolveRoleHex(bgPalette, t, bgBinding.kind),
+        passes: (hex) => meetsContrast(fgHex, hex, spec.minRatio, spec.minApca, contrastMetric),
+      })
+      tones[spec.bg] = bgRefined.tone
+      resolvedColors[spec.bg] = bgRefined.hex
     } else {
-      let candidateT = solved.darkForegroundTone !== null ? solved.darkForegroundTone : 0
-      let candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
-      let steps = 0
-      while (
-        !meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric) &&
-        candidateT > 0 &&
-        steps < 24
-      ) {
-        candidateT = Math.max(0, candidateT - 0.5)
-        candidateHex = resolveRoleHex(fgPalette, candidateT, fgBinding.kind)
-        steps++
-      }
+      const startFgT = solved.darkForegroundTone !== null ? solved.darkForegroundTone : 0
+      const fgRefined = refineToneForContrast({
+        startTone: startFgT,
+        limitTone: 0,
+        resolveHex: (t) => resolveRoleHex(fgPalette, t, fgBinding.kind),
+        passes: (hex) => meetsContrast(hex, bgHex, spec.minRatio, spec.minApca, contrastMetric),
+      })
 
-      if (meetsContrast(candidateHex, bgHex, spec.minRatio, spec.minApca, contrastMetric)) {
-        tones[spec.fg] = candidateT
-        resolvedColors[spec.fg] = candidateHex
-        return
-      }
+      tones[spec.fg] = fgRefined.tone
+      resolvedColors[spec.fg] = fgRefined.hex
+      if (fgRefined.passed) return
 
-      // If dark foreground cannot go lower, flip or nudge light background up
-      const bgSolved = solveTonesForContrast(hexToOkyct(candidateHex).t, spec.minRatio, {
+      // If dark foreground cannot go lower, nudge light background up
+      const bgSolved = solveTonesForContrast(hexToOkyct(fgRefined.hex).t, spec.minRatio, {
         metric: contrastMetric,
         targetLc: spec.minApca,
       })
       if (bgSolved.lightForegroundTone !== null && bgSolved.lightForegroundTone <= peakWhiteCap) {
-        let bgT = bgSolved.lightForegroundTone
-        let nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
-        let bgSteps = 0
-        while (
-          !meetsContrast(candidateHex, nextBgHex, spec.minRatio, spec.minApca, contrastMetric) &&
-          bgT < peakWhiteCap &&
-          bgSteps < 24
-        ) {
-          bgT = Math.min(peakWhiteCap, bgT + 0.5)
-          nextBgHex = resolveRoleHex(bgPalette, bgT, bgBinding.kind)
-          bgSteps++
-        }
-        tones[spec.fg] = candidateT
-        resolvedColors[spec.fg] = candidateHex
-        tones[spec.bg] = bgT
-        resolvedColors[spec.bg] = nextBgHex
-      } else {
-        tones[spec.fg] = candidateT
-        resolvedColors[spec.fg] = candidateHex
+        const bgRefined = refineToneForContrast({
+          startTone: bgSolved.lightForegroundTone,
+          limitTone: peakWhiteCap,
+          resolveHex: (t) => resolveRoleHex(bgPalette, t, bgBinding.kind),
+          passes: (hex) =>
+            meetsContrast(fgRefined.hex, hex, spec.minRatio, spec.minApca, contrastMetric),
+        })
+        tones[spec.bg] = bgRefined.tone
+        resolvedColors[spec.bg] = bgRefined.hex
       }
     }
   }
@@ -469,13 +438,47 @@ export function buildDynamicSchemeWithPhysics(
     enforceHexPairClosure(pair)
   }
 
+  const okyct = {} as Record<SystemColorToken, OKYCT>
+  const hasPhysicsColorTransform = Boolean(physicsPort && (burnInGuard || antiFringing))
+
   for (const token of SystemColorTokens) {
-    tones[token] = parseFloat(hexToOkyct(resolvedColors[token]).t.toFixed(2))
+    const measured = hexToOkyct(resolvedColors[token])
+    tones[token] = parseFloat(measured.t.toFixed(2))
+
+    const binding = SchemeTokenRoleMap[token]
+    const palette = palettes[binding.palette]
+    const targetGamutCoord = palette.toneOkyct(measured.t, { gamut: palette.gamut })
+
+    if (hasPhysicsColorTransform && (binding.kind !== 'surface' || antiFringing)) {
+      if (palette.gamut === 'srgb') {
+        okyct[token] = measured
+      } else {
+        const unguardedSrgb = palette.toneOkyct(measured.t, { gamut: 'srgb' })
+        if (unguardedSrgb.c > 1e-4) {
+          const chromaScale = Math.min(1, measured.c / unguardedSrgb.c)
+          const hueShift = ((measured.h - unguardedSrgb.h + 540) % 360) - 180
+          okyct[token] = {
+            h: (targetGamutCoord.h + hueShift + 360) % 360,
+            c: targetGamutCoord.c * chromaScale,
+            t: measured.t,
+          }
+        } else {
+          okyct[token] = measured
+        }
+      }
+    } else {
+      okyct[token] = {
+        h: targetGamutCoord.h,
+        c: targetGamutCoord.c,
+        t: measured.t,
+      }
+    }
   }
 
   const baseScheme: DynamicSchemeColors = {
     ...resolvedColors,
     tones,
+    okyct,
   }
 
   const requestedStates = normalizeStateLayerStates(options.stateLayers)

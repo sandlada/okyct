@@ -30,6 +30,7 @@ export function createPalettesFromSource(
     gamut: options.gamut,
     hkCompensation: options.hkCompensation,
     softKnee: options.softKnee,
+    maxCacheSize: options.maxCacheSize,
   }
 
   const source = hexToOkyct(sourceHex)

@@ -4,7 +4,7 @@
  * Constraint: depends only on domain/models.
  */
 
-import type { GamutTarget } from '../../domain/models/index.ts'
+import type { CssColorFormat, GamutTarget, OKYCT } from '../../domain/models/index.ts'
 
 export const StandardTones = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99, 100] as const
 export type StandardTone = (typeof StandardTones)[number]
@@ -23,6 +23,7 @@ export interface TonalPaletteOptions {
   gamut?: GamutTarget
   hkCompensation?: boolean
   softKnee?: boolean
+  maxCacheSize?: number
 }
 
 export interface CreatePalettesOptions extends TonalPaletteOptions {
@@ -33,7 +34,10 @@ export interface CreatePalettesOptions extends TonalPaletteOptions {
 export interface ITonalPalettePort {
   readonly hue: number
   readonly targetChroma: number
+  readonly gamut: GamutTarget
   tone(toneValue: number): string
+  toneOkyct(toneValue: number, options?: { gamut?: GamutTarget }): OKYCT
+  toneCss(toneValue: number, format?: CssColorFormat): string
   getAllTones(): Record<StandardTone, string>
 }
 

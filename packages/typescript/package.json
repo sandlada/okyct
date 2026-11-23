@@ -105,8 +105,8 @@
     }
   },
   "scripts": {
-    "build": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.build.json && node -e \"for (const f of fs.globSync('dist/**/*.d.ts')) { fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/(from\\s+['\\\"][^'\\\"]+)\\.ts(['\\\"])/g, '$1.js$2')); }\"",
-    "lint": "tsc --noEmit",
+    "build": "node --experimental-strip-types scripts/build.ts",
+    "lint": "tsc --noEmit && node --experimental-strip-types scripts/verify-architecture.ts",
     "test": "node --experimental-strip-types --test test/**/*.test.ts src/**/*.unit-test.ts",
     "prepublishOnly": "pnpm run lint && pnpm run test && pnpm run build"
   },

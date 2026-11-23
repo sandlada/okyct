@@ -25,7 +25,11 @@ export function useQuantizer(canvasRef: { readonly current: HTMLCanvasElement | 
     }
     context.clearRect(0, 0, canvas.width, canvas.height)
     scene.drawScene(context, canvas.width, canvas.height)
-    dispatch(setExtractedSeeds(extractSeedsFromImageData(context.getImageData(0, 0, canvas.width, canvas.height), 4)))
+    dispatch(
+      setExtractedSeeds(
+        extractSeedsFromImageData(context.getImageData(0, 0, canvas.width, canvas.height), { maxColors: 4 })
+      )
+    )
   }, [activeSceneId, canvasRef, dispatch])
 
   return {
@@ -49,7 +53,10 @@ export function useQuantizer(canvasRef: { readonly current: HTMLCanvasElement | 
           context.clearRect(0, 0, canvas.width, canvas.height)
           context.drawImage(image, 0, 0, canvas.width, canvas.height)
           dispatch(setQuantizerScene('uploaded'))
-          const nextSeeds = extractSeedsFromImageData(context.getImageData(0, 0, canvas.width, canvas.height), 4)
+          const nextSeeds = extractSeedsFromImageData(
+            context.getImageData(0, 0, canvas.width, canvas.height),
+            { maxColors: 4 }
+          )
           dispatch(setExtractedSeeds(nextSeeds))
           const first = nextSeeds[0]
           if (first !== undefined) {

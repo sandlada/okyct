@@ -1,19 +1,18 @@
-
 import {
   SystemColorTokens,
   TailwindFallbackModes,
   type TailwindFallbackMode,
   type DynamicSchemeColors,
-  type ResolvedCustomColor,
-  type StateLayersOption,
+  type ExportTailwindV4Options,
 } from '../../ports/index.ts'
+import { formatColorValue, formatSchemeToken, resolveExportColorFormat } from './internal/format-export-color.ts'
 import { kebabCase } from './internal/kebab-case.ts'
 import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
 } from './internal/resolve-export-state-layers.ts'
 
-export { TailwindFallbackModes, type TailwindFallbackMode }
+export { TailwindFallbackModes, type TailwindFallbackMode, type ExportTailwindV4Options }
 
 const colorVar = (token: string, light: string, dark: string, fallback: TailwindFallbackMode) => {
   if (fallback === 'light-dark') {
@@ -25,19 +24,30 @@ const colorVar = (token: string, light: string, dark: string, fallback: Tailwind
 export function exportTailwindV4(
   lightScheme: DynamicSchemeColors,
   darkScheme: DynamicSchemeColors,
-  customColorsLight: readonly ResolvedCustomColor[] = [],
-  customColorsDark: readonly ResolvedCustomColor[] = [],
-  fallback: TailwindFallbackMode = 'light-dark',
-  stateLayers?: StateLayersOption
+  options: ExportTailwindV4Options = {}
 ): string {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new Error('Invalid exportTailwindV4 options: expected an object.')
+  }
+
+  const {
+    customColorsLight = [],
+    customColorsDark = [],
+    fallback = 'light-dark',
+    stateLayers,
+  } = options
+
   if (!TailwindFallbackModes.includes(fallback)) {
     throw new Error(`Invalid tailwindFallback: "${String(fallback)}". Expected one of: ${TailwindFallbackModes.join(', ')}.`)
   }
+  const colorFormat = resolveExportColorFormat(options.colorFormat)
   const darkByName = new Map(customColorsDark.map((color) => [color.name, color]))
 
   const systemLinesList = SystemColorTokens.map((key) => {
     const k = kebabCase(key)
-    return `  --color-${k}: ${colorVar(`--md-sys-color-${k}`, lightScheme[key], darkScheme[key], fallback)};`
+    const lightVal = formatSchemeToken(lightScheme, key, colorFormat)
+    const darkVal = formatSchemeToken(darkScheme, key, colorFormat)
+    return `  --color-${k}: ${colorVar(`--md-sys-color-${k}`, lightVal, darkVal, fallback)};`
   })
   const lightStates = resolveSystemStateLayersForExport(lightScheme, stateLayers)
   const darkStatesMap = new Map(resolveSystemStateLayersForExport(darkScheme, stateLayers))
@@ -45,7 +55,12 @@ export function exportTailwindV4(
     const darkVal = darkStatesMap.get(key) ?? lightVal
     const k = kebabCase(key)
     systemLinesList.push(
-      `  --color-${k}: ${colorVar(`--md-sys-color-${k}`, lightVal, darkVal, fallback)};`
+      `  --color-${k}: ${colorVar(
+        `--md-sys-color-${k}`,
+        formatColorValue(lightVal, colorFormat),
+        formatColorValue(darkVal, colorFormat),
+        fallback
+      )};`
     )
   }
   const systemLines = systemLinesList.join('\n')
@@ -64,26 +79,28 @@ export function exportTailwindV4(
       const darkContainerMap = new Map(darkCustomStates.containerStates)
       const darkOnContainerMap = new Map(darkCustomStates.onContainerStates)
 
+      const fmt = (hex: string) => formatColorValue(hex, colorFormat)
+
       return [
-        `  --color-${k}: ${colorVar(`--md-custom-color-${k}`, color.color, dark.color, fallback)};`,
+        `  --color-${k}: ${colorVar(`--md-custom-color-${k}`, fmt(color.color), fmt(dark.color), fallback)};`,
         ...lightCustomStates.colorStates.map(([state, lightHex]) => {
           const darkHex = darkColorMap.get(state) ?? lightHex
-          return `  --color-${k}-${state}: ${colorVar(`--md-custom-color-${k}-${state}`, lightHex, darkHex, fallback)};`
+          return `  --color-${k}-${state}: ${colorVar(`--md-custom-color-${k}-${state}`, fmt(lightHex), fmt(darkHex), fallback)};`
         }),
-        `  --color-on-${k}: ${colorVar(`--md-custom-color-on-${k}`, color.onColor, dark.onColor, fallback)};`,
+        `  --color-on-${k}: ${colorVar(`--md-custom-color-on-${k}`, fmt(color.onColor), fmt(dark.onColor), fallback)};`,
         ...lightCustomStates.onColorStates.map(([state, lightHex]) => {
           const darkHex = darkOnColorMap.get(state) ?? lightHex
-          return `  --color-on-${k}-${state}: ${colorVar(`--md-custom-color-on-${k}-${state}`, lightHex, darkHex, fallback)};`
+          return `  --color-on-${k}-${state}: ${colorVar(`--md-custom-color-on-${k}-${state}`, fmt(lightHex), fmt(darkHex), fallback)};`
         }),
-        `  --color-${k}-container: ${colorVar(`--md-custom-color-${k}-container`, color.colorContainer, dark.colorContainer, fallback)};`,
+        `  --color-${k}-container: ${colorVar(`--md-custom-color-${k}-container`, fmt(color.colorContainer), fmt(dark.colorContainer), fallback)};`,
         ...lightCustomStates.containerStates.map(([state, lightHex]) => {
           const darkHex = darkContainerMap.get(state) ?? lightHex
-          return `  --color-${k}-container-${state}: ${colorVar(`--md-custom-color-${k}-container-${state}`, lightHex, darkHex, fallback)};`
+          return `  --color-${k}-container-${state}: ${colorVar(`--md-custom-color-${k}-container-${state}`, fmt(lightHex), fmt(darkHex), fallback)};`
         }),
-        `  --color-on-${k}-container: ${colorVar(`--md-custom-color-on-${k}-container`, color.onColorContainer, dark.onColorContainer, fallback)};`,
+        `  --color-on-${k}-container: ${colorVar(`--md-custom-color-on-${k}-container`, fmt(color.onColorContainer), fmt(dark.onColorContainer), fallback)};`,
         ...lightCustomStates.onContainerStates.map(([state, lightHex]) => {
           const darkHex = darkOnContainerMap.get(state) ?? lightHex
-          return `  --color-on-${k}-container-${state}: ${colorVar(`--md-custom-color-on-${k}-container-${state}`, lightHex, darkHex, fallback)};`
+          return `  --color-on-${k}-container-${state}: ${colorVar(`--md-custom-color-on-${k}-container-${state}`, fmt(lightHex), fmt(darkHex), fallback)};`
         }),
       ]
     })

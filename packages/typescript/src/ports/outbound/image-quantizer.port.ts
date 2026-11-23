@@ -1,10 +1,20 @@
 /**
  * [Hexagonal Layer: Outbound Port]
- * 图像像素色彩量化与主题种子色显著性提取被驱动端契约 (单口单文件)
- * 约束：仅依赖 domain/models，零 DOM 依赖
+ * Image pixel color quantization and salient theme seed extraction contract (one port per file).
+ * Constraint: depends only on domain/models, zero DOM dependency.
  */
 
 import type { OKYCT } from '../../domain/models/index.ts'
+
+export const ImageQuantizerModes = ['hue-tone-grid', 'hue-histogram'] as const
+export type ImageQuantizerMode = (typeof ImageQuantizerModes)[number]
+
+export interface ExtractSeedsOptions {
+  maxColors?: number
+  mode?: ImageQuantizerMode
+  minHueDistance?: number
+  minToneDistance?: number
+}
 
 export interface ExtractedSeedColor {
   hex: string
@@ -20,5 +30,8 @@ export interface ImagePixelBuffer {
 }
 
 export interface IImageQuantizerPort {
-  extractSeedsFromImageData(imageData: ImagePixelBuffer, maxColors?: number): ExtractedSeedColor[]
+  extractSeedsFromImageData(
+    imageData: ImagePixelBuffer,
+    options?: ExtractSeedsOptions
+  ): ExtractedSeedColor[]
 }

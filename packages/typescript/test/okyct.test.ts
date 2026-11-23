@@ -1,5 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { scanSourceModules } from '../scripts/verify-architecture.ts'
 import {
   TonalPalette,
   analyzeEmissiveSchemeMetrics,
@@ -38,9 +41,15 @@ import {
 } from '../src/index.ts'
 import { applyBlueBurnInGuard } from '../src/adapters/driven-emissive-oled/index.ts'
 
-test('hexagonal architecture boundaries verify cleanly', () => {
-  const result = verifyHexagonalArchitectureBoundaries()
-  assert.equal(result.passed, true)
+test('hexagonal architecture boundaries verify cleanly against real src/ import graph', () => {
+  const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src')
+  const modules = scanSourceModules(srcRoot)
+  const result = verifyHexagonalArchitectureBoundaries(modules)
+  assert.equal(result.passed, true, result.violations.map((v) => v.message).join('\n'))
+  assert.ok(result.filesScanned > 80, `expected > 80 source files scanned, got ${result.filesScanned}`)
+  assert.equal(result.modelsCount, 12)
+  assert.equal(result.inboundPortsCount, 3)
+  assert.equal(result.outboundPortsCount, 3)
 })
 
 test('built-in colorimetric invariant suite passes with zero violations', () => {
@@ -500,4 +509,27 @@ test('ADR-001/002/003/005/006: oklch CSS, ABL guard, WOLED, linear CVD, ambient 
   assert.throws(() => simulateCvd('not-a-hex', 'deuteranopia', 0))
   assert.throws(() => auditSchemeCvd(lightStandard, { cvdTypes: ['none' as never] }))
   assert.throws(() => auditSchemeCvd(lightStandard, { minDeltaE: -0.1 }))
+})
+
+test('wide-gamut display-p3 theme preserves luminance contrast while expanding chroma and CSS Color 4 exports', () => {
+  const srgbTheme = createTheme({ sourceHex: '#00E676', variant: 'vibrant', gamut: 'srgb', softKnee: false })
+  const p3Theme = createTheme({ sourceHex: '#00E676', variant: 'vibrant', gamut: 'display-p3', softKnee: false })
+
+  assert.equal(p3Theme.palettes.primary.gamut, 'display-p3')
+  assert.ok(
+    p3Theme.schemes.dark.okyct.primary.c >= srgbTheme.schemes.dark.okyct.primary.c,
+    'display-p3 scheme chroma should be >= sRGB chroma'
+  )
+  assert.ok(
+    Math.abs(p3Theme.schemes.dark.okyct.primary.t - p3Theme.schemes.dark.tones.primary) < 0.05,
+    'display-p3 OKYCT tone must match contrast-verified scheme tone'
+  )
+
+  const cssP3 = p3Theme.export('css', { colorFormat: 'display-p3' })
+  assert.match(cssP3, /--md-ref-palette-primary-40: color\(display-p3 /)
+  assert.match(cssP3, /--md-sys-color-primary: light-dark\(color\(display-p3 /)
+
+  const cssOklch = p3Theme.export('css', { colorFormat: 'oklch' })
+  assert.match(cssOklch, /--md-ref-palette-primary-40: oklch\(/)
+  assert.match(cssOklch, /--md-sys-color-primary: light-dark\(oklch\(/)
 })

@@ -8,7 +8,7 @@ test('driven-image-quantizer barrel exports extractSeedsFromImageData', () => {
     37, 99, 235, 255,
     16, 185, 129, 255,
   ])
-  const seeds = extractSeedsFromImageData({ width: 3, height: 1, data }, 2)
+  const seeds = extractSeedsFromImageData({ width: 3, height: 1, data }, { maxColors: 2 })
   assert.ok(seeds.length >= 1)
   assert.match(seeds[0].hex, /^#[0-9a-f]{6}$/i)
 })
