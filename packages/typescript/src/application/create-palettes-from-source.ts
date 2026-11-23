@@ -4,7 +4,7 @@ import {
   type CreatePalettesOptions,
   type PaletteVariant,
   type TonalPaletteOptions,
-} from '../ports/inbound/palette-generation.port.ts'
+} from '../ports/index.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
 import { isWarmHue } from './is-warm-hue.ts'
 import type { PaletteSet } from './palette-set.ts'

@@ -16,7 +16,7 @@ import type {
   CvdSeparabilityAuditItem,
   DynamicSchemeColors,
   SystemColorToken,
-} from '../ports/inbound/scheme-building.port.ts'
+} from '../ports/index.ts'
 
 const DefaultCvdTypes: readonly Exclude<CvdType, 'none'>[] = [
   'protanopia',

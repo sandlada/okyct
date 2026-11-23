@@ -22,12 +22,27 @@ export const nestTokens = (delimiter = '-') => {
   return (dict: TokenSource): Record<string, unknown> => {
     const normalized = normalizeTokenDict(dict)
     const root: Record<string, unknown> = {}
+    const valueSlotSources = new Map<string, string>()
     for (const [key, val] of Object.entries(normalized)) {
       const parts = key.replace(/^--/, '').split(delimiter).filter((part) => part.length > 0)
-      if (parts.length === 0) continue
+      if (parts.length === 0) {
+        throw new Error(`Invalid token key "${key}" for nestTokens: produces no path segments.`)
+      }
       if (parts.some((part) => ForbiddenSegmentKeys.has(part))) {
         throw new Error(`Forbidden token key segment in "${key}".`)
       }
+
+      const valueSlot =
+        parts[parts.length - 1] === LeafKey
+          ? parts.join('\0')
+          : `${parts.join('\0')}\0${LeafKey}`
+      const existingSource = valueSlotSources.get(valueSlot)
+      if (existingSource !== undefined) {
+        throw new Error(
+          `Token path collision in nestTokens("${delimiter}"): "${existingSource}" and "${key}" map to the same path "${parts.join('.')}".`
+        )
+      }
+      valueSlotSources.set(valueSlot, key)
 
       let current = root
       for (let i = 0; i < parts.length; i++) {

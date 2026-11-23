@@ -40,3 +40,29 @@ test('TonalPalette enforces bounded LRU cache size', () => {
   uncached.toneOkyct(40)
   assert.equal(uncached.cacheSize, 0)
 })
+
+test('TonalPalette cache keys match actual continuous tone inputs regardless of query order', () => {
+  const forward = new TonalPalette(260, 0.2)
+  const reverse = new TonalPalette(260, 0.2)
+  const uncached = new TonalPalette(260, 0.2, { maxCacheSize: 0 })
+
+  const f1 = forward.toneOkyct(50.0001)
+  const f2 = forward.toneOkyct(50.0004)
+  const r2 = reverse.toneOkyct(50.0004)
+  const r1 = reverse.toneOkyct(50.0001)
+
+  assert.deepEqual(f1, uncached.toneOkyct(50.0001))
+  assert.deepEqual(f2, uncached.toneOkyct(50.0004))
+  assert.deepEqual(f1, r1)
+  assert.deepEqual(f2, r2)
+  assert.notEqual(f1.t, f2.t)
+
+  const hFwd1 = forward.tone(50.1)
+  const hFwd2 = forward.tone(50.1004)
+  const hRev2 = reverse.tone(50.1004)
+  const hRev1 = reverse.tone(50.1)
+  assert.equal(hFwd1, uncached.tone(50.1))
+  assert.equal(hFwd2, uncached.tone(50.1004))
+  assert.equal(hFwd1, hRev1)
+  assert.equal(hFwd2, hRev2)
+})

@@ -1,4 +1,4 @@
-import type { InvariantTestResult } from '../models/index.ts'
+import type { InvariantTestResult, RGB } from '../models/index.ts'
 import { findMaxChromaForTone } from './find-max-chroma-for-tone.ts'
 import { getApcaContrast } from './get-apca-contrast.ts'
 import { getContrastRatio } from './get-contrast-ratio.ts'
@@ -9,8 +9,21 @@ import { rgbToOkyct } from './rgb-to-okyct.ts'
 import { shortestHueDelta } from './shortest-hue-delta.ts'
 import { solveTonesForApca } from './solve-tones-for-apca.ts'
 import { solveTonesForContrast } from './solve-tones-for-contrast.ts'
+import { srgbToLinear } from './srgb-to-linear.ts'
 import { toneToY } from './tone-to-y.ts'
 import { yToTone } from './y-to-tone.ts'
+import { xyzToOklab } from './internal/xyz-to-oklab.ts'
+
+function srgbToOklab(rgb: RGB) {
+  const rl = srgbToLinear(rgb.r)
+  const gl = srgbToLinear(rgb.g)
+  const bl = srgbToLinear(rgb.b)
+  return xyzToOklab({
+    x: 0.4124564 * rl + 0.3575761 * gl + 0.1804375 * bl,
+    y: 0.2126729 * rl + 0.7151522 * gl + 0.0721750 * bl,
+    z: 0.0193339 * rl + 0.1191920 * gl + 0.9503041 * bl,
+  })
+}
 
 const HexRoundTripSeeds = ['#2563EB', '#0000FF', '#FF0000', '#FFD600', '#FF00FF'] as const
 const HexRoundTripTones = [10, 20, 30, 40, 50, 60, 70, 80, 90, 95] as const
@@ -34,12 +47,14 @@ function tonalStopHex(sourceHue: number, targetChroma: number, tone: number): st
 
 export function runColorimetricInvariantSuite(): InvariantTestResult[] {
   let maxRoundTripError = 0
+  let maxRoundTripDeltaEOk = 0
   let roundTripSamples = 0
   const SampleSteps = [0, 0.2, 0.4, 0.6, 0.8, 1.0]
   for (const r of SampleSteps) {
     for (const g of SampleSteps) {
       for (const b of SampleSteps) {
-        const okyct = rgbToOkyct({ r, g, b })
+        const sourceRgb = { r, g, b }
+        const okyct = rgbToOkyct(sourceRgb)
         const restored = okyctToRgb(okyct)
         const err = Math.max(
           Math.abs(r - restored.r),
@@ -47,6 +62,10 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
           Math.abs(b - restored.b)
         )
         if (err > maxRoundTripError) maxRoundTripError = err
+        const labSrc = srgbToOklab(sourceRgb)
+        const labDst = srgbToOklab(restored)
+        const deltaEOk = Math.hypot(labDst.L - labSrc.L, labDst.a - labSrc.a, labDst.b - labSrc.b)
+        if (deltaEOk > maxRoundTripDeltaEOk) maxRoundTripDeltaEOk = deltaEOk
         roundTripSamples++
       }
     }
@@ -138,9 +157,9 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
     {
       id: 'round-trip',
       name: 'sRGB <-> OKYCT Bidirectional Round-Trip Accuracy',
-      formula: 'max |RGB - okyctToRgb(rgbToOkyct(RGB))|',
-      passed: maxRoundTripError < 1e-4,
-      measuredValue: maxRoundTripError.toExponential(2),
+      formula: 'max |ΔRGB| & max ΔE_OK(sRGB, okyctToRgb(rgbToOkyct(sRGB)))',
+      passed: maxRoundTripError < 1e-4 && maxRoundTripDeltaEOk < 1e-4,
+      measuredValue: `ΔRGB_max = ${maxRoundTripError.toExponential(2)}, ΔE_OK_max = ${maxRoundTripDeltaEOk.toExponential(2)}`,
       threshold: '< 1.00e-4',
       samplesChecked: roundTripSamples,
       details: 'Verifies single-variable Newton-Raphson dY/dL convergence across the full sRGB cube.',
@@ -169,9 +188,9 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
       id: 'cusp-containment',
       name: '360° Gamut Containment & Zero Hue Drift',
       formula: 'C=0.38 under preserve-tone & cusp-compress: ΔHue & channel bounds',
-      passed: gamutOverflowCount === 0 && maxHueDriftDeg < 0.5,
+      passed: gamutOverflowCount === 0 && maxHueDriftDeg < 0.1,
       measuredValue: `ΔH_max = ${maxHueDriftDeg.toFixed(3)}° (overflows: ${gamutOverflowCount})`,
-      threshold: 'ΔH < 0.500°',
+      threshold: 'ΔH < 0.100°',
       samplesChecked: gamutSamples,
       details: 'Ensures out-of-gamut colors stay strictly inside [0, 1] RGB with negligible hue rotation.',
     },

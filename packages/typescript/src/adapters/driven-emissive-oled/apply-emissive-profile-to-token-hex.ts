@@ -1,6 +1,6 @@
 
 import { hexToOkyct, okyctToHex } from '../../domain/index.ts'
-import { EmissivePanelTypes, type EmissivePanelType } from '../../ports/outbound/display-physics.port.ts'
+import { EmissivePanelTypes, type EmissivePanelType } from '../../ports/index.ts'
 import { EmissivePanelSpecs } from './emissive-panel-specs.ts'
 import { applyBlueBurnInGuard } from './apply-blue-burn-in-guard.ts'
 import { applySubpixelEdgeCompensation } from './internal/apply-subpixel-edge-compensation.ts'

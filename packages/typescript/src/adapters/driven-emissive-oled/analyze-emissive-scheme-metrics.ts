@@ -1,12 +1,36 @@
 
-import { hexToOkyct, getContrastRatio } from '../../domain/index.ts'
-import type { DynamicSchemeColors } from '../../ports/inbound/scheme-building.port.ts'
-import type { EmissivePanelType, SchemeEmissiveReport } from '../../ports/outbound/display-physics.port.ts'
+import { hexToOkyct } from '../../domain/index.ts'
+import { auditSchemeContrast } from '../../application/index.ts'
+import type {
+  DynamicSchemeColors,
+  EmissivePanelType,
+  SchemeEmissiveReport,
+  SystemColorToken,
+} from '../../ports/index.ts'
 import { EmissivePanelSpecs } from './emissive-panel-specs.ts'
 import { computeColorEmissiveTelemetry } from './compute-color-emissive-telemetry.ts'
 
 const BackplaneStaticMw = 95
 const LcdConstantBacklightMw = 540
+
+function computeMinTextWcagContrast(scheme: DynamicSchemeColors): {
+  minWcag: number
+  fgRole: SystemColorToken
+  bgRole: SystemColorToken
+} {
+  const textAudits = auditSchemeContrast(scheme).filter((item) => item.fgRole !== 'outline')
+  let lowest = textAudits[0]!
+  for (const item of textAudits) {
+    if (item.wcagRatio < lowest.wcagRatio) {
+      lowest = item
+    }
+  }
+  return {
+    minWcag: Math.round(lowest.wcagRatio * 100) / 100,
+    fgRole: lowest.fgRole,
+    bgRole: lowest.bgRole,
+  }
+}
 
 const UiAreaWeights: ReadonlyArray<{ role: keyof DynamicSchemeColors; weight: number }> = [
   { role: 'surface', weight: 0.42 },
@@ -37,10 +61,7 @@ export function analyzeEmissiveSchemeMetrics(
       weightedBlueStress += t.blueStressIndex * item.weight
     }
 
-    const minContrast = Math.min(
-      getContrastRatio(scheme.tones.onPrimary, scheme.tones.primary),
-      getContrastRatio(scheme.tones.onSurface, scheme.tones.surface)
-    )
+    const contrastFloor = computeMinTextWcagContrast(scheme)
 
     return {
       profile,
@@ -55,7 +76,11 @@ export function analyzeEmissiveSchemeMetrics(
       blackSmearRisk: 'None',
       pentileFringingRisk: 'Low',
       pixelOffRatioPct: 0,
-      minWcagContrastAfterOpt: Math.round(minContrast * 100) / 100,
+      minWcagContrastAfterOpt: contrastFloor.minWcag,
+      minWcagContrastPair: {
+        fgRole: contrastFloor.fgRole,
+        bgRole: contrastFloor.bgRole,
+      },
     }
   }
 
@@ -121,10 +146,7 @@ export function analyzeEmissiveSchemeMetrics(
       ? 'Elevated'
       : 'Low'
 
-  const minContrast = Math.min(
-    getContrastRatio(scheme.tones.onPrimary, scheme.tones.primary),
-    getContrastRatio(scheme.tones.onSurface, scheme.tones.surface)
-  )
+  const contrastFloor = computeMinTextWcagContrast(scheme)
 
   return {
     profile,
@@ -143,6 +165,10 @@ export function analyzeEmissiveSchemeMetrics(
     blackSmearRisk,
     pentileFringingRisk,
     pixelOffRatioPct: Math.round(pixelOffArea * 100),
-    minWcagContrastAfterOpt: Math.round(minContrast * 100) / 100,
+    minWcagContrastAfterOpt: contrastFloor.minWcag,
+    minWcagContrastPair: {
+      fgRole: contrastFloor.fgRole,
+      bgRole: contrastFloor.bgRole,
+    },
   }
 }

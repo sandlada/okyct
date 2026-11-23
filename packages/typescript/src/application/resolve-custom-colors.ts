@@ -12,7 +12,7 @@ import {
   type CustomColorInput,
   type ResolveCustomColorsOptions,
   type ResolvedCustomColor,
-} from '../ports/inbound/scheme-building.port.ts'
+} from '../ports/index.ts'
 import { harmonizeHex } from './harmonize-hex.ts'
 import { compositeGuardedStateHex } from './internal/composite-guarded-state-hex.ts'
 import { formatStateLayerKey, normalizeStateLayerStates } from './internal/scheme-token-role-map.ts'

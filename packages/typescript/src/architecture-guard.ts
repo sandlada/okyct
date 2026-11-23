@@ -73,6 +73,8 @@ export const ArchitectureViolationRules = [
   'internal-barrel-reexport',
   'missing-ts-extension',
   'root-dependency-from-layer',
+  'cross-layer-non-barrel-import',
+  'ports-domain-services-import',
 ] as const
 export type ArchitectureViolationRule = (typeof ArchitectureViolationRules)[number]
 
@@ -225,6 +227,27 @@ export function verifyHexagonalArchitectureBoundaries(
               rule: 'forbidden-layer-dependency',
               message: `Layer "${fromLayer}" (${file}) is forbidden from importing layer "${toLayer}" (${target}).`,
             })
+          } else {
+            if (
+              fromLayer === 'ports' &&
+              toLayer === 'domain' &&
+              (target === 'domain/index.ts' || target.startsWith('domain/services/'))
+            ) {
+              violations.push({
+                file,
+                specifier,
+                rule: 'ports-domain-services-import',
+                message: `Ports module "${file}" must only depend on domain/models/index.ts, not "${target}".`,
+              })
+            }
+            if (!target.endsWith('/index.ts') && target !== 'index.ts') {
+              violations.push({
+                file,
+                specifier,
+                rule: 'cross-layer-non-barrel-import',
+                message: `Cross-layer import in "${file}" (${fromLayer}) must target a public barrel (index.ts), got "${target}" (${toLayer}).`,
+              })
+            }
           }
         }
       }

@@ -18,3 +18,13 @@ test('DefaultEmissivePanelSpecs defines specs for every EmissivePanelType', () =
   assert.equal(DefaultEmissivePanelSpecs['amoled-anti-smear'].darkSurfaceTones.surface, 4)
   assert.equal(DefaultEmissivePanelSpecs['micro-oled-xr'].lightPeakToneCap, 92)
 })
+
+test('DefaultEmissivePanelSpecs is deeply frozen against runtime mutation', () => {
+  assert.equal(Object.isFrozen(DefaultEmissivePanelSpecs), true)
+  assert.equal(Object.isFrozen(DefaultEmissivePanelSpecs['standard-lcd']), true)
+  assert.equal(Object.isFrozen(DefaultEmissivePanelSpecs['standard-lcd'].darkSurfaceTones), true)
+  assert.throws(() => {
+    ;(DefaultEmissivePanelSpecs['standard-lcd'].darkSurfaceTones as { surface: number }).surface = 99
+  }, TypeError)
+  assert.equal(DefaultEmissivePanelSpecs['standard-lcd'].darkSurfaceTones.surface, 6)
+})

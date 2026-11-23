@@ -11,6 +11,7 @@ import {
 } from '../../ports/index.ts'
 import type { CssColorFormat } from '../../domain/index.ts'
 import { formatColorValue, formatSchemeToken, resolveExportColorFormat } from './internal/format-export-color.ts'
+import { registerTokenKey } from './internal/assert-no-token-collision.ts'
 import { kebabCase } from './internal/kebab-case.ts'
 import {
   resolveCustomStateLayersForExport,
@@ -86,9 +87,14 @@ export function exportCssVariables(
 
   const formatCustomEntries = (customs: readonly ResolvedCustomColor[], indent = '  ') => {
     if (customs.length === 0) return ''
-    const lines = customs.flatMap((c) =>
-      customTuple(c, colorFormat, stateLayers).map(([name, value]) => `${indent}${name}: ${value};`)
-    )
+    const customKeys = new Map<string, string>()
+    const lines = customs.flatMap((c) => {
+      const sourceLabel = `custom color "${c.name}"`
+      return customTuple(c, colorFormat, stateLayers).map(([name, value]) => {
+        registerTokenKey(customKeys, name, sourceLabel, 'exportCssVariables')
+        return `${indent}${name}: ${value};`
+      })
+    })
     return `\n\n  /* -------------------------------------------------------------\n     Custom Extended Semantic Colors\n     ------------------------------------------------------------- */\n${lines.join('\n')}`
   }
 
@@ -129,10 +135,13 @@ ${paletteEntries('  ')}`
       )
     }
     const systemLines = systemLinesList.join('\n')
+    const customKeys = new Map<string, string>()
     const customLines = customColorsLight.flatMap((color) => {
       const dark = darkByName.get(color.name) ?? color
       const darkSlots = new Map(customTuple(dark, colorFormat, stateLayers))
+      const sourceLabel = `custom color "${color.name}"`
       return customTuple(color, colorFormat, stateLayers).map(([name, value]) => {
+        registerTokenKey(customKeys, name, sourceLabel, 'exportCssVariables')
         const darkValue = darkSlots.get(name) ?? value
         return `  ${name}: light-dark(${value}, ${darkValue});`
       })

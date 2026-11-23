@@ -18,11 +18,11 @@ import {
   type DynamicSchemeColors,
   type EmissivePanelType,
   type SystemColorToken,
-} from '../ports/inbound/scheme-building.port.ts'
+} from '../ports/index.ts'
 import {
   DefaultEmissivePanelSpecs,
   type IDisplayPhysicsPort,
-} from '../ports/outbound/display-physics.port.ts'
+} from '../ports/index.ts'
 import { refineToneForContrast } from './internal/refine-tone-for-contrast.ts'
 import { SchemeTokenRoleMap, normalizeStateLayerStates, type SchemeRoleKind } from './internal/scheme-token-role-map.ts'
 import type { PaletteSet } from './palette-set.ts'

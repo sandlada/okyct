@@ -3,7 +3,7 @@ import type {
   ContrastAuditItem,
   DynamicSchemeColors,
   SystemColorToken,
-} from '../ports/inbound/scheme-building.port.ts'
+} from '../ports/index.ts'
 
 export function auditSchemeContrast(scheme: DynamicSchemeColors): ContrastAuditItem[] {
   const pairs: ReadonlyArray<{

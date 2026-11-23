@@ -5,14 +5,23 @@ import { isInGamut } from './is-in-gamut.ts'
 import type { GamutTarget, OKYCT } from '../models/index.ts'
 
 describe('isInGamut', () => {
-  it('returns black and white fast-paths at Tone <= 0.001 and Tone >= 99.999', () => {
-    const atZero = isInGamut({ h: 250, c: 0.4, t: 0.0005 })
-    assert.equal(atZero.inGamut, true)
-    assert.deepEqual(atZero.rgb, { r: 0, g: 0, b: 0 })
+  it('handles achromatic black/white endpoints and marks chromatic endpoints out-of-gamut', () => {
+    const achromaticZero = isInGamut({ h: 250, c: 0, t: 0 })
+    assert.equal(achromaticZero.inGamut, true)
+    assert.deepEqual(achromaticZero.rgb, { r: 0, g: 0, b: 0 })
 
-    const atHundred = isInGamut({ h: 250, c: 0.4, t: 99.9995 })
-    assert.equal(atHundred.inGamut, true)
-    assert.deepEqual(atHundred.rgb, { r: 1, g: 1, b: 1 })
+    const achromaticHundred = isInGamut({ h: 250, c: 0, t: 100 })
+    assert.equal(achromaticHundred.inGamut, true)
+    assert.deepEqual(achromaticHundred.rgb, { r: 1, g: 1, b: 1 })
+
+    for (const gamut of ['srgb', 'display-p3'] as const) {
+      assert.equal(isInGamut({ h: 260, c: 0.3, t: 0 }, { gamut }).inGamut, false)
+      assert.equal(isInGamut({ h: 260, c: 0.3, t: 0.0005 }, { gamut }).inGamut, false)
+      assert.equal(isInGamut({ h: 260, c: 0.3, t: 0.002 }, { gamut }).inGamut, false)
+      assert.equal(isInGamut({ h: 260, c: 0.3, t: 99.998 }, { gamut }).inGamut, false)
+      assert.equal(isInGamut({ h: 260, c: 0.3, t: 99.9995 }, { gamut }).inGamut, false)
+      assert.equal(isInGamut({ h: 260, c: 0.3, t: 100 }, { gamut }).inGamut, false)
+    }
   })
 
   it('detects in-gamut and out-of-gamut colors for default srgb and display-p3', () => {

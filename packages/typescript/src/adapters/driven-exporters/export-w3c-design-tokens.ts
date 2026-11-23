@@ -5,6 +5,7 @@ import {
   type ResolvedCustomColor,
 } from '../../ports/index.ts'
 import { formatColorValue, formatSchemeToken, resolveExportColorFormat } from './internal/format-export-color.ts'
+import { registerTokenKey } from './internal/assert-no-token-collision.ts'
 import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
@@ -38,7 +39,9 @@ export function exportW3cDesignTokens(
 
   const buildGroup = (scheme: DynamicSchemeColors, customs: readonly ResolvedCustomColor[]): W3cDesignTokenGroup => {
     const group: W3cDesignTokenGroup = {}
+    const groupKeys = new Map<string, string>()
     for (const k of SystemColorTokens) {
+      registerTokenKey(groupKeys, k, `system role "${k}"`, 'exportW3cDesignTokens')
       group[k] = {
         $value: formatSchemeToken(scheme, k, colorFormat),
         $type: 'color',
@@ -46,6 +49,7 @@ export function exportW3cDesignTokens(
       }
     }
     for (const [stateKey, stateHex] of resolveSystemStateLayersForExport(scheme, stateLayers)) {
+      registerTokenKey(groupKeys, stateKey, `system state layer "${stateKey}"`, 'exportW3cDesignTokens')
       group[stateKey] = {
         $value: formatColorValue(stateHex, colorFormat),
         $type: 'color',
@@ -53,6 +57,7 @@ export function exportW3cDesignTokens(
       }
     }
     for (const c of customs) {
+      registerTokenKey(groupKeys, c.name, `custom color "${c.name}"`, 'exportW3cDesignTokens')
       const { colorStates, onColorStates, containerStates, onContainerStates } =
         resolveCustomStateLayersForExport(c, stateLayers)
       const fmt = (hex: string) => formatColorValue(hex, colorFormat)

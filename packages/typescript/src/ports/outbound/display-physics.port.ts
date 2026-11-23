@@ -9,6 +9,7 @@ import {
   type EmissivePanelType,
   type EmissiveSchemeOptions,
   type DynamicSchemeColors,
+  type SystemColorToken,
 } from '../inbound/scheme-building.port.ts'
 
 export { EmissivePanelTypes, type EmissivePanelType, type EmissiveSchemeOptions }
@@ -17,27 +18,37 @@ export const SubpixelGeometries = ['rgb-stripe', 'diamond-pentile', 'micro-oled-
 export type SubpixelGeometry = (typeof SubpixelGeometries)[number]
 
 export interface EmissivePanelSpec {
-  id: EmissivePanelType
-  name: string
-  shortName: string
-  badge: string
-  subpixelGeometry: SubpixelGeometry
-  geometryLabel: string
-  description: string
-  darkSurfaceTones: {
-    lowest: number
-    surface: number
-    low: number
-    container: number
-    high: number
-    highest: number
-    bright: number
+  readonly id: EmissivePanelType
+  readonly name: string
+  readonly shortName: string
+  readonly badge: string
+  readonly subpixelGeometry: SubpixelGeometry
+  readonly geometryLabel: string
+  readonly description: string
+  readonly darkSurfaceTones: {
+    readonly lowest: number
+    readonly surface: number
+    readonly low: number
+    readonly container: number
+    readonly high: number
+    readonly highest: number
+    readonly bright: number
   }
-  lightPeakToneCap: number
-  smearRiseTimeMs: number
+  readonly lightPeakToneCap: number
+  readonly smearRiseTimeMs: number
 }
 
-export const DefaultEmissivePanelSpecs: Record<EmissivePanelType, EmissivePanelSpec> = {
+function deepFreezePanelSpecs<T extends object>(obj: T): Readonly<T> {
+  for (const value of Object.values(obj)) {
+    if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
+      deepFreezePanelSpecs(value as object)
+    }
+  }
+  return Object.freeze(obj)
+}
+
+export const DefaultEmissivePanelSpecs: Readonly<Record<EmissivePanelType, EmissivePanelSpec>> =
+  deepFreezePanelSpecs({
   'standard-lcd': {
     id: 'standard-lcd',
     name: 'Standard IPS / Mini-LED LCD',
@@ -143,7 +154,7 @@ export const DefaultEmissivePanelSpecs: Record<EmissivePanelType, EmissivePanelS
     lightPeakToneCap: 98,
     smearRiseTimeMs: 0.3,
   },
-}
+})
 
 export interface ColorEmissiveTelemetry {
   hex: string
@@ -176,6 +187,10 @@ export interface SchemeEmissiveReport {
   pentileFringingRisk: 'Low' | 'Controlled' | 'Elevated'
   pixelOffRatioPct: number
   minWcagContrastAfterOpt: number
+  readonly minWcagContrastPair: {
+    readonly fgRole: SystemColorToken
+    readonly bgRole: SystemColorToken
+  }
 }
 
 export interface IDisplayPhysicsPort {

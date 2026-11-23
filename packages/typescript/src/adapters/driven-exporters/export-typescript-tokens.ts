@@ -6,6 +6,7 @@ import {
 } from '../../ports/index.ts'
 import type { CssColorFormat } from '../../domain/index.ts'
 import { formatColorValue, formatSchemeToken, resolveExportColorFormat } from './internal/format-export-color.ts'
+import { registerTokenKey } from './internal/assert-no-token-collision.ts'
 import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
@@ -44,8 +45,10 @@ export function exportTypeScriptTokens(
 
   const buildCustomMap = (customs: readonly ResolvedCustomColor[]) => {
     const res: Record<string, Record<string, string>> = {}
+    const customKeys = new Map<string, string>()
     const fmt = (hex: string) => formatColorValue(hex, colorFormat)
     for (const c of customs) {
+      registerTokenKey(customKeys, c.name, `custom color "${c.name}"`, 'exportTypeScriptTokens')
       const entry: Record<string, string> = {
         color: fmt(c.color),
         onColor: fmt(c.onColor),

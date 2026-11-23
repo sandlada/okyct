@@ -45,18 +45,31 @@ export function toTokenDictionary(
 
   const includeStateLayers = options.includeStateLayers ?? true
   const dict: TokenDictionary = {}
+  const keySources = new Map<string, string>()
+
+  const assignToken = (key: string, value: string, sourceLabel: string) => {
+    const existing = keySources.get(key)
+    if (existing !== undefined) {
+      throw new Error(
+        `Token key collision in toTokenDictionary: "${key}" from ${sourceLabel} conflicts with ${existing}.`
+      )
+    }
+    keySources.set(key, sourceLabel)
+    dict[key] = value
+  }
+
   for (const key of SystemColorTokens) {
     const value = scheme[key]
     if (typeof value !== 'string') {
       throw new Error(`Invalid scheme color for token "${key}": expected string, received ${typeof value}.`)
     }
-    dict[key] = value
+    assignToken(key, value, `system role "${key}"`)
   }
 
   if (includeStateLayers && scheme.stateLayers) {
     for (const [stateKey, stateHex] of Object.entries(scheme.stateLayers)) {
       if (typeof stateHex === 'string') {
-        dict[stateKey] = stateHex
+        assignToken(stateKey, stateHex, `system state layer "${stateKey}"`)
       }
     }
   }
@@ -65,27 +78,28 @@ export function toTokenDictionary(
     if (custom === null || typeof custom !== 'object') {
       throw new Error('Invalid custom color entry: expected a ResolvedCustomColor object.')
     }
+    const sourceLabel = `custom color "${custom.name}"`
     const [baseKey, onKey, containerKey, onContainerKey] = customRoleKeys(custom.name)
-    dict[baseKey] = custom.color
-    dict[onKey] = custom.onColor
-    dict[containerKey] = custom.colorContainer
-    dict[onContainerKey] = custom.onColorContainer
+    assignToken(baseKey, custom.color, sourceLabel)
+    assignToken(onKey, custom.onColor, sourceLabel)
+    assignToken(containerKey, custom.colorContainer, sourceLabel)
+    assignToken(onContainerKey, custom.onColorContainer, sourceLabel)
 
     if (includeStateLayers && custom.stateLayers) {
       for (const [roleStateKey, stateHex] of Object.entries(custom.stateLayers)) {
         if (typeof stateHex !== 'string') continue
         if (roleStateKey.startsWith('colorContainer')) {
           const suffix = roleStateKey.slice('colorContainer'.length)
-          dict[`${containerKey}${suffix}`] = stateHex
+          assignToken(`${containerKey}${suffix}`, stateHex, sourceLabel)
         } else if (roleStateKey.startsWith('onColorContainer')) {
           const suffix = roleStateKey.slice('onColorContainer'.length)
-          dict[`${onContainerKey}${suffix}`] = stateHex
+          assignToken(`${onContainerKey}${suffix}`, stateHex, sourceLabel)
         } else if (roleStateKey.startsWith('onColor')) {
           const suffix = roleStateKey.slice('onColor'.length)
-          dict[`${onKey}${suffix}`] = stateHex
+          assignToken(`${onKey}${suffix}`, stateHex, sourceLabel)
         } else if (roleStateKey.startsWith('color')) {
           const suffix = roleStateKey.slice('color'.length)
-          dict[`${baseKey}${suffix}`] = stateHex
+          assignToken(`${baseKey}${suffix}`, stateHex, sourceLabel)
         }
       }
     }

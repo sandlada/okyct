@@ -9,3 +9,10 @@ test('renameCase transforms keys to kebab, camel, snake, and constant case', () 
   assert.deepEqual(renameCase('constant')(dict), { ON_PRIMARY_CONTAINER: '#DBEAFE' })
   assert.deepEqual(renameCase('camel')({ 'on-primary-container': '#DBEAFE' }), dict)
 })
+
+test('renameCase throws when distinct keys collapse to the same transformed key', () => {
+  assert.throws(
+    () => renameCase('kebab')({ brandBlue: 'red', 'brand-blue': 'blue' }),
+    /Token key collision/
+  )
+})

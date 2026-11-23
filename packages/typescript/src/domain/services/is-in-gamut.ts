@@ -36,8 +36,8 @@ export function isInGamut(
     )
   }
 
-  if (t <= 0.001) return { inGamut: true, rgb: { r: 0, g: 0, b: 0 } }
-  if (t >= 99.999) return { inGamut: true, rgb: { r: 1, g: 1, b: 1 } }
+  if (t <= 0.001 && c <= GamutTolerance) return { inGamut: true, rgb: { r: 0, g: 0, b: 0 } }
+  if (t >= 99.999 && c <= GamutTolerance) return { inGamut: true, rgb: { r: 1, g: 1, b: 1 } }
 
   const targetY = toneToY(t)
   const rad = (h * Math.PI) / 180

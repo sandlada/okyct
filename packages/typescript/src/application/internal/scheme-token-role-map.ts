@@ -6,7 +6,7 @@ import {
   type StatefulSystemColorToken,
   type SystemColorToken,
   type SystemStateLayerToken,
-} from '../../ports/inbound/scheme-building.port.ts'
+} from '../../ports/index.ts'
 import type { PaletteSet } from '../palette-set.ts'
 
 export type SchemeRoleKind = 'surface' | 'foreground' | 'accent'

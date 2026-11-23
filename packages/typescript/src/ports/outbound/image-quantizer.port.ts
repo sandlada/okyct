@@ -21,6 +21,7 @@ export interface ExtractedSeedColor {
   okyct: OKYCT
   populationRatio: number
   salienceScore: number
+  readonly isFallback?: boolean
 }
 
 export interface ImagePixelBuffer {

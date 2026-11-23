@@ -44,8 +44,17 @@ export const renameCase = (targetCase: NamingCase) => {
   return (dict: TokenSource): TokenDictionary => {
     const normalized = normalizeTokenDict(dict)
     const result: TokenDictionary = {}
+    const seenSources = new Map<string, string>()
     for (const [key, val] of Object.entries(normalized)) {
-      result[transform(key)] = val
+      const nextKey = transform(key)
+      const prev = seenSources.get(nextKey)
+      if (prev !== undefined) {
+        throw new Error(
+          `Token key collision in renameCase("${targetCase}"): "${prev}" and "${key}" both map to "${nextKey}".`
+        )
+      }
+      seenSources.set(nextKey, key)
+      result[nextKey] = val
     }
     return result
   }

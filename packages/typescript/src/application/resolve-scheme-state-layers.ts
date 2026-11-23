@@ -4,7 +4,7 @@ import {
   type SchemeStateLayerTokens,
   type StateLayerBlendSpace,
   type StateLayersOption,
-} from '../ports/inbound/scheme-building.port.ts'
+} from '../ports/index.ts'
 import { compositeGuardedStateHex } from './internal/composite-guarded-state-hex.ts'
 import {
   StatefulTokenOverlayMap,

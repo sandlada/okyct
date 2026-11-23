@@ -1,11 +1,11 @@
-import { rgbToOkyct, okyctToHex, shortestHueDelta } from '../../domain/index.ts'
+import { hexToOkyct, rgbToOkyct, okyctToHex, shortestHueDelta } from '../../domain/index.ts'
 import {
   ImageQuantizerModes,
   type ExtractedSeedColor,
   type ExtractSeedsOptions,
   type ImagePixelBuffer,
   type ImageQuantizerMode,
-} from '../../ports/outbound/image-quantizer.port.ts'
+} from '../../ports/index.ts'
 
 export { ImageQuantizerModes, type ImageQuantizerMode, type ExtractSeedsOptions }
 
@@ -16,12 +16,16 @@ const GridHueBins = 72
 const GridToneBands = 5
 const DegToRad = Math.PI / 180
 const RadToDeg = 180 / Math.PI
+const FallbackHex = '#1A73E8'
 
-const FallbackSeed: ExtractedSeedColor = {
-  hex: '#1A73E8',
-  okyct: { h: 256, c: 0.16, t: 48 },
-  populationRatio: 1,
-  salienceScore: 100,
+function createFallbackSeed(): ExtractedSeedColor {
+  return {
+    hex: FallbackHex,
+    okyct: hexToOkyct(FallbackHex),
+    populationRatio: 0,
+    salienceScore: 0,
+    isFallback: true,
+  }
 }
 
 interface SeedCandidate {
@@ -65,7 +69,7 @@ function extractHueHistogramSeeds(
   }
 
   if (validPixels === 0 || totalOpaquePixels === 0) {
-    return [{ ...FallbackSeed, okyct: { ...FallbackSeed.okyct } }]
+    return [createFallbackSeed()]
   }
 
   const scores: SeedCandidate[] = []
@@ -168,7 +172,7 @@ function extractHueToneGridSeeds(
   }
 
   if (validPixels === 0 || totalOpaquePixels === 0) {
-    return [{ ...FallbackSeed, okyct: { ...FallbackSeed.okyct } }]
+    return [createFallbackSeed()]
   }
 
   const scores: SeedCandidate[] = []
@@ -262,6 +266,32 @@ export function extractSeedsFromImageData(
     typeof imageData.data.length !== 'number'
   ) {
     throw new Error('Invalid imageData input: expected an ImagePixelBuffer object with a data array.')
+  }
+  if (imageData.data.length % 4 !== 0) {
+    throw new Error(
+      `Invalid imageData.data length: ${imageData.data.length}. Expected a multiple of 4 (RGBA).`
+    )
+  }
+  if (imageData.width !== undefined || imageData.height !== undefined) {
+    const w = imageData.width
+    const h = imageData.height
+    if (
+      typeof w !== 'number' ||
+      typeof h !== 'number' ||
+      !Number.isInteger(w) ||
+      !Number.isInteger(h) ||
+      w < 0 ||
+      h < 0
+    ) {
+      throw new Error(
+        `Invalid imageData dimensions: width=${String(w)}, height=${String(h)}. Expected non-negative integers.`
+      )
+    }
+    if (w * h * 4 !== imageData.data.length) {
+      throw new Error(
+        `Invalid imageData buffer size: width (${w}) * height (${h}) * 4 = ${w * h * 4}, but data.length is ${imageData.data.length}.`
+      )
+    }
   }
   if (options === null || typeof options !== 'object' || Array.isArray(options)) {
     throw new Error('Invalid extractSeedsFromImageData options: expected an ExtractSeedsOptions object.')

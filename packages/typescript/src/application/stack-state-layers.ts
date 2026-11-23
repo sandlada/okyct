@@ -1,5 +1,5 @@
 
-import type { ColorLayer, CompositedResult } from '../ports/inbound/layer-stacking.port.ts'
+import type { ColorLayer, CompositedResult } from '../ports/index.ts'
 import { stackLayers } from './stack-layers.ts'
 
 type StackStateName = 'hovered' | 'focused' | 'pressed' | 'dragged' | 'hover' | 'focus'

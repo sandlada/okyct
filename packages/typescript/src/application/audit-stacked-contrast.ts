@@ -5,7 +5,7 @@ import {
   rgbToOkyct,
   solveTonesForContrast,
 } from '../domain/index.ts'
-import type { CompositedResult, StackedContrastReport } from '../ports/inbound/layer-stacking.port.ts'
+import type { CompositedResult, StackedContrastReport } from '../ports/index.ts'
 
 export const auditStackedContrast = (foregroundHex: string) =>
   (composited: CompositedResult): StackedContrastReport => {

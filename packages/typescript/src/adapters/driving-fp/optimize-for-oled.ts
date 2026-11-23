@@ -1,4 +1,4 @@
-import { EmissivePanelTypes, type EmissivePanelType } from '../../ports/outbound/display-physics.port.ts'
+import { EmissivePanelTypes, type EmissivePanelType } from '../../ports/index.ts'
 import type { TokenDictionary, TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
 import { applyEmissiveProfileToTokenHex } from '../driven-emissive-oled/index.ts'

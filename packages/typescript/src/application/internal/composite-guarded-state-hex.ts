@@ -1,5 +1,5 @@
 import { getContrastRatio } from '../../domain/index.ts'
-import type { StateLayerBlendSpace, StateLayerState } from '../../ports/inbound/scheme-building.port.ts'
+import type { StateLayerBlendSpace, StateLayerState } from '../../ports/index.ts'
 import { stackLayers } from '../stack-layers.ts'
 
 const StateOpacityMap: Record<StateLayerState, number> = {

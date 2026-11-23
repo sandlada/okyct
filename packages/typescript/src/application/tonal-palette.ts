@@ -16,7 +16,7 @@ import {
   type ITonalPalettePort,
   type StandardTone,
   type TonalPaletteOptions,
-} from '../ports/inbound/palette-generation.port.ts'
+} from '../ports/index.ts'
 
 const SeedNeutralThreshold = 0.025
 const WarmYellowCenterHue = 100
@@ -145,9 +145,8 @@ export class TonalPalette implements ITonalPalettePort {
       throw new Error(`Invalid gamut target: "${String(gamut)}". Expected one of: ${GamutTargets.join(', ')}.`)
     }
 
-    const t = Math.max(0, Math.min(100, toneValue))
-    const roundedT = Math.round(t * 1000) / 1000
-    const cacheKey = `${gamut}:${roundedT}`
+    const t = Math.max(0, Math.min(100, toneValue)) || 0
+    const cacheKey = `${gamut}:${t}`
     const cached = getLru(this.okyctCache, cacheKey)
     if (cached !== undefined) {
       return { ...cached }
@@ -196,8 +195,8 @@ export class TonalPalette implements ITonalPalettePort {
     if (!Number.isFinite(toneValue)) {
       throw new Error(`Invalid tone value: ${toneValue}. Expected a finite number in [0, 100].`)
     }
-    const t = Math.max(0, Math.min(100, toneValue))
-    const cacheKey = Math.round(t * 1000) / 1000
+    const t = Math.max(0, Math.min(100, toneValue)) || 0
+    const cacheKey = t
     const cached = getLru(this.hexCache, cacheKey)
     if (cached !== undefined) {
       return cached

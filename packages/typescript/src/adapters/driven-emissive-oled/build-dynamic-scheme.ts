@@ -9,8 +9,8 @@ import {
   type StateLayerBlendSpace,
   type ThemeMode,
 } from '../../application/index.ts'
-import type { DynamicSchemeColors, StateLayersOption } from '../../ports/inbound/scheme-building.port.ts'
-import type { EmissiveSchemeOptions } from '../../ports/outbound/display-physics.port.ts'
+import type { DynamicSchemeColors, StateLayersOption } from '../../ports/index.ts'
+import type { EmissiveSchemeOptions } from '../../ports/index.ts'
 import { OledDisplayPhysicsSingleton } from './internal/oled-display-physics-adapter.ts'
 
 export interface BuildSchemeOptions {

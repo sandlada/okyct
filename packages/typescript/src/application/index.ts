@@ -11,7 +11,7 @@ export {
   type PaletteVariant,
   type TonalPaletteOptions,
   type CreatePalettesOptions,
-} from '../ports/inbound/palette-generation.port.ts'
+} from '../ports/index.ts'
 
 export {
   ThemeModes,
@@ -40,7 +40,7 @@ export {
   type EmissiveSchemeOptions,
   type BuildDynamicSchemeOptions,
   type ResolveCustomColorsOptions,
-} from '../ports/inbound/scheme-building.port.ts'
+} from '../ports/index.ts'
 
 export type {
   ColorLayer,
@@ -48,7 +48,7 @@ export type {
   CompositedResult,
   StackOptions,
   StackedContrastReport,
-} from '../ports/inbound/layer-stacking.port.ts'
+} from '../ports/index.ts'
 
 export * from './tonal-palette.ts'
 export * from './palette-set.ts'

@@ -16,7 +16,7 @@ import {
   type StateLayersOption,
   type ThemeMode,
 } from '../application/index.ts'
-import type { SchemeEmissiveReport } from '../ports/outbound/display-physics.port.ts'
+import type { SchemeEmissiveReport } from '../ports/index.ts'
 import { analyzeEmissiveSchemeMetrics, buildDynamicScheme } from './driven-emissive-oled/index.ts'
 import {
   exportTheme,

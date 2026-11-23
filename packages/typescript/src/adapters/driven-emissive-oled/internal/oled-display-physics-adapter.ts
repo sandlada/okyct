@@ -1,5 +1,5 @@
 
-import type { EmissivePanelType, EmissivePanelSpec, IDisplayPhysicsPort } from '../../../ports/outbound/display-physics.port.ts'
+import type { EmissivePanelType, EmissivePanelSpec, IDisplayPhysicsPort } from '../../../ports/index.ts'
 import { EmissivePanelSpecs } from '../emissive-panel-specs.ts'
 import { applyBlueBurnInGuard } from '../apply-blue-burn-in-guard.ts'
 import { applySubpixelEdgeCompensation } from './apply-subpixel-edge-compensation.ts'

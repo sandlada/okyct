@@ -6,7 +6,7 @@ export type {
   EmissiveSchemeOptions,
   ColorEmissiveTelemetry,
   SchemeEmissiveReport,
-} from '../../ports/outbound/display-physics.port.ts'
+} from '../../ports/index.ts'
 
 export * from './emissive-panel-specs.ts'
 export * from './compute-color-emissive-telemetry.ts'

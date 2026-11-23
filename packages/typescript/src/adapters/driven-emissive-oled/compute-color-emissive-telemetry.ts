@@ -1,5 +1,5 @@
 import { hexToRgb, srgbToLinear } from '../../domain/index.ts'
-import type { ColorEmissiveTelemetry } from '../../ports/outbound/display-physics.port.ts'
+import type { ColorEmissiveTelemetry } from '../../ports/index.ts'
 
 const WeightR = 1.05
 const WeightG = 0.85

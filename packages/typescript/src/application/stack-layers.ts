@@ -13,7 +13,7 @@ import type {
   CompositedResult,
   LayerStepTrace,
   StackOptions,
-} from '../ports/inbound/layer-stacking.port.ts'
+} from '../ports/index.ts'
 
 interface BlendState {
   rgb: RGB
