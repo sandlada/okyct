@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import * as esbuild from 'esbuild'
 
 const ScriptDir = path.dirname(fileURLToPath(import.meta.url))
 const PackageDir = path.resolve(ScriptDir, '..')
@@ -48,6 +49,33 @@ function rewriteDeclarationTsExtensions(distDir: string): number {
   return rewrittenCount
 }
 
+async function buildIifeBundles(packageDir: string, distDir: string): Promise<void> {
+  const entryPoint = path.join(packageDir, 'src', 'index.ts')
+  const commonOptions: esbuild.BuildOptions = {
+    entryPoints: [entryPoint],
+    bundle: true,
+    format: 'iife',
+    globalName: 'Okyct',
+    platform: 'browser',
+    target: ['es2022'],
+    sourcemap: true,
+    legalComments: 'none',
+  }
+
+  await Promise.all([
+    esbuild.build({
+      ...commonOptions,
+      minify: false,
+      outfile: path.join(distDir, 'okyct.iife.js'),
+    }),
+    esbuild.build({
+      ...commonOptions,
+      minify: true,
+      outfile: path.join(distDir, 'okyct.iife.min.js'),
+    }),
+  ])
+}
+
 function verifyDistOutput(distDir: string, packageDir: string): void {
   const emittedFiles = walkFiles(distDir, (name) => name.endsWith('.js') || name.endsWith('.d.ts'))
   const strayPattern = /(?:from\s+|import\(\s*)['"]\.[^'"]+\.ts['"]/g
@@ -62,11 +90,33 @@ function verifyDistOutput(distDir: string, packageDir: string): void {
     }
   }
 
+  const requiredIifeArtifacts = [
+    'okyct.iife.js',
+    'okyct.iife.js.map',
+    'okyct.iife.min.js',
+    'okyct.iife.min.js.map',
+  ]
+  for (const relArtifact of requiredIifeArtifacts) {
+    const absArtifact = path.join(distDir, relArtifact)
+    if (!fs.existsSync(absArtifact) || fs.statSync(absArtifact).size === 0) {
+      throw new Error(`Missing or empty IIFE build artifact: dist/${relArtifact}`)
+    }
+  }
+
   const pkg = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8')) as {
     publishConfig?: {
+      unpkg?: string
+      jsdelivr?: string
       exports?: Record<string, { types?: string; import?: string; default?: string }>
     }
   }
+  for (const cdnField of ['unpkg', 'jsdelivr'] as const) {
+    const relTarget = pkg.publishConfig?.[cdnField]
+    if (!relTarget || !fs.existsSync(path.resolve(packageDir, relTarget))) {
+      throw new Error(`Missing build artifact for publishConfig.${cdnField}: ${relTarget ?? '(unset)'}`)
+    }
+  }
+
   const exportsMap = pkg.publishConfig?.exports ?? {}
   for (const [subpath, targets] of Object.entries(exportsMap)) {
     for (const [condition, relTarget] of Object.entries(targets)) {
@@ -90,5 +140,8 @@ execFileSync(process.execPath, [tscBin, '-p', 'tsconfig.build.json'], {
 })
 
 const rewritten = rewriteDeclarationTsExtensions(DistDir)
+await buildIifeBundles(PackageDir, DistDir)
 verifyDistOutput(DistDir, PackageDir)
-console.log(`[build] OK: compiled @sandlada/okyct into dist/ (rewrote ${rewritten} declaration files, verified publishConfig exports).`)
+console.log(
+  `[build] OK: compiled @sandlada/okyct ESM + IIFE (Okyct) into dist/ (rewrote ${rewritten} declaration files, verified publishConfig exports & CDN targets).`
+)

@@ -28,6 +28,8 @@
     "main": "./dist/index.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "unpkg": "./dist/okyct.iife.min.js",
+    "jsdelivr": "./dist/okyct.iife.min.js",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
@@ -111,6 +113,7 @@
     "prepublishOnly": "pnpm run lint && pnpm run test && pnpm run build"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   }
 }
