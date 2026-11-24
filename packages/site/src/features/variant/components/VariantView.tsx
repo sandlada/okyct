@@ -34,12 +34,12 @@ const RoleLabels: Record<VariantEditableRole, { readonly en: string; readonly 'z
 }
 
 const PresetLabels: Record<PaletteVariant, { readonly en: string; readonly 'zh-Hant': string }> = {
-  tonalSpot: { en: 'Tonal Spot', 'zh-Hant': 'Tonal Spot' },
-  vibrant: { en: 'Vibrant', 'zh-Hant': 'Vibrant' },
-  expressive: { en: 'Expressive', 'zh-Hant': 'Expressive' },
-  neutral: { en: 'Neutral', 'zh-Hant': 'Neutral' },
-  monochrome: { en: 'Monochrome', 'zh-Hant': 'Monochrome' },
-  fidelity: { en: 'Fidelity', 'zh-Hant': 'Fidelity' },
+  tonalSpot: { en: 'Tonal Spot', 'zh-Hant': '色調焦點 (Tonal Spot)' },
+  vibrant: { en: 'Vibrant', 'zh-Hant': '鮮明 (Vibrant)' },
+  expressive: { en: 'Expressive', 'zh-Hant': '表現力 (Expressive)' },
+  neutral: { en: 'Neutral', 'zh-Hant': '中性 (Neutral)' },
+  monochrome: { en: 'Monochrome', 'zh-Hant': '單色 (Monochrome)' },
+  fidelity: { en: 'Fidelity', 'zh-Hant': '忠實原色 (Fidelity)' },
 }
 
 const CopyByLocale = {

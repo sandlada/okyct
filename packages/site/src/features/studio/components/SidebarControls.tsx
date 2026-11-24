@@ -64,6 +64,14 @@ const EnglishCopy = {
     'cyber-atelier': 'Neon',
   } as Record<string, string>,
   generationVariant: 'Variant',
+  variantLabels: {
+    tonalSpot: 'Tonal Spot',
+    vibrant: 'Vibrant',
+    expressive: 'Expressive',
+    neutral: 'Neutral',
+    monochrome: 'Monochrome',
+    fidelity: 'Fidelity',
+  } as Record<PaletteVariant, string>,
   contrastLevel: 'Contrast',
   emissivePanel: 'Display profile',
   panelShortNames: {
@@ -111,6 +119,14 @@ const TraditionalCopy: typeof EnglishCopy = {
     'cyber-atelier': '霓虹賽博',
   },
   generationVariant: '變體',
+  variantLabels: {
+    tonalSpot: '色調焦點',
+    vibrant: '鮮明',
+    expressive: '表現力',
+    neutral: '中性',
+    monochrome: '單色',
+    fidelity: '忠實原色',
+  },
   contrastLevel: '對比度',
   emissivePanel: '顯示設定',
   panelShortNames: {
@@ -303,7 +319,7 @@ export function SidebarControls({ closable = false }: { readonly closable?: bool
           columns={2}
           value={variant}
           onChange={(id) => dispatch(setVariant(id))}
-          options={VARIANTS.map((item) => ({ id: item.id, label: item.label }))}
+          options={VARIANTS.map((item) => ({ id: item.id, label: copy.variantLabels[item.id] }))}
         />
       </section>
 

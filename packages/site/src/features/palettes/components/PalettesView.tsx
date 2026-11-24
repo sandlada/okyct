@@ -43,6 +43,17 @@ const CopyByLocale = {
       chroma: 'Chroma',
       contrast: 'WCAG',
     },
+    paletteLabels: {
+      primary: 'Primary',
+      secondary: 'Secondary',
+      tertiary: 'Tertiary',
+      error: 'Error',
+      neutral: 'Neutral',
+      neutralVariant: 'Neutral Variant',
+      success: 'Success',
+      info: 'Info',
+      warning: 'Warning',
+    } as Record<StandardPaletteKey, string>,
   },
   'zh-Hant': {
     title: 'Tonal Palettes 色階矩陣 (PSTENNVSIW)',
@@ -58,6 +69,17 @@ const CopyByLocale = {
       chroma: '色度 C',
       contrast: '對比度',
     },
+    paletteLabels: {
+      primary: '主色 Primary',
+      secondary: '次色 Secondary',
+      tertiary: '第三色 Tertiary',
+      error: '錯誤 Error',
+      neutral: '中性 Neutral',
+      neutralVariant: '中性變體 Neutral Variant',
+      success: '成功 Success',
+      info: '資訊 Info',
+      warning: '警告 Warning',
+    } as Record<StandardPaletteKey, string>,
   },
 } as const
 
@@ -103,7 +125,7 @@ export function PalettesView() {
                 <div key={entry.key} className="flex flex-col gap-1">
                   <div className="flex items-baseline gap-2 text-xs">
                     <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                      {entry.label} ({entry.code})
+                      {copy.paletteLabels[entry.key]} ({entry.code})
                     </span>
                     <span className="font-mono text-[10px] text-neutral-400 tabular-nums">
                       {palette.hue.toFixed(1)}°
@@ -124,9 +146,9 @@ export function PalettesView() {
                           type="button"
                           onClick={() => {
                             setSelectedIndex(idx)
-                            void copyHex(hex, `${entry.label} T${tone}`)
+                            void copyHex(hex, `${copy.paletteLabels[entry.key]} T${tone}`)
                           }}
-                          title={`${entry.label} T${tone}: ${hex}`}
+                          title={`${copy.paletteLabels[entry.key]} T${tone}: ${hex}`}
                           className="group flex flex-col items-stretch gap-1 p-0 border-0 bg-transparent cursor-pointer focus:outline-none"
                         >
                           <span
@@ -204,7 +226,7 @@ export function PalettesView() {
                 <button
                   key={entry.key}
                   type="button"
-                  onClick={() => void copyHex(hex, `${entry.label} T${selectedTone}`)}
+                  onClick={() => void copyHex(hex, `${copy.paletteLabels[entry.key]} T${selectedTone}`)}
                   className="group rounded-xl p-3 flex flex-col justify-between gap-2.5 border border-neutral-200/70 dark:border-neutral-700/70 text-left cursor-pointer transition-transform hover:-translate-y-0.5"
                   style={{
                     backgroundColor: hex,
@@ -213,7 +235,7 @@ export function PalettesView() {
                 >
                   <div className="flex items-center justify-between gap-1 w-full">
                     <span className="text-[11px] font-bold truncate">
-                      {entry.label}
+                      {copy.paletteLabels[entry.key]}
                     </span>
                     <Copy className="w-3 h-3 opacity-0 group-hover:opacity-80 transition-opacity shrink-0" />
                   </div>
