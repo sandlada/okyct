@@ -1,4 +1,4 @@
-import { Activity, Code2, Cpu, Grid3x3, Layers, LayoutTemplate, Palette, Sparkles } from 'lucide-react'
+import { Activity, Code2, Cpu, Grid3x3, Layers, LayoutTemplate, Palette, SlidersHorizontal, Sparkles } from 'lucide-react'
 import { useI18n, type MessageKey } from '../../../i18n/index.tsx'
 import { useRouter } from '../../../router/index.tsx'
 import { studioPath, StudioViewIds, type StudioView } from '../../../router/routes.ts'
@@ -7,6 +7,7 @@ import { Tabs } from '../../../ui/Tabs.tsx'
 const MobileTabs: readonly { id: StudioView; key: MessageKey; icon: typeof Palette }[] = [
   { id: StudioViewIds.Tokens, key: 'studio.mobile.tokens', icon: Palette },
   { id: StudioViewIds.Palettes, key: 'studio.mobile.palettes', icon: Grid3x3 },
+  { id: StudioViewIds.Variant, key: 'studio.mobile.variant', icon: SlidersHorizontal },
   { id: StudioViewIds.Oled, key: 'studio.mobile.oled', icon: Cpu },
   { id: StudioViewIds.Composition, key: 'studio.mobile.fp', icon: Layers },
   { id: StudioViewIds.Delta, key: 'studio.mobile.delta', icon: Activity },

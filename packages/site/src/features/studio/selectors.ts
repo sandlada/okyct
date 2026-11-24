@@ -8,6 +8,7 @@ import {
   type ResolvedCustomColor,
 } from '../../color/scheme.ts'
 import type { RootState } from '../../app/store.ts'
+import { buildCustomPaletteSet } from '../variant/presets.ts'
 
 export const EmissivePanelIds = [
   'standard-lcd',
@@ -32,11 +33,21 @@ const selectThemeMode = (state: RootState) => state.theme.mode
 const selectCustomColors = (state: RootState) => state.studio.customColors
 const selectLiveHex = (state: RootState) => state.studio.sourceHex
 const selectLiveContrast = (state: RootState) => state.studio.contrastLevel
+const selectCustomVariantEnabled = (state: RootState) => state.variant.enabled
+const selectCustomVariantRoles = (state: RootState) => state.variant.roles
 
 export const selectPalettes = createSelector(
-  [selectSettledHex, selectVariant, selectHarmonize],
-  (hex, variant, harmonize) =>
-    createPalettesFromSource(hex, { variant, harmonizeSemantics: harmonize }),
+  [
+    selectSettledHex,
+    selectVariant,
+    selectHarmonize,
+    selectCustomVariantEnabled,
+    selectCustomVariantRoles,
+  ],
+  (hex, variant, harmonize, customEnabled, customRoles) =>
+    customEnabled
+      ? buildCustomPaletteSet(hex, customRoles, harmonize)
+      : createPalettesFromSource(hex, { variant, harmonizeSemantics: harmonize }),
 )
 
 const selectEmissiveOpts = createSelector(

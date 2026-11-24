@@ -12,6 +12,7 @@ import { Tabs } from '../../../ui/Tabs.tsx'
 const NavItems: readonly { view: StudioView; key: MessageKey }[] = [
   { view: StudioViewIds.Tokens, key: 'studio.tab.tokens' },
   { view: StudioViewIds.Palettes, key: 'studio.tab.palettes' },
+  { view: StudioViewIds.Variant, key: 'studio.tab.variant' },
   { view: StudioViewIds.Oled, key: 'studio.tab.oled' },
   { view: StudioViewIds.Composition, key: 'studio.tab.fp' },
   { view: StudioViewIds.Delta, key: 'studio.tab.delta' },
@@ -46,11 +47,11 @@ export function TopNav() {
         <button
           type="button"
           onClick={() => dispatch(setMobileDrawerOpen(true))}
-          className="md:hidden flex items-center justify-center min-h-[38px] min-w-[38px] rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
+          className="md:hidden flex items-center justify-center h-7 w-7 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
           title={t('studio.nav.parameters')}
           aria-label={t('studio.nav.parameters')}
         >
-          <Menu className="w-4 h-4" />
+          <Menu className="w-3.5 h-3.5" />
         </button>
 
         <Link

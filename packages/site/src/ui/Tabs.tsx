@@ -44,7 +44,7 @@ const SelectedClass: Record<TabAppearance, string> = {
 
 function listClass(appearance: TabAppearance, wrap: boolean, columns?: 2 | 4, balanced = false): string {
   if (appearance === 'dock') {
-    return 'grid grid-cols-4 w-full'
+    return 'flex items-center flex-nowrap overflow-x-auto w-full h-full gap-0.5 px-1'
   }
   if (balanced) {
     const track = appearance === 'outline' || appearance === 'ghost'
@@ -128,7 +128,7 @@ function tabClass(appearance: TabAppearance, size: TabSize, wrap: boolean, colum
   const focus = 'focus:outline-none data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-neutral-900 dark:data-focus:outline-neutral-100'
   const idle = 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100'
   if (appearance === 'dock') {
-    return `flex flex-col items-center justify-center h-full min-h-12 py-1 font-medium transition-colors ${focus} ${idle} ${SelectedClass.dock}`
+    return `flex flex-col items-center justify-center shrink-0 min-w-[56px] flex-1 h-full py-1 px-1.5 font-medium transition-colors ${focus} ${idle} ${SelectedClass.dock}`
   }
   if (appearance === 'outline' || appearance === 'ghost') {
     const grow = columns ? 'min-w-0' : 'shrink-0'

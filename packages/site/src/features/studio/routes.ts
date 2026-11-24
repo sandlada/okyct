@@ -6,10 +6,12 @@ import { PageStudioSlug } from '../page/routes.ts'
 import { PalettesStudioSlug } from '../palettes/routes.ts'
 import { SimpleStudioSlug } from '../simple/routes.ts'
 import { TokensLegacySlugs, TokensStudioSlug } from '../tokens/routes.ts'
+import { VariantStudioSlug } from '../variant/routes.ts'
 
 export const StudioViewIds = {
   Tokens: TokensStudioSlug,
   Palettes: PalettesStudioSlug,
+  Variant: VariantStudioSlug,
   Oled: OledStudioSlug,
   Composition: CompositionStudioSlug,
   Delta: DeltaStudioSlug,
@@ -23,6 +25,7 @@ export type StudioView = (typeof StudioViewIds)[keyof typeof StudioViewIds]
 export const StudioViews = [
   StudioViewIds.Tokens,
   StudioViewIds.Palettes,
+  StudioViewIds.Variant,
   StudioViewIds.Oled,
   StudioViewIds.Composition,
   StudioViewIds.Delta,

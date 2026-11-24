@@ -7,6 +7,7 @@ import { OledView } from '../../oled/components/OledView.tsx'
 import { PalettesView } from '../../palettes/components/PalettesView.tsx'
 import { SimpleView } from '../../simple/components/SimpleView.tsx'
 import { TokensView } from '../../tokens/components/TokensView.tsx'
+import { VariantView } from '../../variant/components/VariantView.tsx'
 import { selectSchemePending } from '../selectors.ts'
 import { setMobileDrawerOpen } from '../slice.ts'
 import { MobileBottomNav } from './MobileBottomNav.tsx'
@@ -56,6 +57,7 @@ export default function StudioApp() {
         >
           {view === StudioViewIds.Tokens && <TokensView />}
           {view === StudioViewIds.Palettes && <PalettesView />}
+          {view === StudioViewIds.Variant && <VariantView />}
           {view === StudioViewIds.Oled && <OledView />}
           {view === StudioViewIds.Composition && <FpPlaygroundView />}
           {view === StudioViewIds.Delta && <DeltaView />}

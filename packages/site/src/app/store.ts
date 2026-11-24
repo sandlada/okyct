@@ -16,6 +16,7 @@ import {
 } from '../features/studio/slice.ts'
 import { themeReducer } from '../features/theme/slice.ts'
 import { tokensReducer } from '../features/tokens/slice.ts'
+import { variantReducer } from '../features/variant/slice.ts'
 
 const rootReducer = combineReducers({
   theme: themeReducer,
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   oled: oledReducer,
   delta: deltaReducer,
   benchmark: benchmarkReducer,
+  variant: variantReducer,
 })
 
 export type RootState = ReturnType<typeof rootReducer>
