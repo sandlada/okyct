@@ -1,4 +1,6 @@
 
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
+
 export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) => {
   const space = options.space ?? 'oklch'
   if (space !== 'oklch' && space !== 'srgb') {
@@ -11,14 +13,14 @@ export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) =
     }
 
     return (baseExpr: string): string => {
-      if (typeof baseExpr !== 'string' || baseExpr.trim().length === 0) {
+      if (typeof baseExpr !== 'string' || trimAsciiWhitespace(baseExpr).length === 0) {
         throw new Error('Invalid baseExpr for stackToCssColorMix: expected a non-empty string.')
       }
       let currentExpr = baseExpr
 
       for (let i = 0; i < layers.length; i++) {
         const layer = layers[i]
-        if (typeof layer.color !== 'string' || layer.color.trim().length === 0) {
+        if (typeof layer.color !== 'string' || trimAsciiWhitespace(layer.color).length === 0) {
           throw new Error(`Invalid layer color at index ${i}: expected a non-empty string.`)
         }
         if (!Number.isFinite(layer.opacity)) {

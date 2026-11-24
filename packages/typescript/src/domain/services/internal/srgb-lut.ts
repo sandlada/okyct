@@ -3,6 +3,8 @@
  * Precomputed 8-bit sRGB byte [0..255] lookup tables and zero-regex base-16 hex parser.
  */
 
+import { trimAsciiWhitespace } from './trim-ascii-whitespace.ts'
+
 function buildSrgbByteToLinearLut(): Float64Array {
   const lut = new Float64Array(256)
   for (let i = 0; i < 256; i++) {
@@ -37,14 +39,7 @@ export function parseHexToRgb24(hex: string): number {
     throw new Error(`Invalid hex color input: expected string, received ${typeof hex}`)
   }
 
-  const trimmed =
-    hex.length === 0 ||
-    hex.charCodeAt(0) <= 32 ||
-    hex.charCodeAt(0) > 127 ||
-    hex.charCodeAt(hex.length - 1) <= 32 ||
-    hex.charCodeAt(hex.length - 1) > 127
-      ? hex.trim()
-      : hex
+  const trimmed = trimAsciiWhitespace(hex)
 
   const start = trimmed.length > 0 && trimmed.charCodeAt(0) === 35 ? 1 : 0
   const len = trimmed.length - start

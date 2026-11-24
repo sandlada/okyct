@@ -4,14 +4,16 @@ import {
   type ResolvedCustomColor,
 } from '../../ports/index.ts'
 import type { TokenDictionary } from './token-dictionary.ts'
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 
 function splitNameWords(name: string): string[] {
-  return name
-    .replace(/^--+/, '')
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-    .trim()
-    .split(/[-_\s]+/)
+  return trimAsciiWhitespace(
+    name
+      .replace(/^--+/, '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+  )
+    .split(/[-_ \t\n\r\f]+/)
     .filter(Boolean)
 }
 

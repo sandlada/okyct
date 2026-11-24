@@ -127,6 +127,7 @@ export {
 // 3. Emissive display telemetry, image seed extraction & N-layer stacking
 export {
   EmissivePanelSpecs,
+  EmitterStates,
   computeColorEmissiveTelemetry,
   analyzeEmissiveSchemeMetrics,
   extractSeedsFromImageData,
@@ -135,6 +136,7 @@ export {
   type ExtractSeedsOptions,
   type SubpixelGeometry,
   type EmissivePanelSpec,
+  type EmitterState,
   type ColorEmissiveTelemetry,
   type SchemeEmissiveReport,
   type ExtractedSeedColor,

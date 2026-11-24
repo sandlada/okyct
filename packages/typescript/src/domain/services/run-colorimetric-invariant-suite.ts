@@ -162,7 +162,8 @@ export function runColorimetricInvariantSuite(): InvariantTestResult[] {
       measuredValue: `ΔRGB_max = ${maxRoundTripError.toExponential(2)}, ΔE_OK_max = ${maxRoundTripDeltaEOk.toExponential(2)}`,
       threshold: '< 1.00e-4',
       samplesChecked: roundTripSamples,
-      details: 'Verifies single-variable Newton-Raphson dY/dL convergence across the full sRGB cube.',
+      details:
+        'Verifies single-variable 3rd-order Halley solver (dY/dL, d²Y/dL² with Newton-Raphson fallback) convergence across the full sRGB cube.',
     },
     {
       id: 'tone-bijection',

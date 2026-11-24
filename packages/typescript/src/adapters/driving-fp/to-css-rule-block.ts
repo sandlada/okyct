@@ -1,8 +1,9 @@
 import type { TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 
 export const toCssRuleBlock = (selector: string) => {
-  const trimmedSelector = selector.trim()
+  const trimmedSelector = trimAsciiWhitespace(selector)
   if (trimmedSelector.length === 0) {
     throw new Error('Invalid CSS selector for toCssRuleBlock: expected a non-empty string.')
   }

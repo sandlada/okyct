@@ -27,3 +27,8 @@ LICENSE
 metadata.json
 CONTRIBUTOR*.md
 check
+
+packages/csharp/**/bin/
+packages/csharp/**/obj/
+packages/csharp/**/TestResults/
+/TestResults/

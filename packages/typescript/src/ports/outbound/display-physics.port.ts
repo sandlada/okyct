@@ -156,6 +156,9 @@ export const DefaultEmissivePanelSpecs: Readonly<Record<EmissivePanelType, Emiss
   },
 })
 
+export const EmitterStates = ['off', 'near-black', 'active'] as const
+export type EmitterState = (typeof EmitterStates)[number]
+
 export interface ColorEmissiveTelemetry {
   hex: string
   rLinear: number
@@ -169,8 +172,10 @@ export interface ColorEmissiveTelemetry {
   aplPercent: number
   /** Blue subpixel aging stress index [0, 100]. */
   blueStressIndex: number
-  /** True when emitter is completely powered off (#000000). */
+  /** True strictly when all sRGB channels are 0 (#000000). */
   isPixelOff: boolean
+  /** Physical emitter operating regime: 'off' (#000000), 'near-black' (non-zero linear < 0.0005), or 'active'. */
+  emitterState: EmitterState
 }
 
 export interface SchemeEmissiveReport {

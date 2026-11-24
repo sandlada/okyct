@@ -1,5 +1,6 @@
 import type { TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 import { computeColorEmissiveTelemetry } from '../driven-emissive-oled/index.ts'
 
 export interface OledPowerAuditReport {
@@ -9,6 +10,7 @@ export interface OledPowerAuditReport {
   maxBlueStressToken: string
   maxBlueStressIndex: number
   trueBlackTokenCount: number
+  nearBlackTokenCount: number
   totalTokensEvaluated: number
 }
 
@@ -26,7 +28,9 @@ export const auditOledPower = (
 
   return (dict: TokenSource): OledPowerAuditReport => {
     const normalized = normalizeTokenDict(dict)
-    const entries = Object.entries(normalized).filter(([, v]) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim()))
+    const entries = Object.entries(normalized).filter(
+      ([, v]) => typeof v === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimAsciiWhitespace(v))
+    )
     if (entries.length === 0) {
       return {
         passed: true,
@@ -35,6 +39,7 @@ export const auditOledPower = (
         maxBlueStressToken: 'none',
         maxBlueStressIndex: 0,
         trueBlackTokenCount: 0,
+        nearBlackTokenCount: 0,
         totalTokensEvaluated: 0,
       }
     }
@@ -44,12 +49,14 @@ export const auditOledPower = (
     let maxBlue = -1
     let maxBlueKey = entries[0][0]
     let trueBlackCount = 0
+    let nearBlackCount = 0
 
     for (const [k, hex] of entries) {
       const t = computeColorEmissiveTelemetry(hex)
       sumPower += t.powerMw
       sumApl += t.aplPercent
       if (t.isPixelOff) trueBlackCount++
+      else if (t.emitterState === 'near-black') nearBlackCount++
       if (t.blueStressIndex > maxBlue) {
         maxBlue = t.blueStressIndex
         maxBlueKey = k
@@ -66,6 +73,7 @@ export const auditOledPower = (
       maxBlueStressToken: maxBlueKey,
       maxBlueStressIndex: maxBlue,
       trueBlackTokenCount: trueBlackCount,
+      nearBlackTokenCount: nearBlackCount,
       totalTokensEvaluated: entries.length,
     }
   }

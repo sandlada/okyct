@@ -11,6 +11,7 @@ import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
 } from './internal/resolve-export-state-layers.ts'
+import { serializeCanonicalJson } from './internal/serialize-canonical-json.ts'
 
 function extractTokens(
   scheme: DynamicSchemeColors,
@@ -74,22 +75,19 @@ export function exportTypeScriptTokens(
     return res
   }
 
-  return `/**
- * OKYCT Typed Color Tokens
- */
+  const lightJson = serializeCanonicalJson({
+    ...extractTokens(lightScheme, colorFormat, stateLayers),
+    custom: buildCustomMap(customColorsLight),
+  })
+  const darkJson = serializeCanonicalJson({
+    ...extractTokens(darkScheme, colorFormat, stateLayers),
+    custom: buildCustomMap(customColorsDark),
+  })
 
-export const LightThemeTokens = ${JSON.stringify(
-    { ...extractTokens(lightScheme, colorFormat, stateLayers), custom: buildCustomMap(customColorsLight) },
-    null,
-    2
-  )} as const
-
-export const DarkThemeTokens = ${JSON.stringify(
-    { ...extractTokens(darkScheme, colorFormat, stateLayers), custom: buildCustomMap(customColorsDark) },
-    null,
-    2
-  )} as const
-
-export type ThemeColors = typeof LightThemeTokens
-`
+  return (
+    '/**\n * OKYCT Typed Color Tokens\n */\n\n' +
+    `export const LightThemeTokens = ${lightJson} as const\n\n` +
+    `export const DarkThemeTokens = ${darkJson} as const\n\n` +
+    'export type ThemeColors = typeof LightThemeTokens\n'
+  )
 }

@@ -1,11 +1,13 @@
 
-export type {
-  EmissivePanelType,
-  SubpixelGeometry,
-  EmissivePanelSpec,
-  EmissiveSchemeOptions,
-  ColorEmissiveTelemetry,
-  SchemeEmissiveReport,
+export {
+  EmitterStates,
+  type EmissivePanelType,
+  type SubpixelGeometry,
+  type EmissivePanelSpec,
+  type EmissiveSchemeOptions,
+  type EmitterState,
+  type ColorEmissiveTelemetry,
+  type SchemeEmissiveReport,
 } from '../../ports/index.ts'
 
 export * from './emissive-panel-specs.ts'

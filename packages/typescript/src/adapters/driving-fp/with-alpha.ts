@@ -1,3 +1,5 @@
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
+
 export const withAlpha = (opacity: number) => {
   if (!Number.isFinite(opacity)) {
     throw new Error(`Invalid opacity for withAlpha: ${opacity}. Expected a finite number in [0, 1].`)
@@ -5,10 +7,13 @@ export const withAlpha = (opacity: number) => {
   const alpha = Math.max(0, Math.min(1, opacity))
 
   return (colorOrVar: string): string => {
-    if (typeof colorOrVar !== 'string' || colorOrVar.trim().length === 0) {
+    if (typeof colorOrVar !== 'string') {
       throw new Error('Invalid color or CSS variable input for withAlpha: expected a non-empty string.')
     }
-    const trimmed = colorOrVar.trim()
+    const trimmed = trimAsciiWhitespace(colorOrVar)
+    if (trimmed.length === 0) {
+      throw new Error('Invalid color or CSS variable input for withAlpha: expected a non-empty string.')
+    }
 
     if (trimmed.startsWith('var(') || trimmed.startsWith('--')) {
       const varExpr = trimmed.startsWith('--') ? `var(${trimmed})` : trimmed

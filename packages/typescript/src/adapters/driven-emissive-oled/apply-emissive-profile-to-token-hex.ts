@@ -4,6 +4,7 @@ import { EmissivePanelTypes, type EmissivePanelType } from '../../ports/index.ts
 import { EmissivePanelSpecs } from './emissive-panel-specs.ts'
 import { applyBlueBurnInGuard } from './apply-blue-burn-in-guard.ts'
 import { applySubpixelEdgeCompensation } from './internal/apply-subpixel-edge-compensation.ts'
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 
 export function applyEmissiveProfileToTokenHex(
   key: string,
@@ -19,7 +20,7 @@ export function applyEmissiveProfileToTokenHex(
       `Invalid emissive profile: "${String(options.profile)}". Expected one of: ${EmissivePanelTypes.join(', ')}.`
     )
   }
-  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex.trim())) return hex
+  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimAsciiWhitespace(hex))) return hex
 
   const lowerKey = key.toLowerCase()
   const okyct = hexToOkyct(hex)

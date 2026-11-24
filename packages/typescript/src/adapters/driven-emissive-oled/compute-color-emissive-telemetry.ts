@@ -1,11 +1,12 @@
 import { hexToRgb, srgbToLinear } from '../../domain/index.ts'
-import type { ColorEmissiveTelemetry } from '../../ports/index.ts'
+import type { ColorEmissiveTelemetry, EmitterState } from '../../ports/index.ts'
 
 const WeightR = 1.05
 const WeightG = 0.85
 const WeightB = 2.40
 const WeightSum = WeightR + WeightG + WeightB
 const FullWhiteOledMw = 1000
+const NearBlackLinearThreshold = 0.0005
 
 export function computeColorEmissiveTelemetry(hex: string): ColorEmissiveTelemetry {
   const rgb = hexToRgb(hex)
@@ -13,18 +14,24 @@ export function computeColorEmissiveTelemetry(hex: string): ColorEmissiveTelemet
   const gLin = srgbToLinear(rgb.g)
   const bLin = srgbToLinear(rgb.b)
 
-  const isPixelOff = rLin < 0.0005 && gLin < 0.0005 && bLin < 0.0005
+  const isPixelOff = rgb.r === 0 && rgb.g === 0 && rgb.b === 0
+  const isNearBlack =
+    !isPixelOff &&
+    rLin < NearBlackLinearThreshold &&
+    gLin < NearBlackLinearThreshold &&
+    bLin < NearBlackLinearThreshold
+  const emitterState: EmitterState = isPixelOff ? 'off' : isNearBlack ? 'near-black' : 'active'
 
   const gammaDrive = 1.08
-  const rDrive = isPixelOff ? 0 : Math.pow(rLin, gammaDrive)
-  const gDrive = isPixelOff ? 0 : Math.pow(gLin, gammaDrive)
-  const bDrive = isPixelOff ? 0 : Math.pow(bLin, gammaDrive)
+  const rDrive = rLin === 0 ? 0 : Math.pow(rLin, gammaDrive)
+  const gDrive = gLin === 0 ? 0 : Math.pow(gLin, gammaDrive)
+  const bDrive = bLin === 0 ? 0 : Math.pow(bLin, gammaDrive)
 
   const rMw = (rDrive * WeightR / WeightSum) * FullWhiteOledMw
   const gMw = (gDrive * WeightG / WeightSum) * FullWhiteOledMw
   const bMw = (bDrive * WeightB / WeightSum) * FullWhiteOledMw
 
-  const powerMw = isPixelOff ? 0 : rMw + gMw + bMw
+  const powerMw = rMw + gMw + bMw
   // Physical linear CIE Y luminance APL (%)
   const aplPercent = (0.2126729 * rLin + 0.7151522 * gLin + 0.0721750 * bLin) * 100
 
@@ -49,5 +56,6 @@ export function computeColorEmissiveTelemetry(hex: string): ColorEmissiveTelemet
     aplPercent: Math.round(aplPercent * 10) / 10,
     blueStressIndex,
     isPixelOff,
+    emitterState,
   }
 }

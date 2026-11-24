@@ -20,8 +20,11 @@ describe('hexToRgb', () => {
     assert.deepEqual(hexToRgb('0f0'), { r: 0, g: 1, b: 0 })
   })
 
-  it('trims surrounding whitespace before parsing', () => {
-    assert.deepEqual(hexToRgb('  #10b981 \n\t '), hexToRgb('#10B981'))
+  it('trims surrounding ASCII whitespace before parsing and rejects non-ASCII whitespace', () => {
+    assert.deepEqual(hexToRgb(' \t\n\r\f#10b981 \n\t\r\f '), hexToRgb('#10B981'))
+    assert.throws(() => hexToRgb('\u0085#10b981'), /Invalid hex color format/)
+    assert.throws(() => hexToRgb('\uFEFF#10b981'), /Invalid hex color format/)
+    assert.throws(() => hexToRgb('\u00A0#10b981'), /Invalid hex color format/)
   })
 
   it('throws on non-string inputs and malformed hex formats', () => {

@@ -13,6 +13,8 @@
     "build": "pnpm --filter @sandlada/okyct run build && pnpm --filter @sandlada/site run build && pnpm --filter @sandlada/dev-app run build",
     "build:all": "pnpm --filter @sandlada/okyct run build && pnpm --filter @sandlada/site run build && pnpm --filter @sandlada/dev-app run build",
     "build:core": "pnpm --filter @sandlada/okyct run build",
+    "build:csharp": "dotnet build packages/csharp/Sandlada.Okyct",
+    "test:csharp": "node packages/csharp/generate-color-fixtures.mjs --check && dotnet test --project packages/csharp/Sandlada.Okyct.Tests/Sandlada.Okyct.Tests.csproj",
     "build:site": "pnpm --filter @sandlada/site run build",
     "build:dev-app": "pnpm --filter @sandlada/dev-app run build",
     "build:demo": "pnpm --filter @sandlada/demo run build",

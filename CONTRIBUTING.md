@@ -22,6 +22,8 @@ pnpm install
 | **启动 Dev-App** | `pnpm dev:app` | 启动开发合规验真工作台（`http://localhost:3001`） |
 | **完整构建** | `pnpm build` | 依序构建核心引擎、前端站点与 dev-app |
 | **仅构建核心引擎** | `pnpm build:core` | 编译 `@sandlada/okyct` |
+| **构建 C# 核心** | `pnpm build:csharp` | 使用 .NET 10 SDK 编译 `Sandlada.Okyct` |
+| **验证 C# 核心** | `pnpm test:csharp` | 校验 TypeScript 基准数据并执行 C# 测试 |
 | **仅构建前端站点** | `pnpm build:site` | 构建 `@sandlada/site`（输出至 `packages/site/dist/`） |
 | **仅构建 Dev-App** | `pnpm build:dev-app` | 构建 `@sandlada/dev-app`（输出至 `packages/dev-app/dist/`） |
 | **预览构建产物** | `pnpm preview` | 本地静态预览生产构建结果 |

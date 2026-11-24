@@ -41,18 +41,21 @@ describe('SrgbByteToUnitLut and HexNibbleLut', () => {
 })
 
 describe('parseHexToRgb24', () => {
-  it('parses 3-digit and 6-digit hex strings with or without # and whitespace into 24-bit integers', () => {
+  it('parses 3-digit and 6-digit hex strings with or without # and ASCII whitespace into 24-bit integers', () => {
     assert.equal(parseHexToRgb24('#000000'), 0x000000)
     assert.equal(parseHexToRgb24('#ffffff'), 0xffffff)
     assert.equal(parseHexToRgb24('2563EB'), 0x2563eb)
-    assert.equal(parseHexToRgb24('  #0aF  '), 0x00aaff)
+    assert.equal(parseHexToRgb24(' \t\n\r\f#0aF\f\r\n\t '), 0x00aaff)
     assert.equal(parseHexToRgb24('f80'), 0xff8800)
-    assert.equal(parseHexToRgb24('\u00a0#123\u00a0'), 0x112233)
   })
 
-  it('throws on non-string and invalid hex formats', () => {
+  it('throws on non-string, non-ASCII whitespace, and invalid hex formats', () => {
     assert.throws(() => parseHexToRgb24(123 as unknown as string), /Invalid hex color input/)
     assert.throws(() => parseHexToRgb24(''), /Invalid hex color format/)
+    assert.throws(() => parseHexToRgb24('\u0085#fff'), /Invalid hex color format/)
+    assert.throws(() => parseHexToRgb24('\uFEFF#fff'), /Invalid hex color format/)
+    assert.throws(() => parseHexToRgb24('\u00a0#123\u00a0'), /Invalid hex color format/)
+    assert.throws(() => parseHexToRgb24('\u3000#fff'), /Invalid hex color format/)
     assert.throws(() => parseHexToRgb24('#12345'), /Invalid hex color format/)
     assert.throws(() => parseHexToRgb24('#1234567'), /Invalid hex color format/)
     assert.throws(() => parseHexToRgb24('##12345'), /Invalid hex color format/)

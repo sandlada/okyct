@@ -16,6 +16,7 @@ import {
 import { harmonizeHex } from './harmonize-hex.ts'
 import { compositeGuardedStateHex } from './internal/composite-guarded-state-hex.ts'
 import { formatStateLayerKey, normalizeStateLayerStates } from './internal/scheme-token-role-map.ts'
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 import { TonalPalette } from './tonal-palette.ts'
 
 function meetsTarget(
@@ -98,21 +99,21 @@ export function resolveCustomColors(
     if (cfg === null || typeof cfg !== 'object' || Array.isArray(cfg)) {
       throw new Error('Invalid custom color entry: expected a CustomColorInput object.')
     }
-    const name = typeof cfg.name === 'string' ? cfg.name.trim() : ''
-    if (name.length === 0 || name.replace(/[-_\s]+/g, '').length === 0) {
+    const name = typeof cfg.name === 'string' ? trimAsciiWhitespace(cfg.name) : ''
+    if (name.length === 0 || name.replace(/[-_ \t\n\r\f]+/g, '').length === 0) {
       throw new Error('Invalid custom color name: expected a non-empty identifier string.')
     }
-    if (cfg.id !== undefined && (typeof cfg.id !== 'string' || cfg.id.trim().length === 0)) {
+    if (cfg.id !== undefined && (typeof cfg.id !== 'string' || trimAsciiWhitespace(cfg.id).length === 0)) {
       throw new Error('Invalid custom color id: expected a non-empty string when provided.')
     }
-    if (cfg.label !== undefined && (typeof cfg.label !== 'string' || cfg.label.trim().length === 0)) {
+    if (cfg.label !== undefined && (typeof cfg.label !== 'string' || trimAsciiWhitespace(cfg.label).length === 0)) {
       throw new Error('Invalid custom color label: expected a non-empty string when provided.')
     }
     if (cfg.harmonize !== undefined && typeof cfg.harmonize !== 'boolean') {
       throw new Error('Invalid custom color harmonize option: expected a boolean.')
     }
-    const id = cfg.id?.trim() ?? name
-    const label = cfg.label?.trim() ?? name
+    const id = cfg.id !== undefined ? trimAsciiWhitespace(cfg.id) : name
+    const label = cfg.label !== undefined ? trimAsciiWhitespace(cfg.label) : name
     const harmonize = cfg.harmonize ?? true
 
     const origOkyct = hexToOkyct(cfg.sourceHex)

@@ -4,6 +4,7 @@
 
 export {
   EmissivePanelSpecs,
+  EmitterStates,
   applyEmissiveProfileToTokenHex,
   computeColorEmissiveTelemetry,
   analyzeEmissiveSchemeMetrics,
@@ -13,6 +14,7 @@ export {
   type SubpixelGeometry,
   type EmissivePanelSpec,
   type EmissiveSchemeOptions,
+  type EmitterState,
   type ColorEmissiveTelemetry,
   type SchemeEmissiveReport,
 } from './driven-emissive-oled/index.ts'

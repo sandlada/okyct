@@ -6,7 +6,7 @@ function splitWords(key: string): string[] {
     .replace(/^--+/, '')
     .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-    .split(/[-_\s]+/)
+    .split(/[-_ \t\n\r\f]+/)
     .filter(Boolean)
 }
 

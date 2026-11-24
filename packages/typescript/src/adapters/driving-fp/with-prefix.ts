@@ -1,11 +1,12 @@
 import type { TokenDictionary, TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
+import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 
 export const withPrefix = (prefix: string) => {
   if (typeof prefix !== 'string') {
     throw new Error(`Invalid prefix for withPrefix: expected string, received ${typeof prefix}.`)
   }
-  const trimmedPrefix = prefix.trim()
+  const trimmedPrefix = trimAsciiWhitespace(prefix)
 
   return (dict: TokenSource): TokenDictionary => {
     const normalized = normalizeTokenDict(dict)

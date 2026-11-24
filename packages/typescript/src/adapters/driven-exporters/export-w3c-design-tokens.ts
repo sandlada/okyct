@@ -10,6 +10,7 @@ import {
   resolveCustomStateLayersForExport,
   resolveSystemStateLayersForExport,
 } from './internal/resolve-export-state-layers.ts'
+import { serializeCanonicalJson } from './internal/serialize-canonical-json.ts'
 
 export type { ExportTokensBaseOptions }
 
@@ -111,5 +112,5 @@ export function exportW3cDesignTokens(
     },
   }
 
-  return JSON.stringify(tokens, null, 2)
+  return serializeCanonicalJson(tokens)
 }

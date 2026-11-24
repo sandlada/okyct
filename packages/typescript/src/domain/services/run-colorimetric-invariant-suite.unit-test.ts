@@ -19,6 +19,11 @@ describe('runColorimetricInvariantSuite', () => {
       [...ExpectedInvariantIds],
     )
 
+    const roundTrip = results.find((r) => r.id === 'round-trip')
+    assert.ok(roundTrip)
+    assert.match(roundTrip.details, /3rd-order Halley solver/)
+    assert.match(roundTrip.details, /Newton-Raphson fallback/)
+
     for (const item of results) {
       assert.equal(item.passed, true, `${item.id}: ${item.measuredValue}`)
       assert.ok(item.samplesChecked > 0)
