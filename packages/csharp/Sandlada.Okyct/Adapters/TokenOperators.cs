@@ -117,7 +117,7 @@ public static partial class TokenOperators
     public static Func<string, string> ToCssVarRef(string? prefix = null, string? fallback = null) => tokenKey =>
     {
         ArgumentNullException.ThrowIfNull(tokenKey);
-        var key = TrimAsciiWhitespace(Regex.Replace(tokenKey, "^[- \\t\\n\\r\\f]+", ""));
+        var key = TrimAsciiWhitespace(LeadingCssSeparatorPattern().Replace(tokenKey, ""));
         if (key.Length == 0) throw new ArgumentException("Expected a non-empty token name.", nameof(tokenKey));
         var start = string.IsNullOrEmpty(prefix) ? "--" : prefix.EndsWith('-') ? prefix : prefix + "-";
         return string.IsNullOrEmpty(fallback) ? $"var({start}{key})" : $"var({start}{key}, {fallback})";
@@ -227,4 +227,7 @@ public static partial class TokenOperators
 
     [GeneratedRegex("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
     internal static partial Regex HexPattern();
+
+    [GeneratedRegex("^[- \\t\\n\\r\\f]+")]
+    private static partial Regex LeadingCssSeparatorPattern();
 }

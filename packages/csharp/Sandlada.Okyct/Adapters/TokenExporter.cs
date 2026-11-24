@@ -272,9 +272,9 @@ public sealed partial class TokenExporter : ITokenExporterPort
 
     internal static string[] Words(string text)
     {
-        var spaced = Regex.Replace(text, "([a-z0-9])([A-Z])", "$1 $2");
-        spaced = Regex.Replace(spaced, "([A-Z]+)([A-Z][a-z])", "$1 $2");
-        return Regex.Split(TrimAsciiWhitespace(spaced), "[-_ \\t\\n\\r\\f]+").Where(word => word.Length != 0).ToArray();
+        var spaced = CamelBoundaryPattern().Replace(text, "$1 $2");
+        spaced = AcronymBoundaryPattern().Replace(spaced, "$1 $2");
+        return SeparatorSplitPattern().Split(TrimAsciiWhitespace(spaced)).Where(word => word.Length != 0).ToArray();
     }
 
     internal static string KebabCase(string text) => string.Join('-', Words(text).Select(word => word.ToLowerInvariant()));
@@ -298,4 +298,13 @@ public sealed partial class TokenExporter : ITokenExporterPort
     }
 
     private sealed record CustomRole(string Key, string Hex, string Overlay, string Description, string StateDescription);
+
+    [GeneratedRegex("([a-z0-9])([A-Z])")]
+    private static partial Regex CamelBoundaryPattern();
+
+    [GeneratedRegex("([A-Z]+)([A-Z][a-z])")]
+    private static partial Regex AcronymBoundaryPattern();
+
+    [GeneratedRegex("[-_ \\t\\n\\r\\f]+")]
+    private static partial Regex SeparatorSplitPattern();
 }
