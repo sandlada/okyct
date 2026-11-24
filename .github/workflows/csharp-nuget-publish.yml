@@ -1,0 +1,42 @@
+name: Publish C# NuGet Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'NuGet package version (e.g. 1.0.0 or 1.0.0-preview.1)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore packages/csharp/Sandlada.Okyct.Tests/Sandlada.Okyct.Tests.csproj
+
+      - name: Run tests
+        run: dotnet test packages/csharp/Sandlada.Okyct.Tests/Sandlada.Okyct.Tests.csproj --configuration Release --no-restore
+
+      - name: Pack NuGet package
+        run: dotnet pack packages/csharp/Sandlada.Okyct/Sandlada.Okyct.csproj --configuration Release --output ./nupkg -p:PackageVersion=${{ inputs.version }}
+
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: kai-orion
+
+      - name: Push to NuGet
+        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
