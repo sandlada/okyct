@@ -3,7 +3,7 @@
  * Precomputed 8-bit sRGB byte [0..255] lookup tables and zero-regex base-16 hex parser.
  */
 
-import { trimAsciiWhitespace } from './trim-ascii-whitespace.ts'
+import { trimAsciiWhitespace } from '../trim-ascii-whitespace.ts'
 
 function buildSrgbByteToLinearLut(): Float64Array {
   const lut = new Float64Array(256)

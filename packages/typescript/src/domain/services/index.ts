@@ -2,6 +2,7 @@
  * [Hexagonal Layer: Domain Services Barrel]
  */
 
+export * from './trim-ascii-whitespace.ts'
 export * from './srgb-to-linear.ts'
 export * from './linear-to-srgb.ts'
 export * from './hex-to-rgb.ts'

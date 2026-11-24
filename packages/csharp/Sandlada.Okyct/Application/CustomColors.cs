@@ -21,7 +21,7 @@ public static class CustomColors
         var contrast = Math.Clamp(options.ContrastLevel, -1, 1);
         var minRatio = contrast >= 0.8 ? 7.0 : contrast >= 0.35 ? 5.8 : 4.5;
         var minApca = contrast >= 0.8 ? 75 : contrast >= 0.35 ? 65 : 60;
-        var states = options.StateLayers?.Distinct().ToArray() ?? [];
+        var states = options.StateLayers?.Distinct().Order().ToArray() ?? [];
         if (states.Any(state => state is < StateLayer.Hovered or > StateLayer.Dragged))
             throw new ArgumentOutOfRangeException(nameof(options));
 

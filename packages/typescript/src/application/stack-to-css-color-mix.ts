@@ -1,5 +1,5 @@
 
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
+import { trimAsciiWhitespace } from '../domain/index.ts'
 
 export const stackToCssColorMix = (options: { space?: 'oklch' | 'srgb' } = {}) => {
   const space = options.space ?? 'oklch'

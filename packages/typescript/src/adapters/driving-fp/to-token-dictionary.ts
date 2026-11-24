@@ -1,24 +1,16 @@
 import {
+  StateLayerStates,
+  StatefulSystemColorTokens,
   SystemColorTokens,
   type DynamicSchemeColors,
   type ResolvedCustomColor,
+  type SchemeStateLayerTokens,
 } from '../../ports/index.ts'
 import type { TokenDictionary } from './token-dictionary.ts'
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
-
-function splitNameWords(name: string): string[] {
-  return trimAsciiWhitespace(
-    name
-      .replace(/^--+/, '')
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-  )
-    .split(/[-_ \t\n\r\f]+/)
-    .filter(Boolean)
-}
+import { splitTokenWords } from './internal/split-token-words.ts'
 
 function toCamelName(name: string): string {
-  const words = splitNameWords(name)
+  const words = splitTokenWords(name)
   if (words.length === 0) {
     throw new Error(`Invalid custom color name: "${name}". Expected at least one alphanumeric word.`)
   }
@@ -69,8 +61,20 @@ export function toTokenDictionary(
   }
 
   if (includeStateLayers && scheme.stateLayers) {
+    const seen = new Set<string>()
+    for (const token of StatefulSystemColorTokens) {
+      for (const state of StateLayerStates) {
+        const cap = `${state.charAt(0).toUpperCase()}${state.slice(1)}`
+        const stateKey = `${token}${cap}` as keyof SchemeStateLayerTokens
+        const stateHex = scheme.stateLayers[stateKey]
+        if (typeof stateHex === 'string') {
+          seen.add(stateKey)
+          assignToken(stateKey, stateHex, `system state layer "${stateKey}"`)
+        }
+      }
+    }
     for (const [stateKey, stateHex] of Object.entries(scheme.stateLayers)) {
-      if (typeof stateHex === 'string') {
+      if (!seen.has(stateKey) && typeof stateHex === 'string') {
         assignToken(stateKey, stateHex, `system state layer "${stateKey}"`)
       }
     }
@@ -88,20 +92,19 @@ export function toTokenDictionary(
     assignToken(onContainerKey, custom.onColorContainer, sourceLabel)
 
     if (includeStateLayers && custom.stateLayers) {
-      for (const [roleStateKey, stateHex] of Object.entries(custom.stateLayers)) {
-        if (typeof stateHex !== 'string') continue
-        if (roleStateKey.startsWith('colorContainer')) {
-          const suffix = roleStateKey.slice('colorContainer'.length)
-          assignToken(`${containerKey}${suffix}`, stateHex, sourceLabel)
-        } else if (roleStateKey.startsWith('onColorContainer')) {
-          const suffix = roleStateKey.slice('onColorContainer'.length)
-          assignToken(`${onContainerKey}${suffix}`, stateHex, sourceLabel)
-        } else if (roleStateKey.startsWith('onColor')) {
-          const suffix = roleStateKey.slice('onColor'.length)
-          assignToken(`${onKey}${suffix}`, stateHex, sourceLabel)
-        } else if (roleStateKey.startsWith('color')) {
-          const suffix = roleStateKey.slice('color'.length)
-          assignToken(`${baseKey}${suffix}`, stateHex, sourceLabel)
+      const rolePairs: ReadonlyArray<readonly [string, string]> = [
+        ['color', baseKey],
+        ['onColor', onKey],
+        ['colorContainer', containerKey],
+        ['onColorContainer', onContainerKey],
+      ]
+      for (const state of StateLayerStates) {
+        const cap = `${state.charAt(0).toUpperCase()}${state.slice(1)}`
+        for (const [sourcePrefix, targetPrefix] of rolePairs) {
+          const stateHex = custom.stateLayers[`${sourcePrefix}${cap}`]
+          if (typeof stateHex === 'string') {
+            assignToken(`${targetPrefix}${cap}`, stateHex, sourceLabel)
+          }
         }
       }
     }

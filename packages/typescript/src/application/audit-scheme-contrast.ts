@@ -4,6 +4,7 @@ import type {
   DynamicSchemeColors,
   SystemColorToken,
 } from '../ports/index.ts'
+import { roundToDecimals } from './internal/round-to-decimals.ts'
 
 export function auditSchemeContrast(scheme: DynamicSchemeColors): ContrastAuditItem[] {
   const pairs: ReadonlyArray<{
@@ -48,9 +49,9 @@ export function auditSchemeContrast(scheme: DynamicSchemeColors): ContrastAuditI
     return {
       fgRole: p.fg,
       bgRole: p.bg,
-      fgTone: parseFloat(fgTone.toFixed(2)),
-      bgTone: parseFloat(bgTone.toFixed(2)),
-      wcagRatio: parseFloat(wcag.toFixed(2)),
+      fgTone: roundToDecimals(fgTone, 2),
+      bgTone: roundToDecimals(bgTone, 2),
+      wcagRatio: roundToDecimals(wcag, 2),
       wcagPassAA: wcag >= p.minRatio,
       wcagPassAAA: wcag >= 7.0,
       apcaLc: apca,

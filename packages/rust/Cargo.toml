@@ -1,0 +1,11 @@
+[package]
+name = "okyct"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+description = "OKYCT Perceptual Color Space & MD3 Theme Engine for Emissive Displays"
+repository = "https://github.com/sandlada/okyct"
+keywords = ["okyct", "color", "oklab", "md3", "oled"]
+categories = ["graphics", "accessibility"]
+
+[dependencies]

@@ -1,31 +1,23 @@
 import { NamingCases, type NamingCase, type TokenDictionary, type TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
-
-function splitWords(key: string): string[] {
-  return key
-    .replace(/^--+/, '')
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-    .split(/[-_ \t\n\r\f]+/)
-    .filter(Boolean)
-}
+import { splitTokenWords } from './internal/split-token-words.ts'
 
 function toKebab(key: string): string {
-  return splitWords(key).map((w) => w.toLowerCase()).join('-')
+  return splitTokenWords(key).map((w) => w.toLowerCase()).join('-')
 }
 
 function toCamel(key: string): string {
-  return splitWords(key)
+  return splitTokenWords(key)
     .map((w, i) => (i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()))
     .join('')
 }
 
 function toSnake(key: string): string {
-  return splitWords(key).map((w) => w.toLowerCase()).join('_')
+  return splitTokenWords(key).map((w) => w.toLowerCase()).join('_')
 }
 
 function toConstant(key: string): string {
-  return splitWords(key).map((w) => w.toUpperCase()).join('_')
+  return splitTokenWords(key).map((w) => w.toUpperCase()).join('_')
 }
 
 const CaseTransformers: Record<NamingCase, (key: string) => string> = {

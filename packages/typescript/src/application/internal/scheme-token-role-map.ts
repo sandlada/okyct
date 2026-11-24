@@ -95,6 +95,7 @@ export function normalizeStateLayerStates(option?: StateLayersOption): StateLaye
       result.push(state)
     }
   }
+  result.sort((a, b) => StateLayerStates.indexOf(a) - StateLayerStates.indexOf(b))
   return result
 }
 

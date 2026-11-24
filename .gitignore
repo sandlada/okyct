@@ -32,3 +32,5 @@ packages/csharp/**/bin/
 packages/csharp/**/obj/
 packages/csharp/**/TestResults/
 /TestResults/
+packages/rust/target/
+packages/rust/Cargo.lock

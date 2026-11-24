@@ -157,7 +157,7 @@ public static partial class DynamicSchemes
         IReadOnlyList<StateLayer>? states = null, BlendSpace blendSpace = BlendSpace.Okyct, bool contrastGuard = false)
     {
         ArgumentNullException.ThrowIfNull(scheme);
-        var requested = states?.Distinct().ToArray() ?? [];
+        var requested = states?.Distinct().Order().ToArray() ?? [];
         if (requested.Any(state => state is < StateLayer.Hovered or > StateLayer.Dragged))
             throw new ArgumentOutOfRangeException(nameof(states));
         var result = new Dictionary<string, string>(StringComparer.Ordinal);

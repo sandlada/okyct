@@ -10,6 +10,12 @@ test('renameCase transforms keys to kebab, camel, snake, and constant case', () 
   assert.deepEqual(renameCase('camel')({ 'on-primary-container': '#DBEAFE' }), dict)
 })
 
+test('renameCase trims surrounding ASCII whitespace before splitting words', () => {
+  assert.deepEqual(renameCase('kebab')({ ' \t--PrimaryAccent\n ': '#f07' }), {
+    'primary-accent': '#f07',
+  })
+})
+
 test('renameCase throws when distinct keys collapse to the same transformed key', () => {
   assert.throws(
     () => renameCase('kebab')({ brandBlue: 'red', 'brand-blue': 'blue' }),

@@ -1,6 +1,6 @@
 import type { TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
+import { trimAsciiWhitespace } from '../../domain/index.ts'
 
 export const toCssRuleBlock = (selector: string) => {
   const trimmedSelector = trimAsciiWhitespace(selector)

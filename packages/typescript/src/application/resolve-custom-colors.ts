@@ -5,6 +5,7 @@ import {
   hexToOkyct,
   shortestHueDelta,
   solveTonesForContrast,
+  trimAsciiWhitespace,
   type ContrastMetric,
 } from '../domain/index.ts'
 import {
@@ -16,7 +17,6 @@ import {
 import { harmonizeHex } from './harmonize-hex.ts'
 import { compositeGuardedStateHex } from './internal/composite-guarded-state-hex.ts'
 import { formatStateLayerKey, normalizeStateLayerStates } from './internal/scheme-token-role-map.ts'
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 import { TonalPalette } from './tonal-palette.ts'
 
 function meetsTarget(

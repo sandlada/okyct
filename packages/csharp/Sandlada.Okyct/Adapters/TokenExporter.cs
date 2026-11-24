@@ -229,7 +229,7 @@ public sealed partial class TokenExporter : ITokenExporterPort
     private static IEnumerable<(StateLayer State, string Hex)> CustomStates(
         ResolvedCustomColor color, CustomRole role, IReadOnlyList<StateLayer>? requested)
     {
-        foreach (var state in (requested ?? AllStates).Distinct())
+        foreach (var state in (requested ?? AllStates).Distinct().Order())
         {
             if (state is < StateLayer.Hovered or > StateLayer.Dragged) throw new ArgumentOutOfRangeException(nameof(requested));
             if (color.StateLayers?.TryGetValue(role.Key + state, out var existing) == true)

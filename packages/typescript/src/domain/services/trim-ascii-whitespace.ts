@@ -1,7 +1,11 @@
-export function isAsciiWhitespaceCode(code: number): boolean {
+function isAsciiWhitespaceCode(code: number): boolean {
   return code === 32 || code === 9 || code === 10 || code === 13 || code === 12
 }
 
+/**
+ * Trims leading and trailing W3C CSS / WHATWG ASCII whitespace
+ * (`' '`, `'\t'`, `'\n'`, `'\r'`, `'\f'`), rejecting non-ASCII whitespace such as U+0085 / U+FEFF / U+00A0 / U+3000.
+ */
 export function trimAsciiWhitespace(value: string): string {
   const len = value.length
   if (len === 0) return value

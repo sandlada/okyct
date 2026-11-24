@@ -1,4 +1,4 @@
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
+import { trimAsciiWhitespace } from '../../domain/index.ts'
 
 export const toCssVarRef = (options: { prefix?: string; fallback?: string } = {}) =>
   (tokenKey: string): string => {

@@ -1,10 +1,9 @@
 
-import { hexToOkyct, okyctToHex } from '../../domain/index.ts'
+import { hexToOkyct, okyctToHex, trimAsciiWhitespace } from '../../domain/index.ts'
 import { EmissivePanelTypes, type EmissivePanelType } from '../../ports/index.ts'
 import { EmissivePanelSpecs } from './emissive-panel-specs.ts'
 import { applyBlueBurnInGuard } from './apply-blue-burn-in-guard.ts'
 import { applySubpixelEdgeCompensation } from './internal/apply-subpixel-edge-compensation.ts'
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
 
 export function applyEmissiveProfileToTokenHex(
   key: string,

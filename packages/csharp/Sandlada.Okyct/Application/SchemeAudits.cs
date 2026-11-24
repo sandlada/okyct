@@ -17,7 +17,7 @@ public static partial class DynamicSchemes
         ArgumentNullException.ThrowIfNull(scheme);
         double Tone(string token) => scheme.Colors.TryGetValue(token, out var hex)
             ? HexToOkyct(hex).T : scheme.Tones.GetValueOrDefault(token, 50);
-        static double Format(double value) => double.Parse(ToFixed(value, 2), CultureInfo.InvariantCulture);
+        static double Format(double value) => RoundToInteger(value * 100) / 100;
 
         // Preserve the audit's original ordering for the two surface pairs.
         var pairs = Pairs.ToArray();

@@ -1,9 +1,10 @@
-import type {
-  DynamicSchemeColors,
-  ResolvedCustomColor,
-  SchemeStateLayerTokens,
-  StateLayerState,
-  StateLayersOption,
+import {
+  StatefulSystemColorTokens,
+  type DynamicSchemeColors,
+  type ResolvedCustomColor,
+  type SchemeStateLayerTokens,
+  type StateLayerState,
+  type StateLayersOption,
 } from '../../../ports/index.ts'
 import {
   StateLayerStates,
@@ -30,6 +31,7 @@ function normalizeStates(option: StateLayersOption): StateLayerState[] {
       result.push(state)
     }
   }
+  result.sort((a, b) => StateLayerStates.indexOf(a) - StateLayerStates.indexOf(b))
   return result
 }
 
@@ -56,9 +58,24 @@ export function resolveSystemStateLayersForExport(
     })
   }
   if (scheme.stateLayers) {
-    return Object.entries(scheme.stateLayers).filter(
-      (entry): entry is [string, string] => typeof entry[1] === 'string'
-    )
+    const entries: Array<[string, string]> = []
+    const seen = new Set<string>()
+    for (const token of StatefulSystemColorTokens) {
+      for (const state of StateLayerStates) {
+        const key = `${token}${capitalizeState(state)}` as keyof SchemeStateLayerTokens
+        const hex = scheme.stateLayers[key]
+        if (typeof hex === 'string') {
+          seen.add(key)
+          entries.push([key, hex])
+        }
+      }
+    }
+    for (const [key, hex] of Object.entries(scheme.stateLayers)) {
+      if (!seen.has(key) && typeof hex === 'string') {
+        entries.push([key, hex])
+      }
+    }
+    return entries
   }
   return []
 }

@@ -1,6 +1,6 @@
 import type { TokenDictionary, TokenSource } from './token-dictionary.ts'
 import { normalizeTokenDict } from './internal/normalize-token-dict.ts'
-import { trimAsciiWhitespace } from './internal/trim-ascii-whitespace.ts'
+import { trimAsciiWhitespace } from '../../domain/index.ts'
 
 export const withPrefix = (prefix: string) => {
   if (typeof prefix !== 'string') {

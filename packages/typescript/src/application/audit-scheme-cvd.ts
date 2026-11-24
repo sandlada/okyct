@@ -17,6 +17,7 @@ import type {
   DynamicSchemeColors,
   SystemColorToken,
 } from '../ports/index.ts'
+import { roundToDecimals } from './internal/round-to-decimals.ts'
 
 const DefaultCvdTypes: readonly Exclude<CvdType, 'none'>[] = [
   'protanopia',
@@ -70,9 +71,8 @@ export function auditSchemeCvd(
     for (const [roleA, roleB] of SemanticAuditPairs) {
       const projA = simulateCvd(scheme[roleA], cvdType, severity)
       const projB = simulateCvd(scheme[roleB], cvdType, severity)
-      const deltaEOklab = Math.round(getDeltaEOklab(projA, projB) * 10000) / 10000
-      const deltaTone =
-        Math.round(Math.abs(hexToOkyct(projA).t - hexToOkyct(projB).t) * 100) / 100
+      const deltaEOklab = roundToDecimals(getDeltaEOklab(projA, projB), 4)
+      const deltaTone = roundToDecimals(Math.abs(hexToOkyct(projA).t - hexToOkyct(projB).t), 2)
 
       const separable = deltaEOklab >= minDeltaE || deltaTone >= minDeltaTone
       items.push({

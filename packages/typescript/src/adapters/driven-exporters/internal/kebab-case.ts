@@ -1,5 +1,5 @@
 
-import { trimAsciiWhitespace } from './trim-ascii-whitespace.ts'
+import { trimAsciiWhitespace } from '../../../domain/index.ts'
 
 export function kebabCase(str: string): string {
   return trimAsciiWhitespace(
